@@ -1,0 +1,23 @@
+AeroPredict/
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py          # Flask app factory
+│   │   ├── routes/
+│   │   │   ├── predict.py       # POST /api/predict
+│   │   │   └── analytics.py     # GET  /api/analytics/*
+│   │   ├── services/
+│   │   │   └── ml_engine.py     # XGBoost training + inference
+│   │   └── utils/               # (reserved for future helpers)
+│   ├── run.py                   # Entry point
+│   └── requirements.txt
+├── frontend/
+│   ├── index.html               # Main app (single-page)
+│   ├── style.css                # Premium aviation theme
+│   └── app.js                   # API calls + Chart.js + particles
+├── models/                      # Auto-created after training
+│   ├── aeropredict_model.joblib
+│   └── model_meta.json
+├── data/                        # Reserved for raw CSVs
+├── notebooks/                   # Reserved for Jupyter EDA
+├── start_backend.bat            # One-click backend launcher
+└── start_frontend.bat           # One-click frontend opener

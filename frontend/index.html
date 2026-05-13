@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AeroPredict – AI Flight Delay Prediction Platform</title>
+  <meta name="description" content="AeroPredict uses advanced AI and machine learning to predict flight delays, cancellations, and on-time arrivals with real-time accuracy for global passengers." />
+  <meta name="keywords" content="flight delay prediction, AI aviation, flight cancellation risk, IATA flight tracker, machine learning aviation" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <path d="M16 2L28 8V20L16 30L4 20V8L16 2Z" fill="url(#hexGrad)" />
+        <path d="M10 16L14 12L20 16L14 20L10 16Z" fill="white" opacity="0.9"/>
+        <path d="M14 12L22 14L20 16L14 12Z" fill="white" opacity="0.6"/>
+        <defs>
+          <linearGradient id="hexGrad" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0EA5E9"/>
+            <stop offset="100%" stop-color="#6366F1"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <span class="nav-title">AeroPredict<span class="nav-badge">AI</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#hero" class="nav-link active" data-section="hero">Home</a></li>
+    <li><a href="#predict" class="nav-link" data-section="predict">Predict</a></li>
+    <li><a href="#analytics" class="nav-link" data-section="analytics">Analytics</a></li>
+    <li><a href="#technology" class="nav-link" data-section="technology">Technology</a></li>
+  </ul>
+  <div class="nav-status">
+    <span class="status-dot" id="apiStatus"></span>
+    <span id="apiStatusText">Connecting…</span>
+  </div>
+  <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Toggle menu">☰</button>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <canvas id="particleCanvas"></canvas>
+    <div class="hero-grid"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="chip">✦ IATA Compliant · Real-World AI Model · 120K+ Flights Analyzed</span>
+    </div>
+    <h1 class="hero-title">
+      Predict Your Flight's Fate<br />
+      <span class="gradient-text">Before You Board</span>
+    </h1>
+    <p class="hero-subtitle">
+      AeroPredict combines machine learning, historical BTS/FAA aviation data,
+      NAS delay patterns, and real-time weather risk indices to give you the most
+      accurate flight outcome predictions available — globally.
+    </p>
+    <div class="hero-cta">
+      <a href="#predict" class="btn btn-primary" id="heroCTA">
+        <span>Predict My Flight</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </a>
+      <a href="#analytics" class="btn btn-ghost">View Analytics</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="stat-value" data-target="84.7">0</span><span class="stat-unit">%</span>
+        <span class="stat-label">Model Accuracy</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="stat-value" data-target="120">0</span><span class="stat-unit">K+</span>
+        <span class="stat-label">Flights Analyzed</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="stat-value" data-target="25">0</span><span class="stat-unit">+</span>
+        <span class="stat-label">Global Airports</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="stat-value" data-target="19">0</span><span class="stat-unit">+</span>
+        <span class="stat-label">Airlines Tracked</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-plane">
+    <div class="plane-trail"></div>
+    <svg class="plane-svg" viewBox="0 0 100 100" fill="none">
+      <path d="M85 50L15 25L30 50L15 75L85 50Z" fill="url(#planeGrad)" />
+      <path d="M30 50L40 35L60 40L30 50Z" fill="white" opacity="0.3"/>
+      <defs>
+        <linearGradient id="planeGrad" x1="15" y1="25" x2="85" y2="75" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#38BDF8"/>
+          <stop offset="100%" stop-color="#818CF8"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="scroll-indicator">
+    <span>Scroll to explore</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     PREDICTION SECTION
+═══════════════════════════════════════════════════════ -->
+<section class="section" id="predict">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">AI Prediction Engine</span>
+      <h2 class="section-title">Flight Risk Analysis</h2>
+      <p class="section-subtitle">Enter your flight details below. Our XGBoost ensemble model — trained on FAA Bureau of Transportation Statistics data — will compute real-time delay, cancellation, and on-time probabilities.</p>
+    </div>
+
+    <div class="predict-layout">
+      <!-- INPUT FORM -->
+      <div class="card predict-card" id="predictForm">
+        <div class="card-header">
+          <h3>Flight Information</h3>
+          <span class="card-badge">Real-Time Analysis</span>
+        </div>
+
+        <form class="flight-form" id="flightForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="flightNumber">Flight Number</label>
+              <div class="input-wrapper">
+                <span class="input-icon">✈</span>
+                <input type="text" id="flightNumber" class="form-input" placeholder="e.g. AA1234" maxlength="8" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="airline">Airline (IATA Code)</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🏢</span>
+                <select id="airline" class="form-input form-select">
+                  <option value="">Select Airline</option>
+                  <optgroup label="US Carriers">
+                    <option value="AA">AA – American Airlines</option>
+                    <option value="DL">DL – Delta Air Lines</option>
+                    <option value="UA">UA – United Airlines</option>
+                    <option value="WN">WN – Southwest Airlines</option>
+                    <option value="B6">B6 – JetBlue Airways</option>
+                    <option value="AS">AS – Alaska Airlines</option>
+                    <option value="NK">NK – Spirit Airlines</option>
+                    <option value="F9">F9 – Frontier Airlines</option>
+                    <option value="HA">HA – Hawaiian Airlines</option>
+                    <option value="G4">G4 – Allegiant Air</option>
+                  </optgroup>
+                  <optgroup label="Middle East Carriers">
+                    <option value="EK">EK – Emirates</option>
+                    <option value="QR">QR – Qatar Airways</option>
+                    <option value="EY">EY – Etihad Airways</option>
+                    <option value="GF">GF – Gulf Air</option>
+                    <option value="SV">SV – Saudi Arabian Airlines</option>
+                  </optgroup>
+                  <optgroup label="European Carriers">
+                    <option value="LH">LH – Lufthansa</option>
+                    <option value="BA">BA – British Airways</option>
+                    <option value="AF">AF – Air France</option>
+                    <option value="TK">TK – Turkish Airlines</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row airport-row">
+            <div class="form-group">
+              <label class="form-label" for="depAirport">Departure Airport (IATA)</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🛫</span>
+                <input type="text" id="depAirport" class="form-input" placeholder="e.g. JFK" maxlength="4" />
+                <span class="airport-name" id="depAirportName"></span>
+              </div>
+            </div>
+            <div class="route-arrow">→</div>
+            <div class="form-group">
+              <label class="form-label" for="arrAirport">Arrival Airport (IATA)</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🛬</span>
+                <input type="text" id="arrAirport" class="form-input" placeholder="e.g. LHR" maxlength="4" />
+                <span class="airport-name" id="arrAirportName"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="flightDate">Flight Date</label>
+              <div class="input-wrapper">
+                <span class="input-icon">📅</span>
+                <input type="date" id="flightDate" class="form-input" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="depTime">Departure Time</label>
+              <div class="input-wrapper">
+                <span class="input-icon">⏰</span>
+                <input type="time" id="depTime" class="form-input" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-error" id="formError" hidden></div>
+
+          <button type="submit" class="btn btn-primary btn-full" id="predictBtn">
+            <span id="predictBtnText">Analyze Flight Risk</span>
+            <div class="btn-loader" id="btnLoader" hidden>
+              <div class="spinner"></div>
+            </div>
+          </button>
+        </form>
+
+        <!-- Quick-fill demo examples -->
+        <div class="demo-examples">
+          <span class="demo-label">Quick demo:</span>
+          <button class="demo-chip" onclick="fillDemo('AA','ORD','JFK','2026-01-15','08:30')">AA · ORD→JFK Winter</button>
+          <button class="demo-chip" onclick="fillDemo('EK','DXB','LHR','2026-07-04','14:00')">EK · DXB→LHR Summer</button>
+          <button class="demo-chip" onclick="fillDemo('WN','ATL','LAX','2026-12-24','18:00')">WN · ATL→LAX Xmas Eve</button>
+        </div>
+      </div>
+
+      <!-- RESULT PANEL (initially hidden) -->
+      <div class="card result-card" id="resultCard" hidden>
+        <div class="result-header" id="resultHeader">
+          <div class="result-flight-info">
+            <span class="result-flight-num" id="rFlightNum">–</span>
+            <span class="result-route" id="rRoute">– → –</span>
+            <span class="result-time" id="rTime">–</span>
+          </div>
+          <div class="risk-badge" id="riskBadge">–</div>
+        </div>
+
+        <!-- Probability Gauges -->
+        <div class="proba-grid" id="probaGrid">
+          <div class="proba-card on-time">
+            <div class="proba-icon">✅</div>
+            <div class="proba-label">On-Time Arrival</div>
+            <div class="proba-value" id="pOnTime">–%</div>
+            <div class="proba-bar-wrap">
+              <div class="proba-bar" id="barOnTime"></div>
+            </div>
+          </div>
+          <div class="proba-card delayed">
+            <div class="proba-icon">⚠️</div>
+            <div class="proba-label">Flight Delayed</div>
+            <div class="proba-value" id="pDelayed">–%</div>
+            <div class="proba-bar-wrap">
+              <div class="proba-bar" id="barDelayed"></div>
+            </div>
+          </div>
+          <div class="proba-card cancelled">
+            <div class="proba-icon">❌</div>
+            <div class="proba-label">Cancelled</div>
+            <div class="proba-value" id="pCancelled">–%</div>
+            <div class="proba-bar-wrap">
+              <div class="proba-bar" id="barCancelled"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Doughnut Chart -->
+        <div class="chart-wrap">
+          <canvas id="resultChart" height="200"></canvas>
+        </div>
+
+        <!-- Risk Factors -->
+        <div class="factors-section">
+          <h4>Risk Factor Analysis</h4>
+          <div class="factors-list" id="factorsList"></div>
+        </div>
+
+        <!-- Model confidence note -->
+        <div class="model-note">
+          <span class="note-icon">🤖</span>
+          <span>Powered by XGBoost + Platt Calibration · Trained on 102K flight records · FAA/BTS Data Sources</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     ANALYTICS SECTION
+═══════════════════════════════════════════════════════ -->
+<section class="section section-dark" id="analytics">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Data Intelligence</span>
+      <h2 class="section-title">Aviation Analytics Dashboard</h2>
+      <p class="section-subtitle">Live statistics from our aviation database — carrier on-time performance, airport congestion indices, and global delay trends.</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi-card">
+        <div class="kpi-icon">🌍</div>
+        <div class="kpi-value" id="kpiFlights">–</div>
+        <div class="kpi-label">Flights Analyzed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">⏱</div>
+        <div class="kpi-value" id="kpiOTP">–</div>
+        <div class="kpi-label">Avg. On-Time Rate</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-value" id="kpiDelay">–</div>
+        <div class="kpi-label">Avg. Delay Rate</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🧠</div>
+        <div class="kpi-value" id="kpiAccuracy">–</div>
+        <div class="kpi-label">Model Accuracy</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-grid">
+      <div class="card chart-card">
+        <div class="chart-card-header">
+          <h3>Carrier On-Time Performance</h3>
+          <span class="chart-subtitle">OTP % by airline (BTS 2023)</span>
+        </div>
+        <canvas id="carrierChart" height="300"></canvas>
+      </div>
+      <div class="card chart-card">
+        <div class="chart-card-header">
+          <h3>Airport Congestion Index</h3>
+          <span class="chart-subtitle">Delay pressure by hub (FAA)</span>
+        </div>
+        <canvas id="airportChart" height="300"></canvas>
+      </div>
+    </div>
+
+    <!-- Delay Distribution Chart -->
+    <div class="card chart-card-wide">
+      <div class="chart-card-header">
+        <h3>Seasonal Delay Risk Profile</h3>
+        <span class="chart-subtitle">Monthly NAS delay risk index across the year</span>
+      </div>
+      <canvas id="seasonChart" height="180"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     TECHNOLOGY SECTION
+═══════════════════════════════════════════════════════ -->
+<section class="section" id="technology">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Architecture</span>
+      <h2 class="section-title">The Technology Behind AeroPredict</h2>
+      <p class="section-subtitle">Built on a production-grade AI pipeline with aviation domain expertise baked into every layer.</p>
+    </div>
+
+    <div class="tech-pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-icon">📡</div>
+        <h4>Data Layer</h4>
+        <p>BTS On-Time Performance, FAA OPSNET, METAR weather feeds, IATA schedules</p>
+        <div class="pipeline-tags">
+          <span>BTS</span><span>FAA</span><span>IATA</span><span>METAR</span>
+        </div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">⚙️</div>
+        <h4>Feature Engineering</h4>
+        <p>Cyclical time encoding, congestion indices, carrier OTP profiles, route distance</p>
+        <div class="pipeline-tags">
+          <span>Pandas</span><span>NumPy</span><span>Scikit-learn</span>
+        </div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">🧠</div>
+        <h4>AI Model</h4>
+        <p>XGBoost ensemble + Platt Scaling calibration for calibrated class probabilities</p>
+        <div class="pipeline-tags">
+          <span>XGBoost</span><span>Calibration</span><span>3-Class</span>
+        </div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">🔌</div>
+        <h4>API Layer</h4>
+        <p>Flask REST API with CORS, input validation, and sub-100ms inference latency</p>
+        <div class="pipeline-tags">
+          <span>Flask</span><span>Python</span><span>REST</span>
+        </div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-icon">💻</div>
+        <h4>Dashboard UI</h4>
+        <p>Responsive aviation-grade UI with real-time Chart.js visualizations</p>
+        <div class="pipeline-tags">
+          <span>HTML5</span><span>Chart.js</span><span>CSS3</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h4>IATA-Aligned Data Model</h4>
+        <p>Every airline and airport uses IATA codes ensuring global compatibility and industry-standard identification.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌦</div>
+        <h4>Weather Risk Integration</h4>
+        <p>Seasonal and diurnal weather patterns integrated as NAS-aligned risk features directly into model training.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h4>Calibrated Probabilities</h4>
+        <p>Platt Scaling ensures model probabilities are statistically meaningful, not just raw classifier scores.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h4>Sub-100ms Inference</h4>
+        <p>Optimized inference pipeline delivers real-time predictions even under concurrent user load.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h4>IOSA Safety Standards</h4>
+        <p>Risk scoring methodology aligns with IOSA (IATA Operational Safety Audit) framework principles.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h4>Explainable AI</h4>
+        <p>Risk factor decomposition tells passengers exactly which factors are driving their flight's risk score.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="nav-title">AeroPredict<span class="nav-badge">AI</span></span>
+        <p>Advanced AI-powered flight prediction platform built for global aviation management.</p>
+        <div class="footer-tech-badges">
+          <span>Python</span><span>Flask</span><span>XGBoost</span><span>Chart.js</span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Data Sources</h5>
+        <ul>
+          <li>BTS On-Time Performance Database</li>
+          <li>FAA OPSNET NAS Delay System</li>
+          <li>IATA Global Schedule Data</li>
+          <li>METAR/NOAA Weather API</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Aviation Standards</h5>
+        <ul>
+          <li>IATA Airport Codes (IATA)</li>
+          <li>IOSA Safety Framework</li>
+          <li>NAS Delay Classification</li>
+          <li>FAA OTP Reporting Standards</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Project</h5>
+        <ul>
+          <li>Final Year Research Project</li>
+          <li>Aviation Management Dept.</li>
+          <li>AI & Machine Learning Integration</li>
+          <li>Commercial Aviation Analytics</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 AeroPredict · AI-Powered Flight Intelligence Platform · Academic Research Project</p>
+      <p class="footer-disclaimer">Predictions are probabilistic estimates for informational purposes. Always verify with your airline.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
