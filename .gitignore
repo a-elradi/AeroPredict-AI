@@ -7,8 +7,8 @@ venv/
 env/
 
 # ML Models (Large Files)
-models/*.joblib
-models/*.pkl
+# models/*.joblib
+# models/*.pkl
 
 # IDEs
 .vscode/
