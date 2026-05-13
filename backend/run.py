@@ -7,7 +7,13 @@ from app.services.ml_engine import train_model
 
 app = create_app()
 
+import os
+
 if __name__ == "__main__":
-    print("[AeroPredict] Initializing ML model...")
-    train_model()          # trains on first run, loads from disk thereafter
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # Only train locally. Vercel/Production should use the pre-trained model.
+    if not os.environ.get("VERCEL"):
+        print("[AeroPredict] Local environment detected. Initializing ML model...")
+        train_model()
+    
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
