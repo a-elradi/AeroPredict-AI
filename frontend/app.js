@@ -1,5 +1,6 @@
 /* AeroPredict — Frontend Application Logic */
-const API = "http://localhost:5000/api";
+// Use the current host for the API (handles both local and cloud deployment)
+const API = window.location.origin + "/api";
 let resultChart = null;
 
 /* ── Airport name lookup ── */
