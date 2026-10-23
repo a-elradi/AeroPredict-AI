@@ -5,7 +5,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from ..services import claude_client, flight_data, journey_planner as jp
+from ..services import claude_client, flight_data, journey_planner as jp, wayfinding
 from ..utils.rate_limit import rate_limit
 
 log = logging.getLogger(__name__)
@@ -106,6 +106,31 @@ def journey_plan():
     except Exception:
         log.exception("Journey plan failed")
         return jsonify({"error": "Could not build your journey plan. Please try again."}), 500
+    return jsonify({"success": True, "data": result})
+
+
+@concierge_bp.route("/concierge/wayfinding", methods=["GET"])
+@rate_limit("wayfinding", max_calls=60, per_seconds=3600)
+def wayfinding_view():
+    airport = request.args.get("airport", "").strip().upper()
+    if not _IATA.match(airport):
+        return jsonify({"error": "Please enter a 3-letter airport code, e.g. IST."}), 400
+    gate = request.args.get("gate", "").strip()[:8] or None
+    requested = [c for c in request.args.get("categories", "").split(",") if c]
+    categories = requested or ["coffee", "dining", "toilets", "atm", "prayer_room", "lounge"]
+    unknown = [c for c in categories if c not in wayfinding.CATEGORIES]
+    if unknown:
+        return jsonify({"error": f"Unknown categories: {', '.join(unknown)}. "
+                                 f"Choose from: {', '.join(wayfinding.CATEGORIES)}."}), 400
+    try:
+        result = wayfinding.find_nearby(airport, gate, categories)
+    except wayfinding.AirportNotFound:
+        return jsonify({"error": f"We don't have map data for {airport} yet."}), 404
+    except ConnectionError:
+        return jsonify({"error": "The airport map service is busy. Please try again in a minute."}), 503
+    except Exception:
+        log.exception("Wayfinding failed")
+        return jsonify({"error": "Could not load the airport map. Please try again."}), 500
     return jsonify({"success": True, "data": result})
 
 

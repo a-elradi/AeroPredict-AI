@@ -67,6 +67,15 @@ Example request:
 
 `GET /api/concierge/status` shows which data sources are switched on.
 
+### Wayfinding — amenities near your gate
+
+`GET /api/concierge/wayfinding?airport=IST&gate=B4&categories=coffee,dining,toilets`
+
+Returns the nearest coffee shops, food, toilets, ATMs, prayer rooms, lounges, pharmacies, drinking water,
+charging points and shops, sorted by estimated walking distance from the gate. Data comes free from
+OpenStreetMap through the Overpass API (no key needed) and is cached for 24 hours per airport.
+Coverage depends on how well each airport is mapped in OpenStreetMap.
+
 ### Configuration
 
 Set these environment variables (see `.env.example`). On Render: **Dashboard → your service → Environment**.

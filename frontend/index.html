@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -38,6 +40,7 @@
     <li><a href="#hero" class="nav-link active" data-section="hero">Home</a></li>
     <li><a href="#predict" class="nav-link" data-section="predict">Predict</a></li>
     <li><a href="#journey" class="nav-link" data-section="journey">Journey Plan</a></li>
+    <li><a href="#wayfinding" class="nav-link" data-section="wayfinding">Near My Gate</a></li>
     <li><a href="#analytics" class="nav-link" data-section="analytics">Analytics</a></li>
     <li><a href="#technology" class="nav-link" data-section="technology">Technology</a></li>
   </ul>
@@ -455,6 +458,7 @@
           <div class="jp-flight-facts" id="jpFacts"></div>
           <ul class="jp-warnings" id="jpWarnings"></ul>
           <ol class="jp-timeline" id="jpTimeline"></ol>
+          <button type="button" class="btn btn-ghost btn-full jp-nearby" id="jpNearby" hidden>Find coffee, food &amp; toilets near my gate</button>
           <div class="jp-tips" id="jpTipsWrap" hidden>
             <h4>Tips for this trip</h4>
             <ul id="jpTips"></ul>
@@ -462,6 +466,58 @@
           <div class="jp-sources" id="jpSources"></div>
           <p class="jp-disclaimer" id="jpDisclaimer"></p>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     WAYFINDING SECTION
+═══════════════════════════════════════════════════════ -->
+<section class="section" id="wayfinding">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">AI Concierge</span>
+      <h2 class="section-title">Find What You Need Near Your Gate</h2>
+      <p class="section-subtitle">Coffee, food, toilets, cash machines, prayer rooms and lounges, sorted by walking distance from your gate.</p>
+    </div>
+
+    <div class="card wf-card">
+      <form class="wf-form" id="wfForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="wfAirport">Airport</label>
+          <input type="text" id="wfAirport" class="form-input plain" placeholder="IST" maxlength="3" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="wfGate">Gate (optional)</label>
+          <input type="text" id="wfGate" class="form-input plain" placeholder="e.g. B4" maxlength="8" autocomplete="off" />
+        </div>
+        <button type="submit" class="btn btn-primary" id="wfBtn">
+          <span id="wfBtnText">Show Nearby</span>
+          <div class="btn-loader" id="wfLoader" hidden><div class="spinner"></div></div>
+        </button>
+      </form>
+      <div class="pref-chips wf-cats" id="wfCats">
+        <label class="pref"><input type="checkbox" value="coffee" checked /><span>Coffee</span></label>
+        <label class="pref"><input type="checkbox" value="dining" checked /><span>Food</span></label>
+        <label class="pref"><input type="checkbox" value="toilets" checked /><span>Toilets</span></label>
+        <label class="pref"><input type="checkbox" value="atm" checked /><span>ATM &amp; exchange</span></label>
+        <label class="pref"><input type="checkbox" value="prayer_room" checked /><span>Prayer room</span></label>
+        <label class="pref"><input type="checkbox" value="lounge" checked /><span>Lounge</span></label>
+        <label class="pref"><input type="checkbox" value="pharmacy" /><span>Pharmacy</span></label>
+        <label class="pref"><input type="checkbox" value="water" /><span>Drinking water</span></label>
+        <label class="pref"><input type="checkbox" value="charging" /><span>Charging</span></label>
+        <label class="pref"><input type="checkbox" value="shopping" /><span>Shops</span></label>
+      </div>
+      <div class="form-error wf-error" id="wfError" hidden></div>
+
+      <div id="wfResult" hidden>
+        <p class="wf-note" id="wfNote"></p>
+        <div class="wf-layout">
+          <div class="wf-map" id="wfMap" role="img" aria-label="Airport map with nearby places"></div>
+          <div class="wf-lists" id="wfLists"></div>
+        </div>
+        <p class="jp-disclaimer" id="wfAttribution"></p>
       </div>
     </div>
   </div>

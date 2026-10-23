@@ -1,0 +1,897 @@
+{
+"elements": [
+{
+"type": "node",
+"id": 4848981328,
+"lat": 41.2579312,
+"lon": 28.7492206,
+"tags": {
+"aeroway": "gate",
+"ref": "G8"
+}
+},
+{
+"type": "node",
+"id": 4848981329,
+"lat": 41.2578402,
+"lon": 28.7488241,
+"tags": {
+"aeroway": "gate",
+"ref": "G10"
+}
+},
+{
+"type": "node",
+"id": 6153093738,
+"lat": 41.2590358,
+"lon": 28.7488605,
+"tags": {
+"aeroway": "gate",
+"ref": "G6"
+}
+},
+{
+"type": "node",
+"id": 6153093739,
+"lat": 41.2583253,
+"lon": 28.7491786,
+"tags": {
+"aeroway": "gate",
+"ref": "G7"
+}
+},
+{
+"type": "node",
+"id": 6153093744,
+"lat": 41.2579156,
+"lon": 28.7480459,
+"tags": {
+"aeroway": "gate",
+"ref": "G11"
+}
+},
+{
+"type": "node",
+"id": 6788923815,
+"lat": 41.2635474,
+"lon": 28.7368502,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B3A"
+}
+},
+{
+"type": "node",
+"id": 6788923816,
+"lat": 41.2641934,
+"lon": 28.7371581,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B6B"
+}
+},
+{
+"type": "node",
+"id": 6788923817,
+"lat": 41.2635761,
+"lon": 28.7374307,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B4"
+}
+},
+{
+"type": "node",
+"id": 6788923818,
+"lat": 41.2629939,
+"lon": 28.7376951,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B2"
+}
+},
+{
+"type": "node",
+"id": 6788923819,
+"lat": 41.2627688,
+"lon": 28.737204,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B1B"
+}
+},
+{
+"type": "node",
+"id": 6788941419,
+"lat": 41.2651503,
+"lon": 28.7361303,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B7A"
+}
+},
+{
+"type": "node",
+"id": 6788946679,
+"lat": 41.2644035,
+"lon": 28.7364669,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B5A"
+}
+},
+{
+"type": "node",
+"id": 6788956008,
+"lat": 41.265218,
+"lon": 28.7367548,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B8B"
+}
+},
+{
+"type": "node",
+"id": 6794097282,
+"lat": 41.2627201,
+"lon": 28.7443222,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "E1"
+}
+},
+{
+"type": "node",
+"id": 6794097283,
+"lat": 41.2627245,
+"lon": 28.7447556,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "E2"
+}
+},
+{
+"type": "node",
+"id": 6794097284,
+"lat": 41.2627317,
+"lon": 28.7454711,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "E3"
+}
+},
+{
+"type": "node",
+"id": 6794099085,
+"lat": 41.2627376,
+"lon": 28.7460475,
+"tags": {
+"aeroway": "gate",
+"ref": "E4"
+}
+},
+{
+"type": "node",
+"id": 6794099086,
+"lat": 41.2626839,
+"lon": 28.7407492,
+"tags": {
+"aeroway": "gate",
+"level": "2",
+"ref": "C1"
+}
+},
+{
+"type": "node",
+"id": 6794099087,
+"lat": 41.2626767,
+"lon": 28.740039,
+"tags": {
+"aeroway": "gate",
+"level": "2",
+"ref": "C2"
+}
+},
+{
+"type": "node",
+"id": 6794099088,
+"lat": 41.2626708,
+"lon": 28.7394545,
+"tags": {
+"aeroway": "gate",
+"level": "2",
+"ref": "C3"
+}
+},
+{
+"type": "node",
+"id": 6794099089,
+"lat": 41.2626665,
+"lon": 28.7390309,
+"tags": {
+"aeroway": "gate",
+"level": "2",
+"ref": "C4"
+}
+},
+{
+"type": "node",
+"id": 6794105836,
+"lat": 41.2659641,
+"lon": 28.7367461,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B10B"
+}
+},
+{
+"type": "node",
+"id": 6794105837,
+"lat": 41.2667228,
+"lon": 28.7367272,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B18B"
+}
+},
+{
+"type": "node",
+"id": 6794105838,
+"lat": 41.2669072,
+"lon": 28.7366103,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B17"
+}
+},
+{
+"type": "node",
+"id": 6794105839,
+"lat": 41.2669066,
+"lon": 28.7365563,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B16"
+}
+},
+{
+"type": "node",
+"id": 6794105840,
+"lat": 41.2668544,
+"lon": 28.7358927,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B15"
+}
+},
+{
+"type": "node",
+"id": 6794105841,
+"lat": 41.2667711,
+"lon": 28.7355431,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B14"
+}
+},
+{
+"type": "node",
+"id": 6794105842,
+"lat": 41.2666464,
+"lon": 28.7354532,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B12A"
+}
+},
+{
+"type": "node",
+"id": 6794105843,
+"lat": 41.2666202,
+"lon": 28.7354664,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B12B"
+}
+},
+{
+"type": "node",
+"id": 6794105844,
+"lat": 41.2658984,
+"lon": 28.7357941,
+"tags": {
+"aeroway": "gate",
+"level": "1",
+"ref": "B9A"
+}
+},
+{
+"type": "node",
+"id": 6396908285,
+"lat": 41.2603483,
+"lon": 28.7430949,
+"tags": {
+"amenity": "cafe",
+"name": "MVNCH"
+}
+},
+{
+"type": "node",
+"id": 6787456752,
+"lat": 41.2623429,
+"lon": 28.7467897,
+"tags": {
+"amenity": "cafe",
+"brand": "Starbucks",
+"brand:wikidata": "Q37158",
+"brand:wikipedia": "en:Starbucks",
+"check_date": "2023-09-18",
+"cuisine": "coffee_shop",
+"indoor_seating": "yes",
+"level": "1",
+"name": "Starbucks",
+"official_name": "Starbucks Coffee",
+"outdoor_seating": "no",
+"takeaway": "yes",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 6787479717,
+"lat": 41.2622009,
+"lon": 28.7385003,
+"tags": {
+"amenity": "cafe",
+"brand": "Starbucks",
+"brand:wikidata": "Q37158",
+"brand:wikipedia": "en:Starbucks",
+"check_date": "2025-10-08",
+"cuisine": "coffee_shop",
+"level": "1",
+"name": "Starbucks",
+"official_name": "Starbucks Coffee",
+"takeaway": "yes"
+}
+},
+{
+"type": "node",
+"id": 6787508047,
+"lat": 41.262172,
+"lon": 28.7380821,
+"tags": {
+"amenity": "fast_food",
+"brand": "Arby's",
+"brand:wikidata": "Q630866",
+"check_date": "2025-10-08",
+"cuisine": "sandwich",
+"level": "1",
+"name": "Arby's",
+"takeaway": "yes"
+}
+},
+{
+"type": "node",
+"id": 6789315797,
+"lat": 41.2613054,
+"lon": 28.7391028,
+"tags": {
+"amenity": "restaurant",
+"check_date": "2025-10-08",
+"level": "2",
+"name": "Tickerdaze"
+}
+},
+{
+"type": "node",
+"id": 6794055530,
+"lat": 41.2621864,
+"lon": 28.7394748,
+"tags": {
+"amenity": "restaurant",
+"brand": "YO! Sushi",
+"brand:wikidata": "Q3105441",
+"brand:wikipedia": "en:YO! Sushi",
+"cuisine": "sushi",
+"indoor_seating": "yes",
+"level": "2",
+"name": "YO! Sushi",
+"outdoor_seating": "no"
+}
+},
+{
+"type": "node",
+"id": 6794082490,
+"lat": 41.261493,
+"lon": 28.7435708,
+"tags": {
+"amenity": "cafe",
+"check_date": "2025-10-08",
+"level": "2",
+"name": "TRT Works Cafe",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 6794085815,
+"lat": 41.2617281,
+"lon": 28.746483,
+"tags": {
+"amenity": "restaurant",
+"check_date": "2025-10-08",
+"level": "2",
+"name": "Brewmark"
+}
+},
+{
+"type": "node",
+"id": 6794085833,
+"lat": 41.2623463,
+"lon": 28.7465416,
+"tags": {
+"amenity": "toilets",
+"level": "2"
+}
+},
+{
+"type": "node",
+"id": 6900852766,
+"lat": 41.2585264,
+"lon": 28.7483197,
+"tags": {
+"amenity": "cafe",
+"brand": "Gloria Jean's",
+"brand:wikidata": "Q2666365",
+"brand:wikipedia": "en:Gloria Jean's Coffees",
+"cuisine": "coffee_shop",
+"name": "Gloria Jean's",
+"official_name": "Gloria Jean's Coffees",
+"takeaway": "yes"
+}
+},
+{
+"type": "node",
+"id": 6900852768,
+"lat": 41.2584204,
+"lon": 28.7487665,
+"tags": {
+"amenity": "fast_food",
+"brand": "Simit Sarayı",
+"brand:wikidata": "Q28042608",
+"name": "Simit Sarayı",
+"shop": "bakery"
+}
+},
+{
+"type": "node",
+"id": 7068105744,
+"lat": 41.2620507,
+"lon": 28.7403209,
+"tags": {
+"amenity": "fast_food",
+"brand": "Carl's Jr.",
+"brand:wikidata": "Q1043486",
+"cuisine": "burger",
+"level": "3",
+"name": "Carl's Jr.",
+"opening_hours": "24/7",
+"source": "survey",
+"takeaway": "only",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 7068105746,
+"lat": 41.2621761,
+"lon": 28.7393352,
+"tags": {
+"air_conditioning": "yes",
+"amenity": "cafe",
+"indoor_seating": "yes",
+"level": "1",
+"name": "Café Illy",
+"outdoor_seating": "no",
+"smoking": "no",
+"source": "survey"
+}
+},
+{
+"type": "node",
+"id": 8517883719,
+"lat": 41.2622586,
+"lon": 28.7399106,
+"tags": {
+"amenity": "fast_food",
+"level": "2",
+"name": "Pide"
+}
+},
+{
+"type": "node",
+"id": 8957915717,
+"lat": 41.261349,
+"lon": 28.7469441,
+"tags": {
+"amenity": "fast_food",
+"brand": "Burger King",
+"brand:wikidata": "Q177054",
+"cuisine": "burger",
+"name": "Burger King",
+"name:en": "Burger King",
+"takeaway": "yes"
+}
+},
+{
+"type": "node",
+"id": 8957915718,
+"lat": 41.2589153,
+"lon": 28.7485022,
+"tags": {
+"amenity": "toilets"
+}
+},
+{
+"type": "node",
+"id": 8957915817,
+"lat": 41.2614231,
+"lon": 28.7469367,
+"tags": {
+"amenity": "fast_food",
+"name:en": "Popeye"
+}
+},
+{
+"type": "node",
+"id": 8957915818,
+"lat": 41.2613767,
+"lon": 28.7468057,
+"tags": {
+"amenity": "toilets"
+}
+},
+{
+"type": "node",
+"id": 8957916017,
+"lat": 41.2611688,
+"lon": 28.7475208,
+"tags": {
+"amenity": "toilets",
+"fee": "no"
+}
+},
+{
+"type": "node",
+"id": 8957916018,
+"lat": 41.2583797,
+"lon": 28.7481578,
+"tags": {
+"amenity": "toilets"
+}
+},
+{
+"type": "node",
+"id": 8957916117,
+"lat": 41.2598507,
+"lon": 28.7481036,
+"tags": {
+"amenity": "toilets"
+}
+},
+{
+"type": "node",
+"id": 9032700217,
+"lat": 41.2631012,
+"lon": 28.7474822,
+"tags": {
+"amenity": "fast_food",
+"brand": "Burger King",
+"brand:wikidata": "Q177054",
+"check_date": "2023-09-18",
+"cuisine": "burger",
+"indoor_seating": "yes",
+"level": "1",
+"name": "Burger King",
+"outdoor_seating": "no",
+"takeaway": "yes",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 9195295117,
+"lat": 41.2594999,
+"lon": 28.7399133,
+"tags": {
+"amenity": "atm",
+"brand": "TEB",
+"brand:wikidata": "Q7862447",
+"name": "TEB",
+"operator": "TEB",
+"operator:wikidata": "Q7862447"
+}
+},
+{
+"type": "node",
+"id": 9275086817,
+"lat": 41.2622273,
+"lon": 28.7401525,
+"tags": {
+"amenity": "fast_food",
+"brand": "Sbarro",
+"brand:wikidata": "Q2589409",
+"contact:facebook": "SbarroTurkiye",
+"contact:instagram": "sbarroturkiye",
+"contact:twitter": "SbarroTR",
+"contact:youtube": "SbarroTurkiye",
+"cuisine": "pizza",
+"level": "3",
+"name": "Sbarro",
+"name:en": "Sbarro",
+"opening_hours": "24/7",
+"takeaway": "only",
+"website": "https://www.sbarro.com.tr/",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 9275086818,
+"lat": 41.2622268,
+"lon": 28.7400378,
+"tags": {
+"amenity": "fast_food",
+"brand": "Subway",
+"brand:wikidata": "Q244457",
+"cuisine": "sandwich",
+"diet:vegetarian": "yes",
+"indoor_seating": "yes",
+"level": "3",
+"name": "Subway",
+"name:en": "Subway",
+"opening_hours": "24/7",
+"takeaway": "only",
+"website": "https://www.subway.com/tr-TR/",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 9554351917,
+"lat": 41.2596078,
+"lon": 28.7480649,
+"tags": {
+"amenity": "atm",
+"operator": "Ziraat"
+}
+},
+{
+"type": "node",
+"id": 9554352017,
+"lat": 41.2603851,
+"lon": 28.742549,
+"tags": {
+"amenity": "atm",
+"brand": "Vakıfbank",
+"brand:wikidata": "Q1148521",
+"name": "Vakıfbank",
+"operator": "Vakıfbank",
+"operator:wikidata": "Q1148521"
+}
+},
+{
+"type": "node",
+"id": 11200644967,
+"lat": 41.2626379,
+"lon": 28.7387668,
+"tags": {
+"air_conditioning": "yes",
+"amenity": "fast_food",
+"check_date": "2023-09-18",
+"cuisine": "pizza",
+"delivery": "no",
+"drive_through": "no",
+"internet_access": "wlan",
+"internet_access:fee": "customers",
+"level": "2",
+"name": "Pizzeria Enzo",
+"outdoor_seating": "no",
+"payment:mastercard": "yes",
+"payment:visa": "yes",
+"takeaway": "yes",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11200644968,
+"lat": 41.262626,
+"lon": 28.739086,
+"tags": {
+"amenity": "fast_food",
+"check_date": "2023-09-18",
+"cuisine": "burger",
+"drive_through": "no",
+"level": "2",
+"name": "Vivanda Burger",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11200644969,
+"lat": 41.2624641,
+"lon": 28.7387454,
+"tags": {
+"amenity": "cafe",
+"check_date": "2023-09-18",
+"level": "2",
+"name": "gram",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11200644970,
+"lat": 41.2623522,
+"lon": 28.7446148,
+"tags": {
+"amenity": "cafe",
+"check_date": "2025-10-08",
+"level": "2",
+"name": "Pierre Hermes",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11200644972,
+"lat": 41.26238,
+"lon": 28.7456969,
+"tags": {
+"amenity": "cafe",
+"check_date": "2023-09-18",
+"level": "2",
+"name": "The House",
+"outdoor_seating": "no",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11200644973,
+"lat": 41.2623894,
+"lon": 28.7448264,
+"tags": {
+"access": "yes",
+"amenity": "toilets",
+"check_date": "2023-09-18",
+"fee": "no",
+"level": "2",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11200644977,
+"lat": 41.2647937,
+"lon": 28.7486698,
+"tags": {
+"amenity": "cafe",
+"brand": "Caffè Nero",
+"brand:wikidata": "Q675808",
+"check_date": "2023-09-18",
+"cuisine": "coffee_shop",
+"indoor_seating": "yes",
+"level": "1",
+"name": "Caffè Nero",
+"outdoor_seating": "no",
+"takeaway": "yes",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11453169480,
+"lat": 41.2613061,
+"lon": 28.7420679,
+"tags": {
+"amenity": "toilets",
+"fee": "no",
+"level": "2",
+"room": "toilets",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11453169481,
+"lat": 41.2622783,
+"lon": 28.7394831,
+"tags": {
+"access": "yes",
+"amenity": "toilets",
+"changing_table": "yes",
+"check_date": "2023-12-29",
+"fee": "no",
+"level": "2",
+"room": "toilets",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11453169488,
+"lat": 41.2631985,
+"lon": 28.7374311,
+"tags": {
+"amenity": "toilets",
+"check_date": "2025-10-08",
+"fee": "no",
+"level": "1",
+"room": "toilets",
+"wheelchair": "yes"
+}
+},
+{
+"type": "node",
+"id": 11463713308,
+"lat": 41.2616043,
+"lon": 28.7390346,
+"tags": {
+"amenity": "restaurant",
+"level": "2",
+"name": "Crousty Co",
+"room": "restaurant"
+}
+},
+{
+"type": "node",
+"id": 11463713309,
+"lat": 41.261915,
+"lon": 28.7463169,
+"tags": {
+"amenity": "cafe",
+"cuisine": "coffee_shop",
+"level": "2",
+"name": "Cups & Clouds",
+"room": "shop",
+"takeaway": "yes"
+}
+},
+{
+"type": "node",
+"id": 11607520614,
+"lat": 41.2598173,
+"lon": 28.7456747,
+"tags": {
+"amenity": "atm",
+"brand": "Halkbank",
+"brand:wikidata": "Q5642504",
+"name": "Halkbank",
+"operator": "Halkbank",
+"operator:wikidata": "Q5642504"
+}
+}
+]
+}

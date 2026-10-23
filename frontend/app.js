@@ -512,8 +512,196 @@ document.querySelectorAll(".nav-link").forEach(link =>
     }));
     $("jpDisclaimer").textContent = data.disclaimer;
 
+    const nearby = $("jpNearby");
+    nearby.hidden = false;
+    nearby.onclick = () => window.Wayfinding?.open(dep.airport, dep.gate);
+
     const card = $("jpResult");
     card.hidden = false;
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+})();
+
+/* ═══════════════════════════════════════════
+   Wayfinding — amenities near your gate
+═══════════════════════════════════════════ */
+window.Wayfinding = (() => {
+  const form = document.getElementById("wfForm");
+  if (!form) return null;
+  const $ = id => document.getElementById(id);
+  const LABELS = {
+    coffee: "Coffee", dining: "Food", toilets: "Toilets", atm: "ATM & exchange",
+    prayer_room: "Prayer room", lounge: "Lounge", pharmacy: "Pharmacy",
+    water: "Drinking water", charging: "Charging", shopping: "Shops",
+  };
+  const COLORS = {
+    coffee: "#F59E0B", dining: "#22C55E", toilets: "#0EA5E9", atm: "#8B5CF6",
+    prayer_room: "#14B8A6", lounge: "#EC4899", pharmacy: "#EF4444",
+    water: "#38BDF8", charging: "#FACC15", shopping: "#A3A3A3",
+  };
+  let map = null, layer = null;
+
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  };
+
+  function placeTitle(p) {
+    if (p.name) return p.name;
+    return p.category === "toilets" ? "Toilets" : `${LABELS[p.category]} (no name on map)`;
+  }
+
+  function placeMeta(p) {
+    return [
+      p.level != null ? `Level ${p.level}` : "",
+      p.cuisine ? p.cuisine.replace(/_/g, " ").replace(/;/g, ", ") : "",
+      p.opening_hours ? `Hours: ${p.opening_hours}` : "",
+      p.wheelchair === "yes" ? "Wheelchair accessible" : "",
+    ].filter(Boolean).join(" · ");
+  }
+
+  function popupContent(p) {
+    const box = el("div");
+    box.appendChild(el("strong", null, placeTitle(p)));
+    const meta = placeMeta(p);
+    if (meta) box.appendChild(el("div", null, meta));
+    if (p.distance_m != null) box.appendChild(el("div", null, `≈ ${p.distance_m} m · ${p.walk_minutes} min walk`));
+    return box;
+  }
+
+  function ensureMap() {
+    if (map || typeof L === "undefined") return map;
+    map = L.map($("wfMap"), { scrollWheelZoom: false });
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+    layer = L.layerGroup().addTo(map);
+    return map;
+  }
+
+  async function search(airport, gate) {
+    const err = $("wfError");
+    err.hidden = true;
+    const categories = [...$("wfCats").querySelectorAll("input:checked")].map(i => i.value);
+    if (!/^[A-Za-z]{3}$/.test(airport)) {
+      err.textContent = "Please enter a 3-letter airport code, e.g. IST.";
+      err.hidden = false;
+      return;
+    }
+    if (!categories.length) {
+      err.textContent = "Choose at least one thing to look for.";
+      err.hidden = false;
+      return;
+    }
+    const params = new URLSearchParams({ airport: airport.toUpperCase(), categories: categories.join(",") });
+    if (gate) params.set("gate", gate);
+
+    $("wfBtnText").textContent = "Searching…";
+    $("wfLoader").hidden = false;
+    $("wfBtn").disabled = true;
+    try {
+      const res = await fetch(`${API}/concierge/wayfinding?${params}`);
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || `Server error (${res.status})`);
+      render(json.data);
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.hidden = false;
+    } finally {
+      $("wfBtnText").textContent = "Show Nearby";
+      $("wfLoader").hidden = true;
+      $("wfBtn").disabled = false;
+    }
+  }
+
+  function render(data) {
+    const name = data.airport.name || data.airport.iata;
+    let note;
+    if (data.gate_found) note = `Nearest places to Gate ${data.gate.ref} at ${name}.`;
+    else if (data.gate_requested) note = `We couldn't find Gate ${data.gate_requested} on the ${name} map, so here is everything we know at the airport.`;
+    else note = `Places at ${name}. Add your gate to sort them by walking distance.`;
+    if (data.distance_note) note += " " + data.distance_note;
+    $("wfNote").textContent = note;
+    $("wfAttribution").textContent = data.attribution;
+    $("wfResult").hidden = false;
+
+    const markers = {};
+    const bounds = [];
+    ensureMap();
+    if (map) {
+      layer.clearLayers();
+      if (data.gate_found) {
+        const icon = L.divIcon({ className: "", html: el("span", "wf-gate-marker", `Gate ${data.gate.ref}`), iconSize: null });
+        L.marker([data.gate.lat, data.gate.lon], { icon, zIndexOffset: 1000 }).addTo(layer);
+        bounds.push([data.gate.lat, data.gate.lon]);
+      }
+    }
+
+    const lists = $("wfLists");
+    lists.replaceChildren();
+    // Show categories in the same order as the filter chips
+    for (const cat of Object.keys(LABELS).filter(c => c in data.categories)) {
+      const info = data.categories[cat];
+      const section = el("div", "wf-cat");
+      section.appendChild(el("h4", null, `${LABELS[cat]} (${info.count})`));
+      if (!info.nearest.length) {
+        section.appendChild(el("p", "wf-empty", "Not on the map for this airport yet. Ask airport staff or check the airport signs."));
+        lists.appendChild(section);
+        continue;
+      }
+      const ul = el("ul");
+      for (const p of info.nearest) {
+        if (map) {
+          const m = L.circleMarker([p.lat, p.lon], {
+            radius: 7, color: "#fff", weight: 2, fillColor: COLORS[cat], fillOpacity: 0.95,
+          }).bindPopup(popupContent(p)).addTo(layer);
+          markers[p.id] = m;
+          bounds.push([p.lat, p.lon]);
+        }
+        const li = el("li", "wf-item");
+        li.tabIndex = 0;
+        const left = el("div");
+        left.appendChild(el("div", "wf-item-name", placeTitle(p)));
+        const meta = placeMeta(p);
+        if (meta) left.appendChild(el("div", "wf-item-meta", meta));
+        li.appendChild(left);
+        if (p.distance_m != null) li.appendChild(el("span", "wf-item-dist", `${p.walk_minutes} min · ${p.distance_m} m`));
+        const focus = () => {
+          const m = markers[p.id];
+          if (!m) return;
+          map.setView(m.getLatLng(), Math.max(map.getZoom(), 18));
+          m.openPopup();
+        };
+        li.addEventListener("click", focus);
+        li.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); focus(); } });
+        ul.appendChild(li);
+      }
+      section.appendChild(ul);
+      lists.appendChild(section);
+    }
+
+    if (map) {
+      map.invalidateSize();
+      if (bounds.length) map.fitBounds(bounds, { padding: [30, 30], maxZoom: 18 });
+    } else {
+      $("wfMap").hidden = true;
+    }
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    search($("wfAirport").value.trim(), $("wfGate").value.trim());
+  });
+
+  return {
+    open(airport, gate) {
+      $("wfAirport").value = airport || "";
+      $("wfGate").value = gate || "";
+      document.getElementById("wayfinding").scrollIntoView({ behavior: "smooth" });
+      if (airport) search(airport, gate);
+    },
+  };
 })();

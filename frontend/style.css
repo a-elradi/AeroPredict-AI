@@ -453,6 +453,31 @@ a { color:inherit; text-decoration:none; }
 .jp-source[data-type="estimate"] { color:var(--yellow); border-color:rgba(245,158,11,0.35); }
 .jp-disclaimer { font-size:0.72rem; color:rgba(122,143,166,0.8); line-height:1.5; }
 
+/* ── WAYFINDING ── */
+.wf-card { padding:1.5rem 1.75rem; }
+.wf-form { display:grid; grid-template-columns:1fr 1fr auto; gap:1rem; align-items:end; margin-bottom:1rem; }
+.wf-cats { margin-bottom:0.5rem; }
+.wf-error { margin-top:0.5rem; }
+.wf-note { font-size:0.85rem; color:var(--text-muted); margin:0.75rem 0 1rem; }
+.wf-layout { display:grid; grid-template-columns:1.1fr 1fr; gap:1.25rem; align-items:start; margin-bottom:1rem; }
+.wf-map { height:460px; border-radius:var(--radius-sm); border:1px solid var(--border); overflow:hidden; background:var(--bg-1); }
+.wf-lists { display:flex; flex-direction:column; gap:1rem; max-height:460px; overflow-y:auto; padding-right:0.25rem; }
+.wf-cat h4 { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:0.4rem; }
+.wf-cat ul { list-style:none; display:flex; flex-direction:column; gap:0.35rem; }
+.wf-item {
+  display:flex; justify-content:space-between; gap:0.75rem; align-items:baseline;
+  padding:0.55rem 0.75rem; border-radius:var(--radius-sm); background:rgba(255,255,255,0.03);
+  border:1px solid var(--border); cursor:pointer; transition:var(--transition);
+}
+.wf-item:hover, .wf-item:focus-visible { border-color:var(--accent); outline:none; }
+.wf-item-name { font-size:0.88rem; font-weight:600; }
+.wf-item-meta { font-size:0.72rem; color:var(--text-muted); }
+.wf-item-dist { font-size:0.8rem; font-weight:700; color:var(--accent); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.wf-empty { font-size:0.8rem; color:var(--text-muted); }
+.wf-gate-marker { background:var(--red); color:#fff; font-weight:800; font-size:11px; border-radius:6px; padding:2px 6px; border:2px solid #fff; white-space:nowrap; }
+.jp-nearby { margin:0 0 1.25rem; }
+.leaflet-container { font-family:inherit; }
+
 /* ── MOBILE NAV ── */
 @media(max-width:768px) {
   .nav-links.open {
@@ -461,6 +486,12 @@ a { color:inherit; text-decoration:none; }
   }
   .jp-body { padding:1rem 1rem 0; }
   .jp-key-value { font-size:1.15rem; }
+  .wf-card { padding:1.25rem 1rem; }
+  .wf-form { grid-template-columns:1fr 1fr; }
+  .wf-form .btn { grid-column:1 / -1; justify-content:center; }
+  .wf-layout { grid-template-columns:1fr; }
+  .wf-map { height:320px; }
+  .wf-lists { max-height:none; }
 }
 
 /* ── RESPONSIVE ── */
