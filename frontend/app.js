@@ -603,14 +603,28 @@ window.Wayfinding = (() => {
     $("wfLoader").hidden = false;
     $("wfBtn").disabled = true;
     try {
-      const res = await fetch(`${API}/concierge/wayfinding?${params}`);
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json.success) throw new Error(json.error || `Server error (${res.status})`);
-      render(json.data);
+      // The first lookup of an airport downloads its map; the server answers 202 until it's ready
+      for (let attempt = 0; ; attempt++) {
+        const res = await fetch(`${API}/concierge/wayfinding?${params}`);
+        const json = await res.json().catch(() => ({}));
+        if (res.status === 202 && attempt < 30) {
+          $("wfBtnText").textContent = "Loading airport map…";
+          $("wfStatus").textContent = json.message || "Loading the airport map…";
+          $("wfStatus").hidden = false;
+          $("wfResult").hidden = true;
+          await new Promise(r => setTimeout(r, (json.retry_after_seconds || 5) * 1000));
+          continue;
+        }
+        if (res.status === 202) throw new Error("The airport map is taking longer than usual. Please try again in a minute.");
+        if (!res.ok || !json.success) throw new Error(json.error || `Server error (${res.status})`);
+        render(json.data);
+        break;
+      }
     } catch (ex) {
       err.textContent = ex.message;
       err.hidden = false;
     } finally {
+      $("wfStatus").hidden = true;
       $("wfBtnText").textContent = "Show Nearby";
       $("wfLoader").hidden = true;
       $("wfBtn").disabled = false;

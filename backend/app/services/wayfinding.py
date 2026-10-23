@@ -7,11 +7,12 @@ from the passenger's gate. Map data © OpenStreetMap contributors (ODbL).
 import logging
 import math
 import re
+import threading
 
 import requests
 
 from . import airports
-from ..utils.cache import cached
+from ..utils import cache
 
 log = logging.getLogger(__name__)
 
@@ -36,12 +37,25 @@ CATEGORIES = {
 }
 _AMENITY_VALUES = sorted({v for c in CATEGORIES.values() for v in (c.get("amenity") or ())})
 
+# Big airports can take Overpass a minute or more on a first load, so loads
+# run in a background thread and the browser checks back until they finish.
+OVERPASS_TIMEOUT_S = 120
+CACHE_TTL_S = 86400
+FAILURE_COOLDOWN_S = 120
+
+_loading: set[str] = set()
+_lock = threading.Lock()
+
 WALK_METERS_PER_MIN = 75   # relaxed walking pace with luggage
 DETOUR_FACTOR = 1.3        # corridors are not straight lines
 
 
 class AirportNotFound(Exception):
     pass
+
+
+class MapLoading(Exception):
+    """The airport's map is being downloaded; ask again shortly."""
 
 
 def _query(iata: str, icao: str | None) -> str:
@@ -52,7 +66,7 @@ def _query(iata: str, icao: str | None) -> str:
         union += ".a2;"
     amenity_re = "|".join(_AMENITY_VALUES)
     return (
-        f"[out:json][timeout:25];{areas}({union})->.a;"
+        f"[out:json][timeout:{OVERPASS_TIMEOUT_S - 10}];{areas}({union})->.a;"
         "("
         f'nwr(area.a)["amenity"~"^({amenity_re})$"];'
         'nwr(area.a)["shop"];'
@@ -65,7 +79,7 @@ def _fetch(iata: str) -> list | None:
     query = _query(iata, airports.lookup(iata)["icao"])
     for url in OVERPASS_URLS:
         try:
-            resp = requests.post(url, data={"data": query}, timeout=40,
+            resp = requests.post(url, data={"data": query}, timeout=OVERPASS_TIMEOUT_S,
                                  headers={"User-Agent": "AeroPredict/1.0"})
             if resp.ok:
                 return resp.json().get("elements", [])
@@ -75,12 +89,41 @@ def _fetch(iata: str) -> list | None:
     return None
 
 
+def _load(iata: str) -> None:
+    try:
+        elements = _fetch(iata)
+        if elements is None:
+            cache.put(f"osm-failed:{iata}", True, FAILURE_COOLDOWN_S)
+        else:
+            cache.put(f"osm:{iata}", parse_elements(elements), CACHE_TTL_S)
+    finally:
+        with _lock:
+            _loading.discard(iata)
+
+
+def _spawn(target, *args) -> None:
+    threading.Thread(target=target, args=args, daemon=True).start()
+
+
 def get_airport_features(iata: str) -> dict:
-    """Gates and amenities for an airport, cached for a day."""
-    elements = cached(f"osm:{iata}", 86400, lambda: _fetch(iata))
-    if elements is None:
+    """Gates and amenities for an airport. Raises MapLoading while downloading."""
+    features = cache.get(f"osm:{iata}")
+    if features is not None:
+        return features
+    if cache.get(f"osm-failed:{iata}"):
         raise ConnectionError("Map service is temporarily unavailable")
-    return parse_elements(elements)
+    with _lock:
+        start = iata not in _loading
+        if start:
+            _loading.add(iata)
+    if start:
+        _spawn(_load, iata)
+    features = cache.get(f"osm:{iata}")  # set already if the load ran synchronously
+    if features is not None:
+        return features
+    if cache.get(f"osm-failed:{iata}"):
+        raise ConnectionError("Map service is temporarily unavailable")
+    raise MapLoading(iata)
 
 
 def parse_elements(elements: list) -> dict:

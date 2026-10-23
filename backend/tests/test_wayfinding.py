@@ -18,7 +18,10 @@ IST_ELEMENTS = json.loads((Path(__file__).parent / "fixtures_ist_osm.json").read
 def client(monkeypatch):
     cache.clear()
     rate_limit.reset()
+    wayfinding._loading.clear()
     monkeypatch.setattr(wayfinding, "_fetch", lambda iata: IST_ELEMENTS)
+    # Run map downloads inline instead of in a background thread
+    monkeypatch.setattr(wayfinding, "_spawn", lambda target, *args: target(*args))
     return create_app().test_client()
 
 
@@ -73,3 +76,25 @@ def test_map_service_down_returns_503(client, monkeypatch):
 def test_airport_without_map_data_returns_404(client, monkeypatch):
     monkeypatch.setattr(wayfinding, "_fetch", lambda iata: [])
     assert client.get("/api/concierge/wayfinding?airport=XXX").status_code == 404
+
+
+def test_first_load_returns_202_until_map_is_ready(client, monkeypatch):
+    pending = []
+    monkeypatch.setattr(wayfinding, "_spawn", lambda target, *args: pending.append((target, args)))
+    r = client.get("/api/concierge/wayfinding?airport=IST")
+    assert r.status_code == 202
+    assert r.get_json()["loading"] is True
+    # A second request while loading does not start another download
+    assert client.get("/api/concierge/wayfinding?airport=IST").status_code == 202
+    assert len(pending) == 1
+    target, args = pending[0]
+    target(*args)
+    assert client.get("/api/concierge/wayfinding?airport=IST").status_code == 200
+
+
+def test_failed_load_is_not_retried_immediately(client, monkeypatch):
+    calls = []
+    monkeypatch.setattr(wayfinding, "_fetch", lambda iata: calls.append(iata))
+    assert client.get("/api/concierge/wayfinding?airport=LHR").status_code == 503
+    assert client.get("/api/concierge/wayfinding?airport=LHR").status_code == 503
+    assert calls == ["LHR"]

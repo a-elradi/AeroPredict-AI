@@ -110,7 +110,7 @@ def journey_plan():
 
 
 @concierge_bp.route("/concierge/wayfinding", methods=["GET"])
-@rate_limit("wayfinding", max_calls=60, per_seconds=3600)
+@rate_limit("wayfinding", max_calls=300, per_seconds=3600)
 def wayfinding_view():
     airport = request.args.get("airport", "").strip().upper()
     if not _IATA.match(airport):
@@ -124,6 +124,15 @@ def wayfinding_view():
                                  f"Choose from: {', '.join(wayfinding.CATEGORIES)}."}), 400
     try:
         result = wayfinding.find_nearby(airport, gate, categories)
+    except wayfinding.MapLoading:
+        resp = jsonify({
+            "loading": True,
+            "retry_after_seconds": 5,
+            "message": f"Loading the {airport} airport map for the first time. This can take up to a minute.",
+        })
+        resp.status_code = 202
+        resp.headers["Retry-After"] = "5"
+        return resp
     except wayfinding.AirportNotFound:
         return jsonify({"error": f"We don't have map data for {airport} yet."}), 404
     except ConnectionError:
