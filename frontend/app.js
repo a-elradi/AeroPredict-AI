@@ -376,3 +376,144 @@ const analyticsObserver = new IntersectionObserver(entries => {
   }
 }, { threshold: 0.1 });
 analyticsObserver.observe(document.getElementById("analytics"));
+
+/* ── Mobile menu ── */
+document.getElementById("mobileToggle")?.addEventListener("click", () => {
+  document.querySelector(".nav-links").classList.toggle("open");
+});
+document.querySelectorAll(".nav-link").forEach(link =>
+  link.addEventListener("click", () => document.querySelector(".nav-links").classList.remove("open"))
+);
+
+/* ═══════════════════════════════════════════
+   Journey Planner (AI Concierge)
+═══════════════════════════════════════════ */
+(() => {
+  const form = document.getElementById("journeyForm");
+  if (!form) return;
+  const $ = id => document.getElementById(id);
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  $("jpDate").value = tomorrow.toISOString().split("T")[0];
+
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  };
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = $("jpError");
+    err.hidden = true;
+
+    const payload = {
+      flight_number:   $("jpFlight").value.trim(),
+      date:            $("jpDate").value,
+      dep_airport:     $("jpDep").value.trim().toUpperCase() || undefined,
+      arr_airport:     $("jpArr").value.trim().toUpperCase() || undefined,
+      dep_time:        $("jpTime").value || undefined,
+      starting_point:  $("jpStart").value.trim() || undefined,
+      transport_mode:  $("jpTransport").value,
+      cabin:           $("jpCabin").value,
+      checked_bags:    Number($("jpBags").value),
+      loyalty_tier:    $("jpTier").value,
+      language:        $("jpLang").value,
+      online_check_in: $("jpOnline").checked,
+      fast_track:      $("jpFast").checked,
+      preferences:     [...$("jpPrefs").querySelectorAll("input:checked")].map(i => i.value),
+    };
+    if (!payload.flight_number || !payload.date) {
+      err.textContent = "Please enter your flight number and date.";
+      err.hidden = false;
+      return;
+    }
+
+    $("jpBtnText").textContent = "Planning your journey…";
+    $("jpLoader").hidden = false;
+    $("jpBtn").disabled = true;
+    try {
+      const res = await fetch(`${API}/concierge/journey-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || `Server error (${res.status})`);
+      renderJourney(json.data);
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.hidden = false;
+    } finally {
+      $("jpBtnText").textContent = "Build My Journey Plan";
+      $("jpLoader").hidden = true;
+      $("jpBtn").disabled = false;
+    }
+  });
+
+  function renderJourney(data) {
+    const { flight, plan } = data;
+    const dep = flight.departure;
+
+    $("jpTitle").textContent = `${flight.number} · ${dep.airport}${flight.arrival.airport ? " → " + flight.arrival.airport : ""}`;
+    $("jpAiBadge").textContent = data.ai_generated ? "AI Personalized" : "Standard Plan";
+    $("jpSummary").textContent = plan.summary;
+    $("jpLeave").textContent = plan.leave_by;
+    $("jpArrive").textContent = plan.arrive_airport_by;
+    $("jpDeparts").textContent = dep.revised_time || dep.scheduled_time;
+
+    const facts = $("jpFacts");
+    facts.replaceChildren();
+    const addFact = (label, value) => {
+      if (!value) return;
+      const f = el("span", "jp-fact", label + ": ");
+      f.appendChild(el("strong", null, value));
+      facts.appendChild(f);
+    };
+    addFact("Status", flight.status);
+    addFact("Terminal", dep.terminal);
+    addFact("Gate", dep.gate);
+    addFact("Check-in", dep.check_in_desk);
+    addFact("Aircraft", flight.aircraft);
+    if (data.delay_prediction) addFact("Delay risk", data.delay_prediction.risk_tier);
+    const wx = data.weather?.departure;
+    if (wx) addFact("Weather", `${wx.temperature_c ?? "–"}°C · ${wx.flight_category || "n/a"}`);
+    if (!flight.live_data) facts.appendChild(el("span", "jp-fact", "Using the times you entered"));
+
+    const warnings = $("jpWarnings");
+    warnings.replaceChildren(...plan.warnings.map(w => el("li", null, w)));
+
+    const timeline = $("jpTimeline");
+    timeline.replaceChildren(...plan.timeline.map(step => {
+      const li = el("li", "jp-step");
+      li.dataset.cat = step.category;
+      li.appendChild(el("span", "jp-time", step.time));
+      li.appendChild(el("span", "jp-dot"));
+      const body = el("div");
+      const title = el("div", "jp-step-title", step.title);
+      if (step.is_estimate) title.appendChild(el("span", "jp-est", "est."));
+      body.appendChild(title);
+      const meta = [step.location, step.duration_minutes ? `${step.duration_minutes} min` : ""].filter(Boolean).join(" · ");
+      if (meta) body.appendChild(el("div", "jp-step-meta", meta));
+      if (step.details) body.appendChild(el("div", "jp-step-details", step.details));
+      li.appendChild(body);
+      return li;
+    }));
+
+    $("jpTipsWrap").hidden = !plan.tips.length;
+    $("jpTips").replaceChildren(...plan.tips.map(t => el("li", null, t)));
+
+    $("jpSources").replaceChildren(...data.data_sources.map(s => {
+      const chip = el("span", "jp-source", s.name);
+      chip.dataset.type = s.type;
+      return chip;
+    }));
+    $("jpDisclaimer").textContent = data.disclaimer;
+
+    const card = $("jpResult");
+    card.hidden = false;
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+})();

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from ..services.ml_engine import predict, train_model, META_PATH
-import json, traceback
+import hmac, json, os, traceback
 
 predict_bp = Blueprint("predict", __name__)
 
@@ -35,6 +35,11 @@ def model_status():
 
 @predict_bp.route("/model/train", methods=["POST"])
 def retrain():
+    # Retraining is slow and memory-heavy, so only the site owner may trigger it.
+    admin_token = os.environ.get("ADMIN_TOKEN")
+    supplied = request.headers.get("X-Admin-Token", "")
+    if not admin_token or not hmac.compare_digest(supplied, admin_token):
+        return jsonify({"error": "Not authorized"}), 403
     try:
         meta = train_model(force=True)
         return jsonify({"success": True, "meta": meta})

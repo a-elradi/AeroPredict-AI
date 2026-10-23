@@ -1,18 +1,22 @@
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from pathlib import Path
+from dotenv import load_dotenv
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 def create_app():
+    load_dotenv()  # reads a local .env file if present (Render uses its own env vars)
     app = Flask(__name__, static_folder=str(FRONTEND_DIR), static_url_path="")
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     from .routes.predict import predict_bp
     from .routes.analytics import analytics_bp
+    from .routes.concierge import concierge_bp
 
     app.register_blueprint(predict_bp, url_prefix="/api")
     app.register_blueprint(analytics_bp, url_prefix="/api")
+    app.register_blueprint(concierge_bp, url_prefix="/api")
 
     @app.route("/")
     def index():

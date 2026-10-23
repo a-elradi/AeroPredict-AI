@@ -38,6 +38,56 @@ We transform raw flight data into high-dimensional feature vectors:
 
 ---
 
+## ✈️ AI Concierge — Journey Planner
+
+`POST /api/concierge/journey-plan` builds a door-to-gate timeline for a passenger.
+
+It combines:
+*   **Live flight data** (AeroDataBox via RapidAPI): scheduled time, terminal, gate, check-in desk, status
+*   **Live airport weather** (aviationweather.gov METAR, free)
+*   **The AeroPredict delay model**
+*   **Claude AI**, which personalizes the plan for the passenger's cabin, bags, status, preferences and language
+
+Every source is optional. Without `RAPIDAPI_KEY` the passenger's typed flight details are used, and without
+`ANTHROPIC_API_KEY` a rule-based plan is returned. Each response lists its `data_sources` and marks estimated
+times with `is_estimate`.
+
+Example request:
+
+```json
+{
+  "flight_number": "TK1", "date": "2026-11-02",
+  "dep_airport": "IST", "arr_airport": "JFK", "dep_time": "13:30",
+  "starting_point": "Taksim, Istanbul", "transport_mode": "taxi",
+  "cabin": "economy", "checked_bags": 1, "loyalty_tier": "none",
+  "online_check_in": false, "fast_track": false,
+  "preferences": ["dining", "prayer_room"], "language": "en"
+}
+```
+
+`GET /api/concierge/status` shows which data sources are switched on.
+
+### Configuration
+
+Set these environment variables (see `.env.example`). On Render: **Dashboard → your service → Environment**.
+
+| Variable | Purpose |
+|---|---|
+| `ANTHROPIC_API_KEY` | Claude AI personalization |
+| `RAPIDAPI_KEY` | Live flight data (AeroDataBox) |
+| `ADMIN_TOKEN` | Required to call `POST /api/model/train` (header `X-Admin-Token`) |
+| `JOURNEY_PLAN_LIMIT_PER_HOUR` | Journey plans per visitor per hour (default 10) |
+
+### Tests
+
+```bash
+cd backend
+pip install -r requirements.txt pytest
+python -m pytest tests
+```
+
+---
+
 ## 🚀 Deployment Strategy
 
 As a senior engineer, you can deploy this in several ways:

@@ -37,6 +37,7 @@
   <ul class="nav-links">
     <li><a href="#hero" class="nav-link active" data-section="hero">Home</a></li>
     <li><a href="#predict" class="nav-link" data-section="predict">Predict</a></li>
+    <li><a href="#journey" class="nav-link" data-section="journey">Journey Plan</a></li>
     <li><a href="#analytics" class="nav-link" data-section="analytics">Analytics</a></li>
     <li><a href="#technology" class="nav-link" data-section="technology">Technology</a></li>
   </ul>
@@ -295,6 +296,171 @@
         <div class="model-note">
           <span class="note-icon">🤖</span>
           <span>Powered by XGBoost + Platt Calibration · Trained on 102K flight records · FAA/BTS Data Sources</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     JOURNEY PLANNER SECTION
+═══════════════════════════════════════════════════════ -->
+<section class="section" id="journey">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">AI Concierge</span>
+      <h2 class="section-title">Plan Your Airport Journey</h2>
+      <p class="section-subtitle">Tell us your flight and how you travel. We combine live flight data, airport weather and delay risk into a step-by-step plan from your door to the gate.</p>
+    </div>
+
+    <div class="predict-layout">
+      <div class="card predict-card">
+        <div class="card-header">
+          <h3>Your Trip</h3>
+          <span class="card-badge" id="jpSourcesBadge">Door to Gate</span>
+        </div>
+
+        <form class="flight-form" id="journeyForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="jpFlight">Flight Number</label>
+              <input type="text" id="jpFlight" class="form-input plain" placeholder="e.g. TK1" maxlength="8" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="jpDate">Date</label>
+              <input type="date" id="jpDate" class="form-input plain" />
+            </div>
+          </div>
+
+          <p class="form-hint">If we can't find your flight automatically, add these:</p>
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label class="form-label" for="jpDep">From</label>
+              <input type="text" id="jpDep" class="form-input plain" placeholder="IST" maxlength="3" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="jpArr">To</label>
+              <input type="text" id="jpArr" class="form-input plain" placeholder="JFK" maxlength="3" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="jpTime">Departs</label>
+              <input type="time" id="jpTime" class="form-input plain" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="jpStart">Starting From</label>
+              <input type="text" id="jpStart" class="form-input plain" placeholder="e.g. Taksim, Istanbul" maxlength="120" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="jpTransport">Getting There By</label>
+              <select id="jpTransport" class="form-input form-select plain">
+                <option value="car">Car</option>
+                <option value="taxi">Taxi</option>
+                <option value="public_transport">Public transport</option>
+                <option value="airport_shuttle">Airport shuttle</option>
+                <option value="walk">Walking</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="jpCabin">Cabin</label>
+              <select id="jpCabin" class="form-input form-select plain">
+                <option value="economy">Economy</option>
+                <option value="premium_economy">Premium Economy</option>
+                <option value="business">Business</option>
+                <option value="first">First</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="jpBags">Checked Bags</label>
+              <select id="jpBags" class="form-input form-select plain">
+                <option value="0">None</option>
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+                <option value="3">3+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="jpTier">Frequent Flyer Status</label>
+              <select id="jpTier" class="form-input form-select plain">
+                <option value="none">None</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+                <option value="platinum">Platinum</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="jpLang">Plan Language</label>
+              <select id="jpLang" class="form-input form-select plain">
+                <option value="en">English</option>
+                <option value="tr">Türkçe</option>
+                <option value="ar">العربية</option>
+                <option value="de">Deutsch</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="ru">Русский</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="check-row">
+            <label class="check"><input type="checkbox" id="jpOnline" /> Already checked in online</label>
+            <label class="check"><input type="checkbox" id="jpFast" /> Fast-track security</label>
+          </div>
+
+          <div class="form-group">
+            <span class="form-label">What matters to you?</span>
+            <div class="pref-chips" id="jpPrefs">
+              <label class="pref"><input type="checkbox" value="dining" /><span>Dining</span></label>
+              <label class="pref"><input type="checkbox" value="coffee" /><span>Coffee</span></label>
+              <label class="pref"><input type="checkbox" value="lounge" /><span>Lounge</span></label>
+              <label class="pref"><input type="checkbox" value="shopping" /><span>Shopping</span></label>
+              <label class="pref"><input type="checkbox" value="quiet_area" /><span>Quiet area</span></label>
+              <label class="pref"><input type="checkbox" value="prayer_room" /><span>Prayer room</span></label>
+              <label class="pref"><input type="checkbox" value="family" /><span>Travelling with kids</span></label>
+              <label class="pref"><input type="checkbox" value="accessibility" /><span>Accessibility help</span></label>
+              <label class="pref"><input type="checkbox" value="work_space" /><span>Work space</span></label>
+              <label class="pref"><input type="checkbox" value="minimal_waiting" /><span>Least waiting</span></label>
+            </div>
+          </div>
+
+          <div class="form-error" id="jpError" hidden></div>
+
+          <button type="submit" class="btn btn-primary btn-full" id="jpBtn">
+            <span id="jpBtnText">Build My Journey Plan</span>
+            <div class="btn-loader" id="jpLoader" hidden><div class="spinner"></div></div>
+          </button>
+        </form>
+      </div>
+
+      <div class="card result-card" id="jpResult" hidden>
+        <div class="card-header">
+          <h3 id="jpTitle">Your Journey</h3>
+          <span class="card-badge" id="jpAiBadge"></span>
+        </div>
+        <div class="jp-body">
+          <p class="jp-summary" id="jpSummary"></p>
+          <div class="jp-key-times">
+            <div class="jp-key"><span class="jp-key-label">Leave by</span><span class="jp-key-value" id="jpLeave">–</span></div>
+            <div class="jp-key"><span class="jp-key-label">At airport by</span><span class="jp-key-value" id="jpArrive">–</span></div>
+            <div class="jp-key"><span class="jp-key-label">Departs</span><span class="jp-key-value" id="jpDeparts">–</span></div>
+          </div>
+          <div class="jp-flight-facts" id="jpFacts"></div>
+          <ul class="jp-warnings" id="jpWarnings"></ul>
+          <ol class="jp-timeline" id="jpTimeline"></ol>
+          <div class="jp-tips" id="jpTipsWrap" hidden>
+            <h4>Tips for this trip</h4>
+            <ul id="jpTips"></ul>
+          </div>
+          <div class="jp-sources" id="jpSources"></div>
+          <p class="jp-disclaimer" id="jpDisclaimer"></p>
         </div>
       </div>
     </div>
