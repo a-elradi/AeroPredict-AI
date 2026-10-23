@@ -75,17 +75,31 @@ def _query(iata: str, icao: str | None) -> str:
     )
 
 
+# Last failure reason per airport (no secrets), shown on /api/concierge/status
+last_errors: dict[str, str] = {}
+
+
 def _fetch(iata: str) -> list | None:
     query = _query(iata, airports.lookup(iata)["icao"])
+    reasons = []
     for url in OVERPASS_URLS:
+        host = url.split("/")[2]
         try:
             resp = requests.post(url, data={"data": query}, timeout=OVERPASS_TIMEOUT_S,
                                  headers={"User-Agent": "AeroPredict/1.0"})
             if resp.ok:
-                return resp.json().get("elements", [])
-            log.warning("Overpass %s returned HTTP %s", url, resp.status_code)
+                data = resp.json()
+                # Overpass reports query timeouts and memory limits in "remark" with HTTP 200
+                if data.get("remark") and not data.get("elements"):
+                    reasons.append(f"{host}: {data['remark'][:200]}")
+                    continue
+                last_errors.pop(iata, None)
+                return data.get("elements", [])
+            reasons.append(f"{host}: HTTP {resp.status_code} {resp.text[:200]}")
         except (requests.RequestException, ValueError) as e:
-            log.warning("Overpass %s failed: %s", url, e)
+            reasons.append(f"{host}: {type(e).__name__}: {str(e)[:200]}")
+    last_errors[iata] = " | ".join(reasons)
+    log.warning("Overpass failed for %s: %s", iata, last_errors[iata])
     return None
 
 

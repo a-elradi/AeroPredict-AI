@@ -151,4 +151,5 @@ def concierge_status():
         "live_flight_data": flight_data.is_configured(),
         "weather": True,
         "journey_plan_limit_per_hour": JOURNEY_PLAN_LIMIT,
+        "map_errors": dict(list(wayfinding.last_errors.items())[-10:]),
     })
