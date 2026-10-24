@@ -6,6 +6,8 @@ ask for at the desk. Amounts follow the published regulations; whether a
 claim succeeds still depends on the cause and the airline's evidence.
 """
 import math
+import os
+from urllib.parse import quote
 
 from . import airports
 
@@ -280,3 +282,23 @@ def _rebooking_options(disruption, delay_h) -> list[dict]:
                         "best_for": "When your trip no longer makes sense or other airlines are much sooner.",
                         "tip": "Take the refund in cash or to your card, not as a voucher, unless the voucher is worth more."})
     return options
+
+
+def claim_partner(result: dict, origin: str, destination: str, airline: str) -> dict | None:
+    """
+    Affiliate link to a claims company, shown only when a claim looks valid.
+    Set CLAIM_PARTNER_URL (and optionally CLAIM_PARTNER_NAME) in the environment.
+    The URL may contain {origin}, {destination} and {airline} placeholders.
+    """
+    url = os.environ.get("CLAIM_PARTNER_URL", "").strip()
+    if not url.startswith("https://") or not result["headline"]["eligible"]:
+        return None
+    for key, value in (("origin", origin), ("destination", destination), ("airline", airline)):
+        url = url.replace("{" + key + "}", quote(value))
+    return {
+        "name": os.environ.get("CLAIM_PARTNER_NAME", "our claims partner").strip(),
+        "url": url,
+        "disclosure": ("Affiliate link: AeroPredict may earn a commission if you use this service, "
+                       "at no extra cost to you. Claims companies keep a share of the payout "
+                       "(often around 30-35%). You can also claim directly from the airline for free."),
+    }

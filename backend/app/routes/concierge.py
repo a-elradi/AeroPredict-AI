@@ -214,6 +214,7 @@ def rights():
         return jsonify({"error": "notice_days must be between 0 and 365."}), 400
     result = passenger_rights.assess(origin, destination, airline, disruption,
                                      delay_hours, cause, notice_days)
+    result["claim_partner"] = passenger_rights.claim_partner(result, origin, destination, airline)
     return jsonify({"success": True, "data": result})
 
 
@@ -225,5 +226,6 @@ def concierge_status():
         "live_flight_data": flight_data.is_configured(),
         "weather": True,
         "journey_plan_limit_per_hour": JOURNEY_PLAN_LIMIT,
+        "claim_partner": bool(os.environ.get("CLAIM_PARTNER_URL")),
         "map_errors": dict(list(wayfinding.last_errors.items())[-10:]),
     })

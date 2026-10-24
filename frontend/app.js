@@ -919,6 +919,14 @@ window.Wayfinding = (() => {
     }));
     $("rtEvidence").replaceChildren(...d.keep_evidence.map(t => el("li", null, t)));
     $("rtNote").textContent = d.note;
+
+    const partner = d.claim_partner;
+    $("rtClaim").hidden = !partner;
+    if (partner) {
+      $("rtClaimBtn").href = partner.url;
+      $("rtClaimBtn").textContent = `Claim it for me with ${partner.name}`;
+      $("rtClaimNote").textContent = partner.disclosure;
+    }
     card.hidden = false;
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }

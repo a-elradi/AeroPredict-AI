@@ -103,3 +103,30 @@ def test_endpoint_returns_desk_script(client):
 ])
 def test_invalid_requests(client, body):
     assert client.post("/api/concierge/rights", json=body).status_code == 400
+
+
+def test_claim_button_hidden_without_partner_link(client, monkeypatch):
+    monkeypatch.delenv("CLAIM_PARTNER_URL", raising=False)
+    data = client.post("/api/concierge/rights", json={
+        "origin": "FRA", "destination": "JFK", "airline": "LH",
+        "disruption": "delay", "delay_hours": 4, "cause": "airline"}).get_json()["data"]
+    assert data["claim_partner"] is None
+
+
+def test_claim_button_shown_for_eligible_claims(client, monkeypatch):
+    monkeypatch.setenv("CLAIM_PARTNER_URL", "https://partner.example/claim?a=123&from={origin}&to={destination}")
+    monkeypatch.setenv("CLAIM_PARTNER_NAME", "ClaimCo")
+    data = client.post("/api/concierge/rights", json={
+        "origin": "FRA", "destination": "JFK", "airline": "LH",
+        "disruption": "delay", "delay_hours": 4, "cause": "airline"}).get_json()["data"]
+    assert data["claim_partner"]["url"] == "https://partner.example/claim?a=123&from=FRA&to=JFK"
+    assert data["claim_partner"]["name"] == "ClaimCo"
+    assert "free" in data["claim_partner"]["disclosure"]
+
+
+def test_claim_button_hidden_when_no_compensation_due(client, monkeypatch):
+    monkeypatch.setenv("CLAIM_PARTNER_URL", "https://partner.example/claim")
+    data = client.post("/api/concierge/rights", json={
+        "origin": "FRA", "destination": "MAD", "airline": "LH",
+        "disruption": "cancellation", "cause": "weather", "notice_days": 1}).get_json()["data"]
+    assert data["claim_partner"] is None
