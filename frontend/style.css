@@ -500,6 +500,23 @@ a { color:inherit; text-decoration:none; }
 .bag-list li { font-size:0.83rem; color:var(--text-muted); margin-bottom:0.35rem; line-height:1.5; }
 .bag-text { font-size:0.83rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.5rem; }
 
+/* The hidden attribute must win over display rules like .form-group { display:flex } */
+[hidden] { display:none !important; }
+
+/* ── PASSENGER RIGHTS ── */
+#rtResult { scroll-margin-top:90px; }
+#rtResult[data-eligible="yes"] .rt-amount { color:var(--green); }
+#rtResult[data-eligible="no"] .rt-amount { color:var(--text-muted); font-size:1.6rem; }
+.rt-regime { border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.9rem 1rem; margin-bottom:0.75rem; background:rgba(255,255,255,0.02); }
+.rt-regime h5 { font-size:0.9rem; margin-bottom:0.35rem; display:flex; justify-content:space-between; gap:0.5rem; }
+.rt-regime h5 span { font-size:0.75rem; color:var(--text-muted); font-weight:600; }
+.rt-regime p { font-size:0.83rem; color:var(--text-muted); line-height:1.5; margin-bottom:0.4rem; }
+.rt-regime ul { padding-left:1.1rem; margin-bottom:0.4rem; }
+.rt-regime li { font-size:0.8rem; color:var(--text-muted); margin-bottom:0.25rem; }
+.rt-regime .rt-sub { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text); margin:0.5rem 0 0.25rem; font-weight:700; }
+.rt-script { list-style:none; display:flex; flex-direction:column; gap:0.4rem; }
+.rt-script li { font-size:0.85rem; padding:0.55rem 0.8rem; border-radius:var(--radius-sm); background:rgba(14,165,233,0.08); border-left:3px solid var(--accent); }
+
 /* ── MOBILE NAV ── */
 @media(max-width:768px) {
   .nav-links.open {

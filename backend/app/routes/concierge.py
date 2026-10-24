@@ -5,7 +5,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from ..services import baggage, claude_client, flight_data, journey_planner as jp, wayfinding
+from ..services import baggage, claude_client, flight_data, journey_planner as jp, passenger_rights, wayfinding
 from ..utils.rate_limit import rate_limit
 
 log = logging.getLogger(__name__)
@@ -183,6 +183,38 @@ def baggage_risk():
             return jsonify({"error": "Please enter the travel date as YYYY-MM-DD."}), 400
 
     return jsonify({"success": True, "data": baggage.assess(route, connections, bags, date)})
+
+
+@concierge_bp.route("/concierge/rights", methods=["POST"])
+@rate_limit("rights", max_calls=60, per_seconds=3600)
+def rights():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Request body must be a JSON object."}), 400
+    origin = str(data.get("origin") or "").strip().upper()
+    destination = str(data.get("destination") or "").strip().upper()
+    if not _IATA.match(origin) or not _IATA.match(destination) or origin == destination:
+        return jsonify({"error": "Enter your departure and final destination airport codes, e.g. IST and LHR."}), 400
+    airline = str(data.get("airline") or "").strip().upper()[:2]
+    disruption = data.get("disruption")
+    if disruption not in passenger_rights.DISRUPTIONS:
+        return jsonify({"error": f"disruption must be one of: {', '.join(passenger_rights.DISRUPTIONS)}."}), 400
+    cause = data.get("cause") or "unknown"
+    if cause not in passenger_rights.CAUSES:
+        return jsonify({"error": f"cause must be one of: {', '.join(passenger_rights.CAUSES)}."}), 400
+    try:
+        delay_hours = float(data.get("delay_hours") or 0)
+        notice = data.get("notice_days")
+        notice_days = None if notice in (None, "") else int(notice)
+    except (TypeError, ValueError):
+        return jsonify({"error": "delay_hours and notice_days must be numbers."}), 400
+    if not 0 <= delay_hours <= 72:
+        return jsonify({"error": "delay_hours must be between 0 and 72."}), 400
+    if notice_days is not None and not 0 <= notice_days <= 365:
+        return jsonify({"error": "notice_days must be between 0 and 365."}), 400
+    result = passenger_rights.assess(origin, destination, airline, disruption,
+                                     delay_hours, cause, notice_days)
+    return jsonify({"success": True, "data": result})
 
 
 @concierge_bp.route("/concierge/status", methods=["GET"])

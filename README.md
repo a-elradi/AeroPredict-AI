@@ -88,6 +88,14 @@ Returns the estimated chance a checked bag is delayed or lost, the factors behin
 and during the trip, the steps to take if the bag doesn't arrive, and Montreal Convention claim deadlines.
 Estimates use industry-wide rates from SITA's Baggage IT Insights reports; no external API is called.
 
+### Delay & cancellation rights
+
+`POST /api/concierge/rights` with `{"origin": "IST", "destination": "LHR", "airline": "TK", "disruption": "cancellation", "cause": "airline", "notice_days": 1}`
+
+Works out which rules apply (EU261, UK261, Türkiye SHY-YOLCU, US DOT refund rules, Canada APPR, or the
+Montreal Convention), the cash compensation that may be owed, care and refund rights, what to say at the
+desk, rebooking options and what evidence to keep. General guidance, not legal advice.
+
 ### Configuration
 
 Set these environment variables (see `.env.example`). On Render: **Dashboard → your service → Environment**.

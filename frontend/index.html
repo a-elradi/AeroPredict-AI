@@ -42,6 +42,7 @@
     <li><a href="#journey" class="nav-link" data-section="journey">Journey Plan</a></li>
     <li><a href="#wayfinding" class="nav-link" data-section="wayfinding">Near My Gate</a></li>
     <li><a href="#baggage" class="nav-link" data-section="baggage">Bag Check</a></li>
+    <li><a href="#rights" class="nav-link" data-section="rights">My Rights</a></li>
     <li><a href="#analytics" class="nav-link" data-section="analytics">Analytics</a></li>
     <li><a href="#technology" class="nav-link" data-section="technology">Technology</a></li>
   </ul>
@@ -588,6 +589,97 @@
           <p class="bag-text" id="bagRights"></p>
           <ul class="bag-list" id="bagDeadlines"></ul>
           <p class="jp-disclaimer" id="bagMethod"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     DELAY & CANCELLATION RIGHTS SECTION
+═══════════════════════════════════════════════════════ -->
+<section class="section" id="rights">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">AI Concierge</span>
+      <h2 class="section-title">Flight Delayed or Cancelled?</h2>
+      <p class="section-subtitle">Find out what the airline owes you: cash compensation, meals, a hotel, rebooking or a refund. Plus exactly what to say at the desk.</p>
+    </div>
+
+    <div class="predict-layout">
+      <div class="card predict-card">
+        <div class="card-header">
+          <h3>What Happened</h3>
+          <span class="card-badge">Your Rights</span>
+        </div>
+        <form class="flight-form" id="rightsForm" novalidate>
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label class="form-label" for="rtFrom">From</label>
+              <input type="text" id="rtFrom" class="form-input plain" placeholder="IST" maxlength="3" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="rtTo">Final Destination</label>
+              <input type="text" id="rtTo" class="form-input plain" placeholder="LHR" maxlength="3" autocomplete="off" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="rtAirline">Airline Code</label>
+              <input type="text" id="rtAirline" class="form-input plain" placeholder="TK" maxlength="2" autocomplete="off" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="rtType">Problem</label>
+              <select id="rtType" class="form-input form-select plain">
+                <option value="delay">Delayed</option>
+                <option value="cancellation">Cancelled</option>
+                <option value="denied_boarding">Denied boarding (overbooked)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="rtCause">Reason Given</label>
+              <select id="rtCause" class="form-input form-select plain">
+                <option value="unknown">Not told / not sure</option>
+                <option value="airline">Technical problem, crew or airline operations</option>
+                <option value="weather">Bad weather</option>
+                <option value="air_traffic_control">Air traffic control</option>
+                <option value="strike_external">Airport or air traffic strike</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" id="rtDelayGroup">
+              <label class="form-label" for="rtDelay">Arrival Delay (hours)</label>
+              <input type="number" id="rtDelay" class="form-input plain" min="0" max="72" step="0.5" value="3" />
+            </div>
+            <div class="form-group" id="rtNoticeGroup" hidden>
+              <label class="form-label" for="rtNotice">Days' Notice of Cancellation</label>
+              <input type="number" id="rtNotice" class="form-input plain" min="0" max="365" value="0" />
+            </div>
+          </div>
+          <div class="form-error" id="rtError" hidden></div>
+          <button type="submit" class="btn btn-primary btn-full" id="rtBtn">Check My Rights</button>
+        </form>
+      </div>
+
+      <div class="card result-card" id="rtResult" hidden>
+        <div class="card-header">
+          <h3 id="rtTitle">Your Rights</h3>
+          <span class="card-badge" id="rtBadge"></span>
+        </div>
+        <div class="jp-body">
+          <div class="bag-score">
+            <span class="bag-pct rt-amount" id="rtAmount">–</span>
+            <span class="bag-pct-label" id="rtAmountLabel"></span>
+          </div>
+          <div id="rtRegimes"></div>
+          <h4 class="bag-h">Say this at the desk</h4>
+          <ul class="rt-script" id="rtScript"></ul>
+          <h4 class="bag-h">Ways to get there</h4>
+          <ul class="bag-factors" id="rtOptions"></ul>
+          <h4 class="bag-h">Keep this evidence</h4>
+          <ul class="bag-list" id="rtEvidence"></ul>
+          <p class="jp-disclaimer" id="rtNote"></p>
         </div>
       </div>
     </div>
