@@ -96,6 +96,27 @@ Works out which rules apply (EU261, UK261, Türkiye SHY-YOLCU, US DOT refund rul
 Montreal Convention), the cash compensation that may be owed, care and refund rights, what to say at the
 desk, rebooking options and what evidence to keep. General guidance, not legal advice.
 
+### Delay model and automatic retraining
+
+The delay model (`models/delay_model.ubj` plus history tables) is trained on two years of US Bureau of
+Transportation Statistics flight records and hourly airport weather from Iowa State University's IEM archive.
+Two held-out months are used to test it; results are saved in `models/model_meta.json` and shown on the
+Analytics page.
+
+The **Retrain delay model** GitHub Action runs on the 12th of January, April, July and October (or by hand
+from the Actions tab). It downloads the newest data, retrains, and publishes the model only if
+`backend/scripts/check_model.py` passes and all tests pass with it; otherwise the live model is kept and the
+run fails, so GitHub emails you.
+
+To retrain on your own computer:
+
+```bash
+cd backend
+python scripts/download_training_data.py ../data --months 24
+python scripts/train_delay_model.py --flights ../data/flights --weather ../data/weather --out ../new_model
+python scripts/check_model.py ../new_model --current ../models/model_meta.json
+```
+
 ### Configuration
 
 Set these environment variables (see `.env.example`). On Render: **Dashboard → your service → Environment**.
