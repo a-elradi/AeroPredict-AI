@@ -15,8 +15,10 @@ IST_ELEMENTS = json.loads((Path(__file__).parent / "fixtures_ist_osm.json").read
 
 
 @pytest.fixture
-def client(monkeypatch):
+def client(monkeypatch, tmp_path):
     cache.clear()
+    # Ignore the saved maps in backend/data/osm so each test controls its own data
+    monkeypatch.setattr(wayfinding, "SNAPSHOT_DIR", tmp_path / "no-snapshots")
     rate_limit.reset()
     wayfinding._loading.clear()
     monkeypatch.setattr(wayfinding, "_fetch", lambda iata: IST_ELEMENTS)
@@ -139,3 +141,17 @@ def test_fetch_uses_nodes_when_way_query_fails(monkeypatch):
     results = iter([(nodes, []), (None, ["timeout"])])
     monkeypatch.setattr(wayfinding, "_run", lambda query, timeout: next(results))
     assert wayfinding._fetch("IST") == nodes
+
+
+@pytest.mark.parametrize("tags,expected", [
+    ({"office": "company", "name": "Turkish Airlines Business Lounge"}, "lounge"),
+    ({"indoor": "room", "name": "Mescit"}, "prayer_room"),
+    ({"amenity": "bar", "name": "Sky Lounge"}, None),
+    ({"amenity": "cafe", "name": "Lounge Coffee"}, "coffee"),
+])
+def test_categories_from_names(tags, expected):
+    assert wayfinding._category(tags) == expected
+
+
+def test_query_also_searches_names():
+    assert '["name"~"lounge|' in wayfinding._query("IST", "LTFM", "node")
