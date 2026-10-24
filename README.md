@@ -80,6 +80,14 @@ Airport maps are saved in `backend/data/osm/` so answers are instant. The **Refr
 GitHub Action updates them on the 1st of every month; run it by hand from the Actions tab
 (optionally with specific airport codes). Airports without a saved map are downloaded live.
 
+### Baggage risk
+
+`POST /api/concierge/baggage-risk` with `{"route": ["IST","FRA","JFK"], "connections": [{"duration": "under_1h", "airline_change": true}], "checked_bags": 1, "date": "2026-07-15"}`
+
+Returns the estimated chance a checked bag is delayed or lost, the factors behind it, what to do before
+and during the trip, the steps to take if the bag doesn't arrive, and Montreal Convention claim deadlines.
+Estimates use industry-wide rates from SITA's Baggage IT Insights reports; no external API is called.
+
 ### Configuration
 
 Set these environment variables (see `.env.example`). On Render: **Dashboard → your service → Environment**.
