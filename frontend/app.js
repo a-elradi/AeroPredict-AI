@@ -829,3 +829,97 @@ window.Wayfinding = (() => {
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 })();
+
+/* ═══════════════════════════════════════════
+   Delay & cancellation rights
+═══════════════════════════════════════════ */
+(() => {
+  const form = document.getElementById("rightsForm");
+  if (!form) return;
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  };
+  const list = (tag, items, cls) => {
+    const ul = el(tag, cls);
+    ul.append(...items.map(t => el("li", null, t)));
+    return ul;
+  };
+
+  const syncFields = () => {
+    const type = $("rtType").value;
+    $("rtNoticeGroup").hidden = type !== "cancellation";
+    $("rtDelayGroup").hidden = type === "denied_boarding";
+  };
+  $("rtType").addEventListener("change", syncFields);
+  syncFields();
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = $("rtError");
+    err.hidden = true;
+    const type = $("rtType").value;
+    try {
+      const res = await fetch(`${API}/concierge/rights`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: $("rtFrom").value.trim(),
+          destination: $("rtTo").value.trim(),
+          airline: $("rtAirline").value.trim(),
+          disruption: type,
+          cause: $("rtCause").value,
+          delay_hours: type === "denied_boarding" ? 0 : Number($("rtDelay").value || 0),
+          notice_days: type === "cancellation" ? Number($("rtNotice").value || 0) : undefined,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || `Server error (${res.status})`);
+      render(json.data);
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.hidden = false;
+    }
+  });
+
+  function render(d) {
+    const card = $("rtResult");
+    const h = d.headline;
+    card.dataset.eligible = h.eligible ? "yes" : "no";
+    $("rtTitle").textContent = `${d.route.origin} → ${d.route.destination}` +
+      (d.route.distance_km ? ` · ${d.route.distance_km.toLocaleString()} km` : "");
+    $("rtBadge").textContent = d.regimes.map(r => r.code).join(" · ");
+    $("rtAmount").textContent = h.eligible ? `${h.currency}${h.amount}` : "No fixed payout";
+    $("rtAmountLabel").textContent = h.eligible
+      ? "you may be owed in compensation, per passenger"
+      : "but you still have rights to care, rebooking or a refund";
+
+    $("rtRegimes").replaceChildren(...d.regimes.map(r => {
+      const box = el("div", "rt-regime");
+      const title = el("h5", null, r.name);
+      title.appendChild(el("span", null, r.compensation.eligible ? `${r.compensation.currency}${r.compensation.amount}` : "No cash payout"));
+      box.appendChild(title);
+      box.appendChild(el("p", null, r.compensation.explanation));
+      box.appendChild(el("div", "rt-sub", "While you wait"));
+      box.appendChild(list("ul", r.care));
+      box.appendChild(el("div", "rt-sub", "Your choices"));
+      box.appendChild(list("ul", r.choices));
+      box.appendChild(el("p", null, r.claim));
+      return box;
+    }));
+    $("rtScript").replaceChildren(...d.ask_at_the_desk.map(t => el("li", null, `“${t}”`)));
+    $("rtOptions").replaceChildren(...d.rebooking_options.map(o => {
+      const li = el("li");
+      li.dataset.impact = "low";
+      li.append(el("strong", null, o.option), `${o.best_for} ${o.tip}`);
+      return li;
+    }));
+    $("rtEvidence").replaceChildren(...d.keep_evidence.map(t => el("li", null, t)));
+    $("rtNote").textContent = d.note;
+    card.hidden = false;
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+})();
