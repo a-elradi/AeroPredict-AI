@@ -41,6 +41,7 @@
     <li><a href="#predict" class="nav-link" data-section="predict">Predict</a></li>
     <li><a href="#journey" class="nav-link" data-section="journey">Journey Plan</a></li>
     <li><a href="#wayfinding" class="nav-link" data-section="wayfinding">Near My Gate</a></li>
+    <li><a href="#baggage" class="nav-link" data-section="baggage">Bag Check</a></li>
     <li><a href="#analytics" class="nav-link" data-section="analytics">Analytics</a></li>
     <li><a href="#technology" class="nav-link" data-section="technology">Technology</a></li>
   </ul>
@@ -519,6 +520,75 @@
           <div class="wf-lists" id="wfLists"></div>
         </div>
         <p class="jp-disclaimer" id="wfAttribution"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     BAGGAGE RISK SECTION
+═══════════════════════════════════════════════════════ -->
+<section class="section" id="baggage">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">AI Concierge</span>
+      <h2 class="section-title">Will My Bag Make It?</h2>
+      <p class="section-subtitle">See how likely your checked bag is to be delayed on your route, what raises the risk, and exactly what to do if it doesn't arrive.</p>
+    </div>
+
+    <div class="predict-layout">
+      <div class="card predict-card">
+        <div class="card-header">
+          <h3>Your Route</h3>
+          <span class="card-badge">Bag Check</span>
+        </div>
+        <form class="flight-form" id="bagForm" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="bagRoute">Airports in order</label>
+            <input type="text" id="bagRoute" class="form-input plain" placeholder="e.g. IST, FRA, JFK" maxlength="30" autocomplete="off" />
+            <p class="form-hint">Separate with commas. Include every stop where you change planes.</p>
+          </div>
+          <div id="bagConnections"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="bagCount">Checked Bags</label>
+              <select id="bagCount" class="form-input form-select plain">
+                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4+</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="bagDate">Travel Date</label>
+              <input type="date" id="bagDate" class="form-input plain" />
+            </div>
+          </div>
+          <div class="form-error" id="bagError" hidden></div>
+          <button type="submit" class="btn btn-primary btn-full" id="bagBtn">Check My Bag Risk</button>
+        </form>
+      </div>
+
+      <div class="card result-card" id="bagResult" hidden>
+        <div class="card-header">
+          <h3 id="bagTitle">Your Bag</h3>
+          <span class="card-badge" id="bagLevel"></span>
+        </div>
+        <div class="jp-body">
+          <div class="bag-score">
+            <span class="bag-pct" id="bagPct">–</span>
+            <span class="bag-pct-label" id="bagOneIn"></span>
+          </div>
+          <h4 class="bag-h">What affects your bag</h4>
+          <ul class="bag-factors" id="bagFactors"></ul>
+          <h4 class="bag-h">Before you fly</h4>
+          <ul class="bag-list" id="bagBefore"></ul>
+          <h4 class="bag-h">During your trip</h4>
+          <ul class="bag-list" id="bagDuring"></ul>
+          <h4 class="bag-h">If your bag doesn't arrive</h4>
+          <ol class="bag-list" id="bagMissing"></ol>
+          <h4 class="bag-h">Your rights</h4>
+          <p class="bag-text" id="bagRights"></p>
+          <ul class="bag-list" id="bagDeadlines"></ul>
+          <p class="jp-disclaimer" id="bagMethod"></p>
+        </div>
       </div>
     </div>
   </div>

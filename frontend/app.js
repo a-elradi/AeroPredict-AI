@@ -720,3 +720,112 @@ window.Wayfinding = (() => {
     },
   };
 })();
+
+/* ═══════════════════════════════════════════
+   Baggage risk
+═══════════════════════════════════════════ */
+(() => {
+  const form = document.getElementById("bagForm");
+  if (!form) return;
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  };
+  const DURATIONS = [["under_1h", "Under 1 hour"], ["1_2h", "1–2 hours"], ["2_4h", "2–4 hours"], ["over_4h", "Over 4 hours"]];
+
+  const parseRoute = () => $("bagRoute").value.split(/[,\s→>-]+/).map(a => a.trim().toUpperCase()).filter(Boolean);
+
+  // One connection box per stop between the first and last airport
+  function renderConnections() {
+    const route = parseRoute();
+    const box = $("bagConnections");
+    const stops = route.slice(1, -1);
+    const existing = [...box.querySelectorAll(".bag-conn")].map(c => c.dataset.airport);
+    if (stops.join() === existing.join()) return;
+    box.replaceChildren(...stops.map((airport, i) => {
+      const conn = el("div", "bag-conn");
+      conn.dataset.airport = airport;
+      conn.appendChild(el("div", "bag-conn-title", `Connection in ${airport}`));
+      const sel = el("select", "form-input form-select plain");
+      sel.setAttribute("aria-label", `Connection time in ${airport}`);
+      for (const [v, label] of DURATIONS) {
+        const o = el("option", null, label);
+        o.value = v;
+        if (v === "1_2h") o.selected = true;
+        sel.appendChild(o);
+      }
+      conn.appendChild(sel);
+      const row = el("div", "check-row");
+      for (const [key, label] of [["airline_change", "Changing airline"], ["terminal_change", "Changing terminal"]]) {
+        const lab = el("label", "check");
+        const cb = el("input");
+        cb.type = "checkbox";
+        cb.dataset.key = key;
+        lab.append(cb, " " + label);
+        row.appendChild(lab);
+      }
+      conn.appendChild(row);
+      return conn;
+    }));
+  }
+  $("bagRoute").addEventListener("input", renderConnections);
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const err = $("bagError");
+    err.hidden = true;
+    const route = parseRoute();
+    const connections = [...$("bagConnections").querySelectorAll(".bag-conn")].map(c => ({
+      duration: c.querySelector("select").value,
+      airline_change: c.querySelector('[data-key="airline_change"]').checked,
+      terminal_change: c.querySelector('[data-key="terminal_change"]').checked,
+    }));
+    try {
+      const res = await fetch(`${API}/concierge/baggage-risk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          route, connections,
+          checked_bags: Number($("bagCount").value),
+          date: $("bagDate").value || undefined,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || `Server error (${res.status})`);
+      render(json.data);
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.hidden = false;
+    }
+  });
+
+  const fill = (id, items) => $(id).replaceChildren(...items.map(t => el("li", null, t)));
+
+  function render(d) {
+    const card = $("bagResult");
+    card.dataset.level = d.risk_level;
+    $("bagTitle").textContent = d.route.join(" → ");
+    $("bagLevel").textContent = `${d.risk_level[0].toUpperCase()}${d.risk_level.slice(1)} risk`;
+    $("bagPct").textContent = `${d.risk_percent}%`;
+    $("bagOneIn").textContent = d.one_in
+      ? `chance a bag is delayed or lost · about 1 in ${d.one_in} trips like yours`
+      : "chance a bag is delayed or lost";
+    $("bagFactors").replaceChildren(...d.factors.map(f => {
+      const li = el("li");
+      li.dataset.impact = f.impact;
+      li.append(el("strong", null, f.factor), f.detail);
+      return li;
+    }));
+    fill("bagBefore", d.actions.before_you_fly);
+    fill("bagDuring", d.actions.during_your_trip);
+    fill("bagMissing", d.if_bag_missing);
+    $("bagRights").textContent = `${d.compensation.summary} ${d.compensation.note}`;
+    fill("bagDeadlines", d.compensation.deadlines);
+    $("bagMethod").textContent = d.method;
+    card.hidden = false;
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+})();

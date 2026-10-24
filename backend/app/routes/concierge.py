@@ -5,7 +5,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
-from ..services import claude_client, flight_data, journey_planner as jp, wayfinding
+from ..services import baggage, claude_client, flight_data, journey_planner as jp, wayfinding
 from ..utils.rate_limit import rate_limit
 
 log = logging.getLogger(__name__)
@@ -141,6 +141,48 @@ def wayfinding_view():
         log.exception("Wayfinding failed")
         return jsonify({"error": "Could not load the airport map. Please try again."}), 500
     return jsonify({"success": True, "data": result})
+
+
+@concierge_bp.route("/concierge/baggage-risk", methods=["POST"])
+@rate_limit("baggage-risk", max_calls=60, per_seconds=3600)
+def baggage_risk():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Request body must be a JSON object."}), 400
+
+    route = [str(a).strip().upper() for a in data.get("route") or []]
+    if not 2 <= len(route) <= 5 or not all(_IATA.match(a) for a in route):
+        return jsonify({"error": "Enter 2 to 5 airport codes in travel order, e.g. IST, FRA, JFK."}), 400
+    if any(a == b for a, b in zip(route, route[1:])):
+        return jsonify({"error": "The same airport can't appear twice in a row."}), 400
+
+    raw = data.get("connections") or []
+    if not isinstance(raw, list) or len(raw) != len(route) - 2:
+        return jsonify({"error": "Add one connection entry for each stop between your first and last airport."}), 400
+    connections = []
+    for c in raw:
+        if not isinstance(c, dict) or c.get("duration") not in baggage.CONNECTION_FACTORS:
+            return jsonify({"error": "Connection duration must be one of: "
+                                     f"{', '.join(baggage.CONNECTION_FACTORS)}."}), 400
+        connections.append({"duration": c["duration"],
+                            "airline_change": bool(c.get("airline_change")),
+                            "terminal_change": bool(c.get("terminal_change"))})
+
+    try:
+        bags = int(data.get("checked_bags", 1))
+    except (TypeError, ValueError):
+        return jsonify({"error": "checked_bags must be a number."}), 400
+    if not 1 <= bags <= 10:
+        return jsonify({"error": "checked_bags must be between 1 and 10."}), 400
+
+    date = data.get("date") or None
+    if date:
+        try:
+            datetime.strptime(str(date), "%Y-%m-%d")
+        except ValueError:
+            return jsonify({"error": "Please enter the travel date as YYYY-MM-DD."}), 400
+
+    return jsonify({"success": True, "data": baggage.assess(route, connections, bags, date)})
 
 
 @concierge_bp.route("/concierge/status", methods=["GET"])
