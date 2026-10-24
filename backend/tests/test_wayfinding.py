@@ -98,3 +98,23 @@ def test_failed_load_is_not_retried_immediately(client, monkeypatch):
     assert client.get("/api/concierge/wayfinding?airport=LHR").status_code == 503
     assert client.get("/api/concierge/wayfinding?airport=LHR").status_code == 503
     assert calls == ["LHR"]
+
+
+def test_known_airports_use_cheap_box_query():
+    query = wayfinding._query("IST", "LTFM")
+    assert "area" not in query
+    assert "(41.2484,28.7001,41.3021,28.8041)" in query
+
+
+def test_unknown_airports_fall_back_to_outline_query():
+    query = wayfinding._query("XYZ", None)
+    assert 'area["aeroway"="aerodrome"]["iata"="XYZ"]' in query
+
+
+def test_without_gate_places_near_terminals_come_first(client, monkeypatch):
+    far_cafe = {"type": "node", "id": 1, "lat": 41.40, "lon": 28.90,
+                "tags": {"amenity": "cafe", "name": "Aaa Village Cafe"}}
+    monkeypatch.setattr(wayfinding, "_fetch", lambda iata: IST_ELEMENTS + [far_cafe])
+    data = client.get("/api/concierge/wayfinding?airport=IST&categories=coffee").get_json()["data"]
+    names = [p["name"] for p in data["categories"]["coffee"]["nearest"]]
+    assert "Aaa Village Cafe" not in names

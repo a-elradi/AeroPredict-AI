@@ -16,9 +16,12 @@ from ..utils import cache
 
 log = logging.getLogger(__name__)
 
+# Public Overpass servers, tried in order
 OVERPASS_URLS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ]
 ATTRIBUTION = "Map data © OpenStreetMap contributors (openstreetmap.org/copyright)"
 
@@ -59,14 +62,26 @@ class MapLoading(Exception):
 
 
 def _query(iata: str, icao: str | None) -> str:
+    amenity_re = "|".join(_AMENITY_VALUES)
+    head = f"[out:json][timeout:{OVERPASS_TIMEOUT_S - 10}];"
+    bounds = airports.BOUNDS.get(iata)
+    if bounds:
+        box = "({},{},{},{})".format(*bounds)
+        return (
+            head + "("
+            f'nwr{box}["amenity"~"^({amenity_re})$"];'
+            f'nwr{box}["shop"];'
+            f'nwr{box}["aeroway"="gate"];'
+            ");out center tags;"
+        )
+    # Unknown airport: search inside its outline (slower for the server)
     areas = f'area["aeroway"="aerodrome"]["iata"="{iata}"]->.a1;'
     union = ".a1;"
     if icao:
         areas += f'area["aeroway"="aerodrome"]["icao"="{icao}"]->.a2;'
         union += ".a2;"
-    amenity_re = "|".join(_AMENITY_VALUES)
     return (
-        f"[out:json][timeout:{OVERPASS_TIMEOUT_S - 10}];{areas}({union})->.a;"
+        head + f"{areas}({union})->.a;"
         "("
         f'nwr(area.a)["amenity"~"^({amenity_re})$"];'
         'nwr(area.a)["shop"];'
@@ -205,6 +220,13 @@ def distance_m(lat1, lon1, lat2, lon2) -> float:
     return 2 * r * math.asin(math.sqrt(a))
 
 
+def _gates_center(gates: dict) -> tuple[float, float] | None:
+    if not gates:
+        return None
+    return (sum(g["lat"] for g in gates.values()) / len(gates),
+            sum(g["lon"] for g in gates.values()) / len(gates))
+
+
 def find_nearby(iata: str, gate: str | None, categories: list[str], limit: int = 5) -> dict:
     features = get_airport_features(iata)
     if not features["gates"] and not features["places"]:
@@ -212,6 +234,7 @@ def find_nearby(iata: str, gate: str | None, categories: list[str], limit: int =
 
     gate_ref = normalize_gate(gate) if gate else None
     origin = features["gates"].get(gate_ref) if gate_ref else None
+    center = _gates_center(features["gates"])
 
     results = {}
     for category in categories:
@@ -223,6 +246,10 @@ def find_nearby(iata: str, gate: str | None, categories: list[str], limit: int =
                 p["walk_minutes"] = max(1, round(p["distance_m"] / WALK_METERS_PER_MIN))
             # Nearest first; unnamed places last when distances tie
             items.sort(key=lambda p: (p.get("distance_m", 0), p["name"] is None))
+        elif center:
+            # Near the terminals first; places outside the airport sink to the end
+            items.sort(key=lambda p: (p["name"] is None,
+                                      distance_m(center[0], center[1], p["lat"], p["lon"])))
         else:
             items.sort(key=lambda p: (p["name"] is None, p["name"] or ""))
         results[category] = {"count": len(items), "nearest": items[:limit]}

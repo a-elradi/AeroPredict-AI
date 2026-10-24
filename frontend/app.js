@@ -607,7 +607,7 @@ window.Wayfinding = (() => {
       for (let attempt = 0; ; attempt++) {
         const res = await fetch(`${API}/concierge/wayfinding?${params}`);
         const json = await res.json().catch(() => ({}));
-        if (res.status === 202 && attempt < 30) {
+        if (res.status === 202 && attempt < 48) {
           $("wfBtnText").textContent = "Loading airport map…";
           $("wfStatus").textContent = json.message || "Loading the airport map…";
           $("wfStatus").hidden = false;
