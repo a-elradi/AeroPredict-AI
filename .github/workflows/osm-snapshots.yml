@@ -30,10 +30,15 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
+      # Maps are written one airport at a time, so if the servers are slow and this
+      # step runs out of time, the airports finished so far are still committed.
       - name: Download airport maps
         working-directory: backend
+        timeout-minutes: 240
+        continue-on-error: true
         run: python scripts/build_osm_snapshots.py ${{ github.event.inputs.airports }}
       - name: Commit updated maps
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

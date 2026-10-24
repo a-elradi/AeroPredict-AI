@@ -138,9 +138,20 @@ def test_saved_snapshot_is_used_without_contacting_map_servers(client, monkeypat
 
 def test_fetch_uses_nodes_when_way_query_fails(monkeypatch):
     nodes = [e for e in IST_ELEMENTS if e["type"] == "node"]
-    results = iter([(nodes, []), (None, ["timeout"])])
-    monkeypatch.setattr(wayfinding, "_run", lambda query, timeout: next(results))
+    results = iter([(nodes, []), (None, ["timeout"]), (None, ["timeout"])])
+    monkeypatch.setattr(wayfinding, "_run", lambda query, timeout, urls=None: next(results))
     assert wayfinding._fetch("IST") == nodes
+
+
+def test_name_search_results_are_merged_without_duplicates(monkeypatch):
+    nodes = [e for e in IST_ELEMENTS if e["type"] == "node"][:5]
+    lounge = {"type": "node", "id": 99, "lat": 41.26, "lon": 28.74,
+              "tags": {"office": "company", "name": "Turkish Airlines Business Lounge"}}
+    results = iter([(nodes, []), ([], []), ([nodes[0], lounge], [])])
+    monkeypatch.setattr(wayfinding, "_run", lambda query, timeout, urls=None: next(results))
+    elements = wayfinding._fetch("IST")
+    assert len(elements) == 6
+    assert lounge in elements
 
 
 @pytest.mark.parametrize("tags,expected", [
@@ -153,5 +164,6 @@ def test_categories_from_names(tags, expected):
     assert wayfinding._category(tags) == expected
 
 
-def test_query_also_searches_names():
-    assert '["name"~"lounge|' in wayfinding._query("IST", "LTFM", "node")
+def test_name_search_is_a_separate_query():
+    assert '["name"~' not in wayfinding._query("IST", "LTFM", "node")
+    assert '["name"~"lounge|' in wayfinding._query("IST", "LTFM", "nwr", by_name=True)
