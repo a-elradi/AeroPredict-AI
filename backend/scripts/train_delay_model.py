@@ -6,7 +6,7 @@ Data (all free):
   Performance" monthly files:
   https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_YYYY_M.zip
 - Optional hourly airport weather from Iowa State University's IEM ASOS
-  archive (one CSV per airport, UTC times), e.g.
+  archive (one CSV per airport named <IATA>.csv, UTC times), e.g.
   https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?station=ORD&data=sknt&data=gust&data=vsby&data=skyc1&data=skyl1&data=wxcodes&...
 
     python scripts/train_delay_model.py --flights DIR [DIR ...] [--weather DIR] [--sample 0.1]
@@ -16,6 +16,10 @@ training), so scores show how the model does on future flights. Weather is
 hidden on half the training flights because live forecasts only cover the
 next day or so; the test is scored both with and without weather. The final
 model is then retrained on all months and saved to models/.
+
+Lookup keys (flight, route, airport...) are kept as integers while training
+so ~14M flights fit in memory; they are turned into the text keys used by
+services/delay_model.py only when the history tables are saved.
 """
 import argparse
 import gzip
@@ -23,7 +27,7 @@ import json
 import sys
 import time
 import zipfile
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -47,64 +51,98 @@ PARAMS = {
     "colsample_bytree": 0.8, "min_child_weight": 100, "nthread": 4,
 }
 WEATHER_HIDDEN_SHARE = 0.5
+TRAIN_ROWS_SHARE = 0.4  # trees learn from 40% of flights; history uses all of them (saves memory)
+EPOCH = np.datetime64("1970-01-01")
+
+
+class Codes:
+    """Integer codes for airports and carriers, shared by all months."""
+
+    def __init__(self):
+        self.airports: list[str] = []
+        self.carriers: list[str] = []
 
 
 # ── Flights ──────────────────────────────────────────────────────────────────
 
-def load_flights(folders: list[Path], sample: float) -> pd.DataFrame:
+def _read_month(path: Path) -> pd.DataFrame:
+    with zipfile.ZipFile(path) as z:
+        name = next(n for n in z.namelist() if n.endswith(".csv"))
+        with z.open(name) as f:
+            return pd.read_csv(f, usecols=COLUMNS, low_memory=False,
+                               dtype={"Origin": "category", "Dest": "category", "Reporting_Airline": "category"})
+
+
+def load_flights(folders: list[Path], sample: float) -> tuple[pd.DataFrame, Codes]:
+    paths = sorted(p for folder in folders for p in folder.glob("*.zip"))
+    raw = []
+    for path in paths:
+        m = _read_month(path)
+        if sample < 1:
+            m = m.sample(frac=sample, random_state=0)
+        raw.append(m.dropna(subset=["Origin", "Dest", "CRSDepTime", "Reporting_Airline"]))
+        print(f"  {path.name}: {len(m):,} flights", flush=True)
+
+    codes = Codes()
+    codes.airports = sorted(set().union(*[set(m["Origin"].cat.categories) | set(m["Dest"].cat.categories) for m in raw]))
+    codes.carriers = sorted(set().union(*[set(m["Reporting_Airline"].cat.categories) for m in raw]))
+    ap, cr = {a: i for i, a in enumerate(codes.airports)}, {c: i for i, c in enumerate(codes.carriers)}
+
     frames = []
-    for folder in folders:
-        for path in sorted(folder.glob("*.zip")):
-            with zipfile.ZipFile(path) as z:
-                name = next(n for n in z.namelist() if n.endswith(".csv"))
-                with z.open(name) as f:
-                    df = pd.read_csv(f, usecols=COLUMNS, low_memory=False)
-            if sample < 1:
-                df = df.sample(frac=sample, random_state=0)
-            frames.append(df)
-            print(f"  {path.name}: {len(df):,} flights")
-    df = pd.concat(frames, ignore_index=True)
-    df = df.dropna(subset=["Origin", "Dest", "CRSDepTime", "Reporting_Airline"])
-    df["label"] = np.where(df["Cancelled"] == 1, 2,
-                           np.where((df["ArrDel15"] == 1) | (df["Diverted"] == 1), 1, 0)).astype(np.int8)
-    df["period"] = df["Year"] * 12 + df["Month"]
-    df["dep_hour"] = (df["CRSDepTime"] // 100).clip(0, 23).astype(np.int8)
-    df["arr_hour"] = ((df["CRSArrTime"].fillna(df["CRSDepTime"]) // 100) % 24).astype(np.int8)
-    df["carrier"] = df["Reporting_Airline"].astype(str)
-    df["flight_no"] = df["Flight_Number_Reporting_Airline"].astype(int).astype(str)
-    df["delay_min"] = np.where(df["label"] == 1, df["ArrDelay"], np.nan)
-    df["date"] = pd.to_datetime(df["FlightDate"])
-    # Local scheduled departure and arrival, as whole hours (arrival may be the next day)
-    df["dep_local"] = df["date"] + pd.to_timedelta(df["dep_hour"], unit="h")
-    arr = df["date"] + pd.to_timedelta(df["arr_hour"], unit="h")
-    df["arr_local"] = arr.where(df["arr_hour"] >= df["dep_hour"], arr + pd.Timedelta(days=1))
-    return df.drop(columns=["FlightDate", "Flight_Number_Reporting_Airline", "Reporting_Airline"])
+    for m in raw:
+        dep_hour = (m["CRSDepTime"] // 100).clip(0, 23).astype(np.int8)
+        arr_hour = ((m["CRSArrTime"].fillna(m["CRSDepTime"]) // 100) % 24).astype(np.int8)
+        label = np.where(m["Cancelled"] == 1, 2, np.where((m["ArrDel15"] == 1) | (m["Diverted"] == 1), 1, 0))
+        day = ((pd.to_datetime(m["FlightDate"]).to_numpy() - EPOCH) // np.timedelta64(1, "D")).astype(np.int32)
+        dep_abs = day.astype(np.int64) * 24 + dep_hour.to_numpy()
+        arr_abs = day.astype(np.int64) * 24 + arr_hour.to_numpy() + np.where(arr_hour < dep_hour, 24, 0)
+        frames.append(pd.DataFrame({
+            "Month": m["Month"].astype(np.int8).to_numpy(),
+            "DayofMonth": m["DayofMonth"].astype(np.int8).to_numpy(),
+            "DayOfWeek": m["DayOfWeek"].astype(np.int8).to_numpy(),
+            "period": (m["Year"] * 12 + m["Month"]).astype(np.int32).to_numpy(),
+            "day": day,
+            "dep_hour": dep_hour.to_numpy(), "arr_hour": arr_hour.to_numpy(),
+            "dep_abs": dep_abs, "arr_abs": arr_abs,  # local hours since 1970, for weather joins
+            "o": m["Origin"].map(ap).astype(np.int16).to_numpy(),
+            "d": m["Dest"].map(ap).astype(np.int16).to_numpy(),
+            "c": m["Reporting_Airline"].map(cr).astype(np.int8).to_numpy(),
+            "fno": m["Flight_Number_Reporting_Airline"].astype(np.int32).to_numpy(),
+            "Distance": m["Distance"].astype(np.float32).to_numpy(),
+            "label": label.astype(np.int8),
+            "delay_min": np.where(label == 1, m["ArrDelay"], np.nan).astype(np.float32),
+        }))
+    del raw
+    return pd.concat(frames, ignore_index=True), codes
 
 
 # ── Weather ──────────────────────────────────────────────────────────────────
 
-def load_weather(folder: Path) -> pd.DataFrame:
+def load_weather(folder: Path, codes: Codes) -> pd.DataFrame:
     """Hourly weather per airport and local hour, worst conditions within ±1 hour."""
+    ap = {a: i for i, a in enumerate(codes.airports)}
     frames = []
     for path in sorted(folder.glob("*.csv")):
         station = path.stem
         tz = AIRPORT_TZ.get(station)
-        if not tz:
+        if not tz or station not in ap:
             continue
         w = pd.read_csv(path, na_values=["M", "T"], low_memory=False)
-        if w.empty:
-            continue
         t = pd.to_datetime(w["valid"], format="%Y-%m-%d %H:%M", errors="coerce", utc=True)
         w, t = w[t.notna()].reset_index(drop=True), t[t.notna()].reset_index(drop=True)
-        t = t.dt.tz_convert(tz).dt.tz_localize(None).dt.floor("h")
+        if w.empty:
+            continue
+        local = t.dt.tz_convert(tz).dt.tz_localize(None).dt.floor("h")
+        hour_abs = ((local.to_numpy() - EPOCH) // np.timedelta64(1, "h")).astype(np.int64)
         wx = w["wxcodes"].fillna("").astype(str).str.upper()
-        ceiling = np.where(w["skyc1"].isin(["BKN", "OVC", "VV"]), w["skyl1"], NO_CEILING_FT)
+        wind = pd.to_numeric(w["sknt"], errors="coerce")
         hourly = pd.DataFrame({
-            "airport": station, "hour": t,
+            "hour": hour_abs,
             "vis": pd.to_numeric(w["vsby"], errors="coerce").clip(upper=10),
-            "wind": pd.to_numeric(w["sknt"], errors="coerce"),
-            "gust": pd.to_numeric(w["gust"], errors="coerce").fillna(pd.to_numeric(w["sknt"], errors="coerce")),
-            "ceiling": pd.to_numeric(pd.Series(ceiling), errors="coerce").fillna(NO_CEILING_FT),
+            "wind": wind,
+            "gust": pd.to_numeric(w["gust"], errors="coerce").fillna(wind),
+            "ceiling": pd.to_numeric(pd.Series(np.where(w["skyc1"].isin(["BKN", "OVC", "VV"]), w["skyl1"], NO_CEILING_FT)),
+                                     errors="coerce").fillna(NO_CEILING_FT),
             "ts": wx.str.contains("TS").astype(np.int8),
             "snow": wx.str.contains(r"SN|SG|PL|GS").astype(np.int8),
             "rain": wx.str.contains(r"RA|DZ|SH").astype(np.int8),
@@ -112,63 +150,89 @@ def load_weather(folder: Path) -> pd.DataFrame:
             "freezing": wx.str.contains("FZ").astype(np.int8),
         })
         # Each observation counts for the hour before, the hour itself and the hour after
-        spread = pd.concat([hourly.assign(hour=hourly["hour"] + pd.Timedelta(hours=s)) for s in (-1, 0, 1)])
-        frames.append(spread.groupby(["airport", "hour"]).agg(
+        spread = pd.concat([hourly.assign(hour=hourly["hour"] + s) for s in (-1, 0, 1)])
+        agg = spread.groupby("hour").agg(
             vis=("vis", "min"), wind=("wind", "max"), gust=("gust", "max"), ceiling=("ceiling", "min"),
             ts=("ts", "max"), snow=("snow", "max"), rain=("rain", "max"), fog=("fog", "max"),
-            freezing=("freezing", "max")).reset_index())
-        print(f"  weather {station}: {len(hourly):,} observations")
-    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+            freezing=("freezing", "max"))
+        agg.index = ap[station] * 10_000_000 + agg.index  # airport + hour in one integer key
+        frames.append(agg.astype(np.float32))
+        print(f"  weather {station}: {len(hourly):,} observations", flush=True)
+    return pd.concat(frames) if frames else pd.DataFrame()
 
 
-def attach_weather(df: pd.DataFrame, weather: pd.DataFrame) -> pd.DataFrame:
-    for f in WX_FEATURES:
-        df[f] = np.nan
-    if weather.empty:
-        return df
-    for side, airport_col, time_col in (("o", "Origin", "dep_local"), ("d", "Dest", "arr_local")):
-        w = weather.rename(columns={f: f"{side}_{f}" for f in WX_FIELDS})
-        cols = [f"{side}_{f}" for f in WX_FIELDS]
-        merged = df[[airport_col, time_col]].merge(
-            w, how="left", left_on=[airport_col, time_col], right_on=["airport", "hour"])
-        df[cols] = merged[cols].to_numpy()
-    return df
+def attach_weather(df: pd.DataFrame, weather: pd.DataFrame) -> None:
+    for side, airport, hour in (("o", "o", "dep_abs"), ("d", "d", "arr_abs")):
+        if weather.empty:
+            for f in WX_FIELDS:
+                df[f"{side}_{f}"] = np.float32(np.nan)
+            continue
+        key = df[airport].astype(np.int64) * 10_000_000 + df[hour]
+        idx = weather.index.get_indexer(key)
+        found = idx >= 0
+        for f in WX_FIELDS:
+            col = np.full(len(df), np.nan, dtype=np.float32)
+            col[found] = weather[f].to_numpy()[idx[found]]
+            df[f"{side}_{f}"] = col
 
 
 # ── History tables ───────────────────────────────────────────────────────────
 
-def key_columns(df: pd.DataFrame) -> dict[str, pd.Series]:
+def key_columns(df: pd.DataFrame) -> dict[str, np.ndarray]:
+    c, f = df["c"].to_numpy(np.int64), df["fno"].to_numpy(np.int64)
+    o, d = df["o"].to_numpy(np.int64), df["d"].to_numpy(np.int64)
     return {
-        "flight": df["carrier"] + df["flight_no"] + "|" + df["Origin"],
-        "route_carrier": df["carrier"] + "|" + df["Origin"] + "|" + df["Dest"],
-        "route": df["Origin"] + "|" + df["Dest"],
-        "origin_hour": df["Origin"] + "|" + df["dep_hour"].astype(str),
-        "dest_hour": df["Dest"] + "|" + df["arr_hour"].astype(str),
-        "carrier": df["carrier"],
-        "origin": df["Origin"],
-        "dest": df["Dest"],
+        "flight": (c * 10_000 + f) * 1000 + o,
+        "route_carrier": (c * 1000 + o) * 1000 + d,
+        "route": o * 1000 + d,
+        "origin_hour": o * 24 + df["dep_hour"].to_numpy(np.int64),
+        "dest_hour": d * 24 + df["arr_hour"].to_numpy(np.int64),
+        "carrier": c,
+        "origin": o,
+        "dest": d,
     }
 
 
-def stats_tables(df: pd.DataFrame, keys: dict) -> dict:
-    """Per-key counts, delay and cancel rates, and median delay when delayed."""
-    tables = {}
-    is_delay = (df["label"] == 1).astype(np.int32)
-    is_cancel = (df["label"] == 2).astype(np.int32)
+def decode(name: str, k: int, codes: Codes) -> str:
+    """Integer key -> the text key services/delay_model.py looks up."""
+    A, C = codes.airports, codes.carriers
+    if name == "flight":
+        return f"{C[k // 10_000_000]}{k // 1000 % 10_000}|{A[k % 1000]}"
+    if name == "route_carrier":
+        return f"{C[k // 1_000_000]}|{A[k // 1000 % 1000]}|{A[k % 1000]}"
+    if name == "route":
+        return f"{A[k // 1000]}|{A[k % 1000]}"
+    if name in ("origin_hour", "dest_hour"):
+        return f"{A[k // 24]}|{k % 24}"
+    if name == "carrier":
+        return C[k]
+    return A[k]
+
+
+def stats_frames(df: pd.DataFrame, keys: dict) -> dict[str, pd.DataFrame]:
+    """Per-key counts, delays, cancellations and median delay when delayed."""
+    is_delay = (df["label"] == 1).to_numpy(np.int32)
+    is_cancel = (df["label"] == 2).to_numpy(np.int32)
+    out = {}
     for name in STAT_KEYS:
-        g = pd.DataFrame({"k": keys[name], "d": is_delay, "c": is_cancel, "m": df["delay_min"]})
-        agg = g.groupby("k").agg(n=("d", "size"), d=("d", "sum"), c=("c", "sum"), m=("m", "median"))
-        tables[name] = {k: [int(n), int(d), int(c), None if pd.isna(m) else int(m)]
-                        for k, n, d, c, m in zip(agg.index, agg["n"], agg["d"], agg["c"], agg["m"])}
-    return tables
+        g = pd.DataFrame({"k": keys[name], "d": is_delay, "c": is_cancel, "m": df["delay_min"].to_numpy()})
+        out[name] = g.groupby("k").agg(n=("d", "size"), d=("d", "sum"), c=("c", "sum"), m=("m", "median"))
+    return out
 
 
-def route_table(df: pd.DataFrame) -> dict:
+def tables_json(frames: dict, codes: Codes) -> dict:
+    return {name: {decode(name, int(k), codes): [int(n), int(d), int(c), None if pd.isna(m) else int(m)]
+                   for k, n, d, c, m in zip(t.index, t["n"], t["d"], t["c"], t["m"])}
+            for name, t in frames.items()}
+
+
+def route_table(df: pd.DataFrame, codes: Codes) -> dict:
     """Route -> [distance in miles, typical hours from departure to local arrival]."""
-    r = pd.DataFrame({"k": df["Origin"] + "|" + df["Dest"], "dist": df["Distance"],
-                      "off": (df["arr_hour"] - df["dep_hour"]) % 24})
+    r = pd.DataFrame({"k": key_columns(df)["route"], "dist": df["Distance"].to_numpy(),
+                      "off": (df["arr_hour"].astype(np.int16) - df["dep_hour"]) % 24})
     agg = r.groupby("k").agg(dist=("dist", "median"), off=("off", "median"))
-    return {k: [int(d), int(round(o))] for k, d, o in zip(agg.index, agg["dist"], agg["off"])}
+    return {decode("route", int(k), codes): [int(d), int(round(o))]
+            for k, d, o in zip(agg.index, agg["dist"], agg["off"])}
 
 
 def monthly_summary(df: pd.DataFrame) -> list[dict]:
@@ -180,48 +244,65 @@ def monthly_summary(df: pd.DataFrame) -> list[dict]:
              "cancelled_pct": round(float((s == 2).mean() * 100), 2)} for m, s in g]
 
 
-def history_features(df: pd.DataFrame, keys: dict, prior: dict, tables: dict | None) -> dict:
+def history_features(df: pd.DataFrame, keys: dict, prior: dict, frames: dict | None,
+                     source: pd.DataFrame | None = None) -> dict:
     """
-    History-rate features. With tables (evaluation/serving), look keys up.
-    Without (training rows), use each key's history excluding the row's own
-    month, so a flight never 'sees' its own outcome.
+    History-rate features for the rows of df.
+
+    With frames (evaluation), each key is looked up. Without (training), the
+    history comes from `source` (all training flights, default df) excluding
+    the row's own month, so a flight never 'sees' its own outcome.
     """
     out = {}
-    is_delay = (df["label"] == 1).astype(np.int32)
-    is_cancel = (df["label"] == 2).astype(np.int32)
+    if frames is None:
+        source = df if source is None else source
+        src_keys = key_columns(source)
+        src_p = source["period"].to_numpy(np.int64)
+        p0 = int(src_p.min())
+        is_delay = (source["label"] == 1).to_numpy(np.int32)
+        is_cancel = (source["label"] == 2).to_numpy(np.int32)
+        row_p = df["period"].to_numpy(np.int64) - p0
     for name in STAT_KEYS:
-        if tables is not None:
-            t = pd.DataFrame.from_dict(tables[name], orient="index", columns=["n", "d", "c", "m"])
-            j = pd.DataFrame({"k": keys[name]}).join(t, on="k")
-            n, d, c = j["n"].fillna(0), j["d"].fillna(0), j["c"].fillna(0)
+        k = keys[name]
+        if frames is not None:
+            t = frames[name]
+            idx = t.index.get_indexer(k)
+            hit = idx >= 0
+            n, d, c = (np.where(hit, t[col].to_numpy()[idx], 0).astype(np.float64) for col in ("n", "d", "c"))
         else:
-            g = pd.DataFrame({"k": keys[name], "p": df["period"], "d": is_delay, "c": is_cancel})
+            sk = src_keys[name]
+            g = pd.DataFrame({"k": sk, "km": sk * 1000 + (src_p - p0), "d": is_delay, "c": is_cancel})
             tot = g.groupby("k")[["d", "c"]].agg(["sum", "count"])
-            tot.columns = ["d_sum", "n", "c_sum", "_"]
-            mon = g.groupby(["k", "p"])[["d", "c"]].agg(["sum", "count"])
-            mon.columns = ["d_m", "n_m", "c_m", "_m"]
-            j = g[["k", "p"]].join(tot, on="k").join(mon, on=["k", "p"])
-            n, d, c = j["n"] - j["n_m"], j["d_sum"] - j["d_m"], j["c_sum"] - j["c_m"]
-        out[f"{name}_n"] = np.log1p(n.to_numpy())
-        out[f"{name}_delay"] = ((d + SMOOTHING * prior["delay"]) / (n + SMOOTHING)).to_numpy()
-        out[f"{name}_cancel"] = ((c + SMOOTHING * prior["cancel"]) / (n + SMOOTHING)).to_numpy()
+            mon = g.groupby("km")[["d", "c"]].agg(["sum", "count"])
+            del g
+            ti = tot.index.get_indexer(k)
+            mi = mon.index.get_indexer(k * 1000 + row_p)
+            def pick(table, idx, col):
+                v = table[col].to_numpy()
+                return np.where(idx >= 0, v[idx], 0).astype(np.float64)
+            n = pick(tot, ti, ("d", "count")) - pick(mon, mi, ("d", "count"))
+            d = pick(tot, ti, ("d", "sum")) - pick(mon, mi, ("d", "sum"))
+            c = pick(tot, ti, ("c", "sum")) - pick(mon, mi, ("c", "sum"))
+            del tot, mon
+        out[f"{name}_n"] = np.log1p(n).astype(np.float32)
+        out[f"{name}_delay"] = ((d + SMOOTHING * prior["delay"]) / (n + SMOOTHING)).astype(np.float32)
+        out[f"{name}_cancel"] = ((c + SMOOTHING * prior["cancel"]) / (n + SMOOTHING)).astype(np.float32)
     return out
 
 
-def matrix(df: pd.DataFrame, prior: dict, tables: dict | None, hide_weather: float = 0.0,
-           seed: int = 0) -> pd.DataFrame:
-    keys = key_columns(df)
-    dates = df["date"].dt.date
-    holiday = dates.map({d: holiday_distance(d) for d in dates.unique()})
+def matrix(df: pd.DataFrame, prior: dict, frames: dict | None, hide_weather: float = 0.0,
+           seed: int = 0, source: pd.DataFrame | None = None) -> pd.DataFrame:
+    days = df["day"].to_numpy()
+    uniq = np.unique(days)
+    hol = dict(zip(uniq, (holiday_distance(date.fromordinal(date(1970, 1, 1).toordinal() + int(x))) for x in uniq)))
     X = pd.DataFrame({
-        "month": df["Month"].to_numpy(), "day_of_week": df["DayOfWeek"].to_numpy(),
-        "dep_hour": df["dep_hour"].to_numpy(), "arr_hour": df["arr_hour"].to_numpy(),
-        "distance": df["Distance"].to_numpy(), "day_of_month": df["DayofMonth"].to_numpy(),
-        "holiday_days": holiday.to_numpy(),
-        **history_features(df, keys, prior, tables),
-        **{f: df[f].to_numpy() for f in WX_FEATURES},
-    })
-    X = X[FEATURES].astype(np.float32)  # halves memory on ~14M rows
+        "month": df["Month"].to_numpy(np.float32), "day_of_week": df["DayOfWeek"].to_numpy(np.float32),
+        "dep_hour": df["dep_hour"].to_numpy(np.float32), "arr_hour": df["arr_hour"].to_numpy(np.float32),
+        "distance": df["Distance"].to_numpy(np.float32), "day_of_month": df["DayofMonth"].to_numpy(np.float32),
+        "holiday_days": pd.Series(days).map(hol).to_numpy(np.float32),
+        **history_features(df, key_columns(df), prior, frames, source),
+        **{f: df[f].to_numpy(np.float32) for f in WX_FEATURES},
+    })[FEATURES]
     if hide_weather > 0:
         hide = np.random.default_rng(seed).random(len(X)) < hide_weather
         X.loc[hide, WX_FEATURES] = np.nan
@@ -266,38 +347,42 @@ def main():
     args = ap.parse_args()
     started = time.time()
 
-    print("Loading flights...")
-    df = load_flights(args.flights, args.sample)
+    print("Loading flights...", flush=True)
+    df, codes = load_flights(args.flights, args.sample)
     weather = pd.DataFrame()
     if args.weather:
-        print("Loading weather...")
-        weather = load_weather(args.weather)
-    df = attach_weather(df, weather)
-    print(f"{len(df):,} flights; weather found for {df['o_vis'].notna().mean():.0%} of departures")
+        print("Loading weather...", flush=True)
+        weather = load_weather(args.weather, codes)
+    attach_weather(df, weather)
+    del weather
+    print(f"{len(df):,} flights; weather found for {np.isfinite(df['o_vis']).mean():.0%} of departures", flush=True)
 
     periods = sorted(df["period"].unique())
     test_p, val_p = periods[-2:], periods[-3]
-    train_df = df[df["period"] < val_p]
+    is_train = (df["period"] < val_p).to_numpy()
     val_df = df[df["period"] == val_p].sample(n=min(200_000, int((df["period"] == val_p).sum())), random_state=1)
     test_df = df[df["period"].isin(test_p)].sample(n=min(300_000, int(df["period"].isin(test_p).sum())), random_state=2)
-    print(f"Train {len(train_df):,} | validation {len(val_df):,} | test {len(test_df):,} (held-out months)")
+    train_df = df[is_train]
+    print(f"Train {len(train_df):,} | validation {len(val_df):,} | test {len(test_df):,} (held-out months)", flush=True)
 
     # 1) Honest evaluation: history tables and model only see the earlier months
     prior = priors(train_df)
-    tables = stats_tables(train_df, key_columns(train_df))
-    X_train = matrix(train_df, prior, None, hide_weather=WEATHER_HIDDEN_SHARE)
-    X_val = matrix(val_df, prior, tables, hide_weather=WEATHER_HIDDEN_SHARE, seed=1)
-    dtrain = xgb.DMatrix(X_train, label=train_df["label"].to_numpy())
-    del X_train
-    booster = xgb.train(PARAMS, dtrain, num_boost_round=1500,
-                        evals=[(xgb.DMatrix(X_val, label=val_df["label"].to_numpy()), "val")],
-                        early_stopping_rounds=40, verbose_eval=100)
-    rounds = booster.best_iteration + 1
-    del dtrain
-
+    frames = stats_frames(train_df, key_columns(train_df))
     class_rates = np.bincount(train_df["label"], minlength=3) / len(train_df)
+    fit_rows = train_df.sample(frac=TRAIN_ROWS_SHARE, random_state=3)
+    dtrain = xgb.DMatrix(matrix(fit_rows, prior, None, hide_weather=WEATHER_HIDDEN_SHARE, source=train_df),
+                         label=fit_rows["label"].to_numpy())
+    del train_df, fit_rows
+    dval = xgb.DMatrix(matrix(val_df, prior, frames, hide_weather=WEATHER_HIDDEN_SHARE, seed=1),
+                       label=val_df["label"].to_numpy())
+    print(f"Training (features ready after {time.time() - started:.0f}s)...", flush=True)
+    booster = xgb.train(PARAMS, dtrain, num_boost_round=1500, evals=[(dval, "val")],
+                        early_stopping_rounds=40, verbose_eval=50)
+    rounds = booster.best_iteration + 1
+    del dtrain, dval
+
     y = test_df["label"].to_numpy()
-    X_test = matrix(test_df, prior, tables)
+    X_test = matrix(test_df, prior, frames)
     metrics = {
         "test_flights": int(len(y)),
         "baseline_accuracy_always_on_time": round(float((y == 0).mean()), 4),
@@ -307,28 +392,30 @@ def main():
     if has_wx.any():
         metrics["with_weather"] = evaluate(booster, X_test[has_wx], y[has_wx], class_rates, rounds)
         metrics["with_weather"]["flights"] = int(has_wx.sum())
-    print(json.dumps(metrics, indent=2))
+    print(json.dumps(metrics, indent=2), flush=True)
+    del booster, X_test, frames
 
     # 2) Final model on every month, same number of trees
-    print(f"Retraining on all {len(df):,} flights with {rounds} trees...")
+    print(f"Retraining on all {len(df):,} flights with {rounds} trees...", flush=True)
     final_prior = priors(df)
-    final_tables = stats_tables(df, key_columns(df))
-    del booster, X_test, X_val
-    dfinal = xgb.DMatrix(matrix(df, final_prior, None, hide_weather=WEATHER_HIDDEN_SHARE), label=df["label"].to_numpy())
+    fit_rows = df.sample(frac=TRAIN_ROWS_SHARE, random_state=4)
+    dfinal = xgb.DMatrix(matrix(fit_rows, final_prior, None, hide_weather=WEATHER_HIDDEN_SHARE, source=df),
+                         label=fit_rows["label"].to_numpy())
+    del fit_rows
     final = xgb.train(PARAMS, dfinal, num_boost_round=rounds)
     del dfinal
-    final_prior["median_delay"] = int(df["delay_min"].median())
+    final_prior["median_delay"] = int(np.nanmedian(df["delay_min"].to_numpy()))
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     final.save_model(MODEL_FILE)
     with gzip.open(STATS_FILE, "wt", encoding="utf-8") as f:
-        json.dump({"prior": final_prior, "tables": final_tables, "routes": route_table(df)},
-                  f, separators=(",", ":"))
+        json.dump({"prior": final_prior, "tables": tables_json(stats_frames(df, key_columns(df)), codes),
+                   "routes": route_table(df, codes)}, f, separators=(",", ":"))
     wo = metrics["without_weather"]
     meta = {
         "trained_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
         "data_source": "US Bureau of Transportation Statistics, Reporting Carrier On-Time Performance",
-        "weather_source": "Iowa Environmental Mesonet ASOS archive" if not weather.empty else None,
+        "weather_source": "Iowa Environmental Mesonet ASOS archive" if args.weather else None,
         "data_months": [ym(p) for p in periods],
         "n_training": int(len(df)),
         "test_months": [ym(p) for p in test_p],
@@ -342,7 +429,7 @@ def main():
         **metrics,
     }
     META_FILE.write_text(json.dumps(meta, indent=2))
-    print(f"Saved model to {MODEL_DIR} in {time.time() - started:.0f}s")
+    print(f"Saved model to {MODEL_DIR} in {time.time() - started:.0f}s", flush=True)
 
 
 if __name__ == "__main__":
