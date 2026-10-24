@@ -158,6 +158,8 @@ def test_name_search_results_are_merged_without_duplicates(monkeypatch):
     ({"office": "company", "name": "Turkish Airlines Business Lounge"}, "lounge"),
     ({"indoor": "room", "name": "Mescit"}, "prayer_room"),
     ({"amenity": "bar", "name": "Sky Lounge"}, None),
+    ({"name": "Winston Smoking Lounge"}, None),
+    ({"leisure": "sports_centre", "name": "Pendik Kurtköy Sport Salonu"}, None),
     ({"amenity": "cafe", "name": "Lounge Coffee"}, "coffee"),
 ])
 def test_categories_from_names(tags, expected):
