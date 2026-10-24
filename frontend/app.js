@@ -639,7 +639,8 @@ window.Wayfinding = (() => {
     else note = `Places at ${name}. Add your gate to sort them by walking distance.`;
     if (data.distance_note) note += " " + data.distance_note;
     $("wfNote").textContent = note;
-    $("wfAttribution").textContent = data.attribution;
+    $("wfAttribution").textContent = data.attribution +
+      (data.map_updated ? ` · Map updated ${data.map_updated.slice(0, 10)}` : "");
     $("wfResult").hidden = false;
 
     const markers = {};

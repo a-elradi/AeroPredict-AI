@@ -76,6 +76,10 @@ charging points and shops, sorted by estimated walking distance from the gate. D
 OpenStreetMap through the Overpass API (no key needed) and is cached for 24 hours per airport.
 Coverage depends on how well each airport is mapped in OpenStreetMap.
 
+Airport maps are saved in `backend/data/osm/` so answers are instant. The **Refresh airport maps**
+GitHub Action updates them on the 1st of every month; run it by hand from the Actions tab
+(optionally with specific airport codes). Airports without a saved map are downloaded live.
+
 ### Configuration
 
 Set these environment variables (see `.env.example`). On Render: **Dashboard → your service → Environment**.

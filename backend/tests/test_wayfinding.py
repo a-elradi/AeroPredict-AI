@@ -101,13 +101,13 @@ def test_failed_load_is_not_retried_immediately(client, monkeypatch):
 
 
 def test_known_airports_use_cheap_box_query():
-    query = wayfinding._query("IST", "LTFM")
+    query = wayfinding._query("IST", "LTFM", "node")
     assert "area" not in query
     assert "(41.2484,28.7001,41.3021,28.8041)" in query
 
 
 def test_unknown_airports_fall_back_to_outline_query():
-    query = wayfinding._query("XYZ", None)
+    query = wayfinding._query("XYZ", None, "node")
     assert 'area["aeroway"="aerodrome"]["iata"="XYZ"]' in query
 
 
@@ -118,3 +118,24 @@ def test_without_gate_places_near_terminals_come_first(client, monkeypatch):
     data = client.get("/api/concierge/wayfinding?airport=IST&categories=coffee").get_json()["data"]
     names = [p["name"] for p in data["categories"]["coffee"]["nearest"]]
     assert "Aaa Village Cafe" not in names
+
+
+def test_saved_snapshot_is_used_without_contacting_map_servers(client, monkeypatch, tmp_path):
+    features = wayfinding.parse_elements(IST_ELEMENTS)
+    snapshot = {"iata": "IST", "generated_at": "2026-10-01T03:17Z",
+                "gates": features["gates"], "places": features["places"]}
+    (tmp_path / "IST.json").write_text(json.dumps(snapshot))
+    monkeypatch.setattr(wayfinding, "SNAPSHOT_DIR", tmp_path)
+    monkeypatch.setattr(wayfinding, "_fetch", lambda iata: pytest.fail("should not download"))
+    r = client.get("/api/concierge/wayfinding?airport=IST&gate=G8")
+    assert r.status_code == 200
+    data = r.get_json()["data"]
+    assert data["gate_found"] is True
+    assert data["map_updated"] == "2026-10-01T03:17Z"
+
+
+def test_fetch_uses_nodes_when_way_query_fails(monkeypatch):
+    nodes = [e for e in IST_ELEMENTS if e["type"] == "node"]
+    results = iter([(nodes, []), (None, ["timeout"])])
+    monkeypatch.setattr(wayfinding, "_run", lambda query, timeout: next(results))
+    assert wayfinding._fetch("IST") == nodes

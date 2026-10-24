@@ -1,0 +1,47 @@
+name: Refresh airport maps
+
+# Saves OpenStreetMap gates and amenities for each airport into backend/data/osm/
+# so the Wayfinding feature answers instantly.
+on:
+  schedule:
+    - cron: "17 3 1 * *"   # 03:17 UTC on the 1st of every month
+  workflow_dispatch:
+    inputs:
+      airports:
+        description: "Airport codes separated by spaces (empty = all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: osm-snapshots
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Download airport maps
+        working-directory: backend
+        run: python scripts/build_osm_snapshots.py ${{ github.event.inputs.airports }}
+      - name: Commit updated maps
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/data/osm
+          if git diff --cached --quiet; then
+            echo "No map changes"
+          else
+            git commit -m "Refresh airport maps from OpenStreetMap"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

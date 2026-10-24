@@ -5,9 +5,12 @@ Finds gates and amenities inside an airport from OpenStreetMap
 from the passenger's gate. Map data © OpenStreetMap contributors (ODbL).
 """
 import logging
+import json
 import math
 import re
 import threading
+from datetime import datetime
+from pathlib import Path
 
 import requests
 
@@ -46,6 +49,9 @@ OVERPASS_TIMEOUT_S = 120
 CACHE_TTL_S = 86400
 FAILURE_COOLDOWN_S = 120
 
+# Saved airport maps, refreshed monthly by .github/workflows/osm-snapshots.yml
+SNAPSHOT_DIR = Path(__file__).resolve().parents[2] / "data" / "osm"
+
 _loading: set[str] = set()
 _lock = threading.Lock()
 
@@ -61,31 +67,28 @@ class MapLoading(Exception):
     """The airport's map is being downloaded; ask again shortly."""
 
 
-def _query(iata: str, icao: str | None) -> str:
+def _query(iata: str, icao: str | None, kind: str) -> str:
+    """Overpass query for one element kind ("node" or "way") at an airport."""
     amenity_re = "|".join(_AMENITY_VALUES)
     head = f"[out:json][timeout:{OVERPASS_TIMEOUT_S - 10}];"
     bounds = airports.BOUNDS.get(iata)
     if bounds:
-        box = "({},{},{},{})".format(*bounds)
-        return (
-            head + "("
-            f'nwr{box}["amenity"~"^({amenity_re})$"];'
-            f'nwr{box}["shop"];'
-            f'nwr{box}["aeroway"="gate"];'
-            ");out center tags;"
-        )
-    # Unknown airport: search inside its outline (slower for the server)
-    areas = f'area["aeroway"="aerodrome"]["iata"="{iata}"]->.a1;'
-    union = ".a1;"
-    if icao:
-        areas += f'area["aeroway"="aerodrome"]["icao"="{icao}"]->.a2;'
-        union += ".a2;"
+        scope = "({},{},{},{})".format(*bounds)
+        setup = ""
+    else:
+        # Unknown airport: search inside its outline (slower for the server)
+        setup = f'area["aeroway"="aerodrome"]["iata"="{iata}"]->.a1;'
+        union = ".a1;"
+        if icao:
+            setup += f'area["aeroway"="aerodrome"]["icao"="{icao}"]->.a2;'
+            union += ".a2;"
+        setup += f"({union})->.a;"
+        scope = "(area.a)"
     return (
-        head + f"{areas}({union})->.a;"
-        "("
-        f'nwr(area.a)["amenity"~"^({amenity_re})$"];'
-        'nwr(area.a)["shop"];'
-        'nwr(area.a)["aeroway"="gate"];'
+        head + setup + "("
+        f'{kind}{scope}["amenity"~"^({amenity_re})$"];'
+        f'{kind}{scope}["shop"];'
+        f'{kind}{scope}["aeroway"="gate"];'
         ");out center tags;"
     )
 
@@ -94,13 +97,12 @@ def _query(iata: str, icao: str | None) -> str:
 last_errors: dict[str, str] = {}
 
 
-def _fetch(iata: str) -> list | None:
-    query = _query(iata, airports.lookup(iata)["icao"])
+def _run(query: str, timeout: int) -> tuple[list | None, list[str]]:
     reasons = []
     for url in OVERPASS_URLS:
         host = url.split("/")[2]
         try:
-            resp = requests.post(url, data={"data": query}, timeout=OVERPASS_TIMEOUT_S,
+            resp = requests.post(url, data={"data": query}, timeout=timeout,
                                  headers={"User-Agent": "AeroPredict/1.0"})
             if resp.ok:
                 data = resp.json()
@@ -108,14 +110,26 @@ def _fetch(iata: str) -> list | None:
                 if data.get("remark") and not data.get("elements"):
                     reasons.append(f"{host}: {data['remark'][:200]}")
                     continue
-                last_errors.pop(iata, None)
-                return data.get("elements", [])
+                return data.get("elements", []), reasons
             reasons.append(f"{host}: HTTP {resp.status_code} {resp.text[:200]}")
         except (requests.RequestException, ValueError) as e:
             reasons.append(f"{host}: {type(e).__name__}: {str(e)[:200]}")
-    last_errors[iata] = " | ".join(reasons)
-    log.warning("Overpass failed for %s: %s", iata, last_errors[iata])
-    return None
+    return None, reasons
+
+
+def _fetch(iata: str, timeout: int = OVERPASS_TIMEOUT_S) -> list | None:
+    """Nodes hold most gates and shops and are cheap to query; ways are a bonus."""
+    icao = airports.lookup(iata)["icao"]
+    nodes, reasons = _run(_query(iata, icao, "node"), timeout)
+    if nodes is None:
+        last_errors[iata] = " | ".join(reasons)
+        log.warning("Overpass failed for %s: %s", iata, last_errors[iata])
+        return None
+    ways, reasons = _run(_query(iata, icao, "way"), timeout)
+    if ways is None:
+        log.warning("Overpass ways query failed for %s, using nodes only: %s", iata, reasons)
+    last_errors.pop(iata, None)
+    return nodes + (ways or [])
 
 
 def _load(iata: str) -> None:
@@ -124,7 +138,9 @@ def _load(iata: str) -> None:
         if elements is None:
             cache.put(f"osm-failed:{iata}", True, FAILURE_COOLDOWN_S)
         else:
-            cache.put(f"osm:{iata}", parse_elements(elements), CACHE_TTL_S)
+            features = parse_elements(elements)
+            features["updated_at"] = datetime.utcnow().strftime("%Y-%m-%dT%H:%MZ")
+            cache.put(f"osm:{iata}", features, CACHE_TTL_S)
     finally:
         with _lock:
             _loading.discard(iata)
@@ -134,10 +150,26 @@ def _spawn(target, *args) -> None:
     threading.Thread(target=target, args=args, daemon=True).start()
 
 
+def load_snapshot(iata: str) -> dict | None:
+    path = SNAPSHOT_DIR / f"{iata}.json"
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        log.exception("Bad map snapshot %s", path)
+        return None
+    return {"gates": data["gates"], "places": data["places"], "updated_at": data.get("generated_at")}
+
+
 def get_airport_features(iata: str) -> dict:
     """Gates and amenities for an airport. Raises MapLoading while downloading."""
     features = cache.get(f"osm:{iata}")
     if features is not None:
+        return features
+    features = load_snapshot(iata)
+    if features is not None:
+        cache.put(f"osm:{iata}", features, CACHE_TTL_S)
         return features
     if cache.get(f"osm-failed:{iata}"):
         raise ConnectionError("Map service is temporarily unavailable")
@@ -262,6 +294,7 @@ def find_nearby(iata: str, gate: str | None, categories: list[str], limit: int =
         "gates_on_map": len(features["gates"]),
         "categories": results,
         "attribution": ATTRIBUTION,
+        "map_updated": features.get("updated_at"),
         "distance_note": ("Walking distances are estimates from map positions and may not "
                           "reflect security or passport-control routes.") if origin else None,
     }
