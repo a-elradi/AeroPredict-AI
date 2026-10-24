@@ -2,8 +2,6 @@
 AeroPredict — Airport reference data
 IATA -> ICAO / name / country, used when live flight data is unavailable.
 """
-from .ml_engine import AIRPORT_CONGESTION
-
 AIRPORTS = {
     # North America
     "ATL": ("KATL", "Atlanta Hartsfield-Jackson", "US"),
@@ -97,6 +95,16 @@ BOUNDS = {
     "ICN": (37.433, 126.4031, 37.4946, 126.4757), "KUL": (2.7015, 101.6728, 2.7848, 101.7281),
     "NRT": (35.737, 140.3619, 35.8148, 140.4052), "SIN": (1.3135, 103.9709, 1.3891, 104.0193),
     "SYD": (-33.974, 151.1614, -33.926, 151.1955), "GRU": (-23.4578, -46.494, -23.4179, -46.4376),
+}
+
+# Rough airport busyness (0-1), used only for security-queue estimates in the
+# journey planner. Not used by the delay model.
+AIRPORT_CONGESTION = {
+    "ORD": 0.91, "ATL": 0.88, "LAX": 0.85, "DFW": 0.84, "JFK": 0.83,
+    "EWR": 0.82, "SFO": 0.80, "BOS": 0.78, "LGA": 0.87, "MIA": 0.76,
+    "SEA": 0.72, "DEN": 0.70, "MCO": 0.68, "LAS": 0.65, "PHX": 0.63,
+    "BAH": 0.45, "DXB": 0.88, "DOH": 0.75, "AUH": 0.70, "RUH": 0.55,
+    "CDG": 0.82, "LHR": 0.91, "FRA": 0.85, "AMS": 0.80, "IST": 0.78,
 }
 
 # Schengen-area countries: no passport control between them

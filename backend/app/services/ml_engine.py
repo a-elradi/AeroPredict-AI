@@ -17,16 +17,6 @@ from . import delay_model
 
 META_PATH = delay_model.META_FILE
 
-# Rough airport busyness (0-1), used only for security-queue estimates in the
-# journey planner. Not used by the delay model.
-AIRPORT_CONGESTION = {
-    "ORD": 0.91, "ATL": 0.88, "LAX": 0.85, "DFW": 0.84, "JFK": 0.83,
-    "EWR": 0.82, "SFO": 0.80, "BOS": 0.78, "LGA": 0.87, "MIA": 0.76,
-    "SEA": 0.72, "DEN": 0.70, "MCO": 0.68, "LAS": 0.65, "PHX": 0.63,
-    "BAH": 0.45, "DXB": 0.88, "DOH": 0.75, "AUH": 0.70, "RUH": 0.55,
-    "CDG": 0.82, "LHR": 0.91, "FRA": 0.85, "AMS": 0.80, "IST": 0.78,
-}
-
 MIN_HISTORY = 20  # flights needed before we quote a track record
 
 US_CARRIER_NAMES = {
