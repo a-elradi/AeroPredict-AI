@@ -57,3 +57,22 @@ def test_evening_flights_riskier_than_morning_on_average(client):
 ])
 def test_invalid_input_is_rejected(client, field, value):
     assert client.post("/api/predict", json=dict(US_FLIGHT, **{field: value})).status_code == 400
+
+
+def test_weather_forecast_factors():
+    from app.services.ml_engine import _weather_factors
+    wx = {"o_ts": 1, "o_vis": 0.5, "o_ceiling": 400, "o_gust": 35, "o_snow": 0, "o_freezing": 0,
+          "d_ts": 0, "d_vis": 10, "d_ceiling": 12000, "d_gust": 8, "d_snow": 0, "d_freezing": 0}
+    factors = _weather_factors(wx, "ORD", "LGA")
+    values = [f["value"] for f in factors if f["label"] == "Forecast at ORD"]
+    assert "thunderstorms" in values and any("visibility" in v for v in values)
+    assert [f["value"] for f in factors if f["label"] == "Forecast at LGA"] == ["No significant weather"]
+    assert _weather_factors(None, "ORD", "LGA") == []
+
+
+def test_holiday_distance():
+    from datetime import date
+    from app.services.delay_model import holiday_distance
+    assert holiday_distance(date(2026, 11, 26)) == 0   # Thanksgiving 2026
+    assert holiday_distance(date(2026, 12, 23)) == 2
+    assert holiday_distance(date(2026, 3, 15)) == 15

@@ -64,14 +64,14 @@
 
   <div class="hero-content">
     <div class="hero-eyebrow">
-      <span class="chip">✦ Trained on 7 million real flights · Free to use</span>
+      <span class="chip">✦ Trained on 14 million real flights · Free to use</span>
     </div>
     <h1 class="hero-title">
       Predict Your Flight's Fate<br />
       <span class="gradient-text">Before You Board</span>
     </h1>
     <p class="hero-subtitle">
-      AeroPredict learns from a year of real flight records to show how likely your
+      AeroPredict learns from two years of real flight records and live airport weather to show how likely your
       flight is to be delayed or cancelled, then helps you through the whole trip:
       airport timing, amenities near your gate, bag risk and your rights if things go wrong.
     </p>
@@ -86,7 +86,7 @@
     </div>
     <div class="hero-stats">
       <div class="hero-stat">
-        <span class="stat-value" data-target="7.0">0</span><span class="stat-unit">M</span>
+        <span class="stat-value" data-target="14">0</span><span class="stat-unit">M</span>
         <span class="stat-label">Real Flights Analyzed</span>
       </div>
       <div class="hero-stat-divider"></div>
@@ -135,7 +135,7 @@
     <div class="section-header">
       <span class="section-tag">AI Prediction Engine</span>
       <h2 class="section-title">Flight Risk Analysis</h2>
-      <p class="section-subtitle">Enter your flight details below. Our model learned from a year of real flight records from the US Bureau of Transportation Statistics and estimates your chances of an on-time arrival, a delay or a cancellation. Flights to, from and within the US get the most accurate probabilities.</p>
+      <p class="section-subtitle">Enter your flight details below. Our model learned from two years of real flight records from the US Bureau of Transportation Statistics, plus airport weather and estimates your chances of an on-time arrival, a delay or a cancellation. Flights to, from and within the US get the most accurate probabilities.</p>
     </div>
 
     <div class="predict-layout">
@@ -303,7 +303,7 @@
         <!-- Model confidence note -->
         <div class="model-note">
           <span class="note-icon">🤖</span>
-          <span>XGBoost model trained on 7 million real flights (US Bureau of Transportation Statistics, Sep 2025 – Aug 2026). Predictions are odds, not certainties.</span>
+          <span>XGBoost model trained on 14 million real flights (US Bureau of Transportation Statistics, Sep 2024 – Aug 2026) and airport weather. Predictions are odds, not certainties.</span>
         </div>
       </div>
     </div>
@@ -734,7 +734,7 @@
       <div class="card chart-card">
         <div class="chart-card-header">
           <h3>Carrier On-Time Performance</h3>
-          <span class="chart-subtitle">Share of flights arriving within 15 min (BTS, last 12 months)</span>
+          <span class="chart-subtitle">Share of flights arriving within 15 min (BTS, last 2 years)</span>
         </div>
         <canvas id="carrierChart" height="300"></canvas>
       </div>
@@ -773,7 +773,7 @@
       <div class="pipeline-step">
         <div class="pipeline-icon">📡</div>
         <h4>Data Layer</h4>
-        <p>12 months of US flight records (BTS), live airport weather (METAR), OpenStreetMap airport maps</p>
+        <p>Two years of US flight records (BTS), airport weather history and forecasts (IEM, METAR/TAF), OpenStreetMap airport maps</p>
         <div class="pipeline-tags">
           <span>BTS</span><span>METAR</span><span>OpenStreetMap</span>
         </div>
@@ -782,7 +782,7 @@
       <div class="pipeline-step">
         <div class="pipeline-icon">⚙️</div>
         <h4>Feature Engineering</h4>
-        <p>Past on-time record of each flight number, route, airline and airport, plus time of day, weekday, month and distance</p>
+        <p>Past on-time record of each flight number, route, airline and airport, time of day, holidays, and the weather forecast for flights in the next day</p>
         <div class="pipeline-tags">
           <span>Pandas</span><span>NumPy</span><span>Scikit-learn</span>
         </div>
@@ -826,7 +826,7 @@
       <div class="feature-card">
         <div class="feature-icon">🌦</div>
         <h4>Live Airport Weather</h4>
-        <p>Journey plans include current weather reports (METAR) for your departure and arrival airports.</p>
+        <p>For flights in the next day, predictions use the official airport forecast (TAF) for thunderstorms, snow, fog, low cloud and strong winds.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📊</div>

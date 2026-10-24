@@ -66,6 +66,7 @@ def global_stats():
         "baseline_accuracy_pct": round(meta.get("baseline_accuracy_always_on_time", 0) * 100, 1)
         if meta.get("baseline_accuracy_always_on_time") else None,
         "model_auc": meta.get("auc_delay_or_cancel"),
+        "model_auc_with_forecast": (meta.get("with_weather") or {}).get("auc_delay_or_cancel"),
         "test_flights": meta.get("test_flights"),
         "test_months": meta.get("test_months", []),
         "calibration": meta.get("calibration", []),

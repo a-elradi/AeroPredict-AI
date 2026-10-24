@@ -1,7 +1,20 @@
 {
-  "trained_at": "2026-10-24T13:42Z",
+  "trained_at": "2026-10-24T14:55Z",
   "data_source": "US Bureau of Transportation Statistics, Reporting Carrier On-Time Performance",
+  "weather_source": "Iowa Environmental Mesonet ASOS archive",
   "data_months": [
+    "2024-09",
+    "2024-10",
+    "2024-11",
+    "2024-12",
+    "2025-01",
+    "2025-02",
+    "2025-03",
+    "2025-04",
+    "2025-05",
+    "2025-06",
+    "2025-07",
+    "2025-08",
     "2025-09",
     "2025-10",
     "2025-11",
@@ -15,55 +28,17 @@
     "2026-07",
     "2026-08"
   ],
-  "n_training": 7049869,
+  "n_training": 14094455,
   "test_months": [
     "2026-07",
     "2026-08"
   ],
-  "trees": 134,
+  "trees": 174,
   "class_rates": {
-    "on_time": 0.7713,
-    "delayed": 0.2103,
-    "cancelled": 0.0183
+    "on_time": 0.7772,
+    "delayed": 0.2076,
+    "cancelled": 0.0151
   },
-  "test_flights": 300000,
-  "accuracy": 0.7055,
-  "baseline_accuracy_always_on_time": 0.7039,
-  "log_loss": 0.6506,
-  "baseline_log_loss": 0.6991,
-  "auc_delay_or_cancel": 0.6979,
-  "calibration": [
-    {
-      "predicted": "0-10%",
-      "flights": 41637,
-      "actual_disrupted_pct": 9.8
-    },
-    {
-      "predicted": "10-20%",
-      "flights": 101679,
-      "actual_disrupted_pct": 19.8
-    },
-    {
-      "predicted": "20-30%",
-      "flights": 85031,
-      "actual_disrupted_pct": 34.3
-    },
-    {
-      "predicted": "30-40%",
-      "flights": 51735,
-      "actual_disrupted_pct": 46.5
-    },
-    {
-      "predicted": "40-50%",
-      "flights": 17489,
-      "actual_disrupted_pct": 56.2
-    },
-    {
-      "predicted": "50-60%",
-      "flights": 2353,
-      "actual_disrupted_pct": 63.6
-    }
-  ],
   "monthly": [
     {
       "month": 1,
@@ -137,5 +112,148 @@
       "delayed_pct": 26.5,
       "cancelled_pct": 1.55
     }
-  ]
+  ],
+  "accuracy": 0.7065,
+  "log_loss": 0.6386,
+  "auc_delay_or_cancel": 0.6964,
+  "calibration": [
+    {
+      "predicted": "0-10%",
+      "flights": 29011,
+      "actual_disrupted_pct": 8.6
+    },
+    {
+      "predicted": "10-20%",
+      "flights": 91300,
+      "actual_disrupted_pct": 17.3
+    },
+    {
+      "predicted": "20-30%",
+      "flights": 77316,
+      "actual_disrupted_pct": 29.8
+    },
+    {
+      "predicted": "30-40%",
+      "flights": 56144,
+      "actual_disrupted_pct": 42.3
+    },
+    {
+      "predicted": "40-50%",
+      "flights": 31643,
+      "actual_disrupted_pct": 49.6
+    },
+    {
+      "predicted": "50-60%",
+      "flights": 12342,
+      "actual_disrupted_pct": 54.6
+    },
+    {
+      "predicted": "60-70%",
+      "flights": 2163,
+      "actual_disrupted_pct": 58.9
+    }
+  ],
+  "test_flights": 300000,
+  "baseline_accuracy_always_on_time": 0.7039,
+  "without_weather": {
+    "accuracy": 0.7065,
+    "log_loss": 0.6386,
+    "baseline_log_loss": 0.7015,
+    "auc_delay_or_cancel": 0.6964,
+    "mean_predicted_disrupted_pct": 25.6,
+    "actual_disrupted_pct": 29.6,
+    "calibration": [
+      {
+        "predicted": "0-10%",
+        "flights": 29011,
+        "actual_disrupted_pct": 8.6
+      },
+      {
+        "predicted": "10-20%",
+        "flights": 91300,
+        "actual_disrupted_pct": 17.3
+      },
+      {
+        "predicted": "20-30%",
+        "flights": 77316,
+        "actual_disrupted_pct": 29.8
+      },
+      {
+        "predicted": "30-40%",
+        "flights": 56144,
+        "actual_disrupted_pct": 42.3
+      },
+      {
+        "predicted": "40-50%",
+        "flights": 31643,
+        "actual_disrupted_pct": 49.6
+      },
+      {
+        "predicted": "50-60%",
+        "flights": 12342,
+        "actual_disrupted_pct": 54.6
+      },
+      {
+        "predicted": "60-70%",
+        "flights": 2163,
+        "actual_disrupted_pct": 58.9
+      }
+    ]
+  },
+  "with_weather": {
+    "accuracy": 0.7117,
+    "log_loss": 0.6296,
+    "baseline_log_loss": 0.7188,
+    "auc_delay_or_cancel": 0.7225,
+    "mean_predicted_disrupted_pct": 25.9,
+    "actual_disrupted_pct": 30.8,
+    "calibration": [
+      {
+        "predicted": "0-10%",
+        "flights": 28585,
+        "actual_disrupted_pct": 8.6
+      },
+      {
+        "predicted": "10-20%",
+        "flights": 73615,
+        "actual_disrupted_pct": 18.4
+      },
+      {
+        "predicted": "20-30%",
+        "flights": 56698,
+        "actual_disrupted_pct": 31.0
+      },
+      {
+        "predicted": "30-40%",
+        "flights": 38054,
+        "actual_disrupted_pct": 42.4
+      },
+      {
+        "predicted": "40-50%",
+        "flights": 20381,
+        "actual_disrupted_pct": 50.6
+      },
+      {
+        "predicted": "50-60%",
+        "flights": 9605,
+        "actual_disrupted_pct": 59.3
+      },
+      {
+        "predicted": "60-70%",
+        "flights": 4544,
+        "actual_disrupted_pct": 70.8
+      },
+      {
+        "predicted": "70-80%",
+        "flights": 2832,
+        "actual_disrupted_pct": 78.6
+      },
+      {
+        "predicted": "80-90%",
+        "flights": 1583,
+        "actual_disrupted_pct": 88.1
+      }
+    ],
+    "flights": 236112
+  }
 }

@@ -47,7 +47,7 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
     flight_no = number[2:] if number[:2] == carrier else number.lstrip("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
     flight_no = str(int(flight_no)) if flight_no.isdigit() else flight_no
 
-    r = delay_model.predict(carrier, flight_no, dep_ap, arr_ap, dt.month, dt.isoweekday(), dt.hour)
+    r = delay_model.predict(carrier, flight_no, dep_ap, arr_ap, dt)
     p_on, p_delay, p_cancel = r["proba"]
     hist, prior = r["history"], r["prior"]
     disrupted = p_delay + p_cancel
@@ -79,8 +79,9 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
         "risk_color": risk_color,
         "expected_delay_minutes": expected,
         "delay_severity": severity,
-        "data_basis": _data_basis(hist, r["meta"]),
-        "factors": _explain_factors(hist, prior, carrier, number, dep_ap, arr_ap, dt),
+        "data_basis": _data_basis(hist, r["meta"], r.get("weather_used", False)),
+        "factors": (_weather_factors(r.get("weather"), dep_ap, arr_ap)
+                    + _explain_factors(hist, prior, carrier, number, dep_ap, arr_ap, dt)),
     }
 
 
@@ -93,7 +94,34 @@ def _expected_delay(hist: dict, prior: dict) -> int:
     return int(prior.get("median_delay", 45))
 
 
-def _data_basis(hist: dict, meta: dict) -> dict:
+def _weather_factors(wx: dict | None, dep: str, arr: str) -> list[dict]:
+    """Forecast conditions worth telling the passenger about (flights in the next ~day)."""
+    if not wx:
+        return []
+    out = []
+    for side, airport in (("o", dep), ("d", arr)):
+        def v(k):
+            x = wx.get(f"{side}_{k}")
+            return None if x is None or x != x else x  # NaN check
+        problems = []
+        if v("ts"):
+            problems.append(("thunderstorms", "high"))
+        if v("snow") or v("freezing"):
+            problems.append(("snow or freezing precipitation", "high"))
+        if v("vis") is not None and v("vis") < 3:
+            problems.append((f"low visibility ({v('vis'):g} mi)", "high" if v("vis") < 1 else "medium"))
+        if v("ceiling") is not None and v("ceiling") < 1000:
+            problems.append((f"low cloud ({int(v('ceiling'))} ft)", "medium"))
+        if v("gust") is not None and v("gust") >= 30:
+            problems.append((f"strong gusts ({int(v('gust'))} kt)", "medium"))
+        for text, level in problems:
+            out.append({"icon": "⛈", "label": f"Forecast at {airport}", "value": text, "level": level})
+        if not problems and v("vis") is not None:
+            out.append({"icon": "🌤", "label": f"Forecast at {airport}", "value": "No significant weather", "level": "low"})
+    return out
+
+
+def _data_basis(hist: dict, meta: dict, weather_used: bool = False) -> dict:
     months = meta.get("data_months") or []
     period = f"{months[0]} to {months[-1]}" if months else "the past year"
     flight = hist.get("flight")
@@ -108,7 +136,9 @@ def _data_basis(hist: dict, meta: dict) -> dict:
         level, note = "general", ("We don't have flight records for this route (our data covers flights "
                                   "to, from and within the US). This is a general estimate from time of "
                                   "day and season, so treat it as a rough guide.")
-    return {"confidence": level, "note": note,
+    if weather_used:
+        note += " Includes the current airport weather forecast."
+    return {"confidence": level, "note": note, "weather_forecast_used": weather_used,
             "source": meta.get("data_source", "US Bureau of Transportation Statistics"),
             "flights_in_model": meta.get("n_training")}
 

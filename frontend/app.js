@@ -308,8 +308,15 @@ async function loadAnalytics() {
         `Real US flights from ${months[0]} to ${months[months.length - 1]} (US Bureau of Transportation Statistics). ` +
         `We tested the model on ${stats.test_flights.toLocaleString()} flights from ${stats.test_months.join(" and ")} ` +
         `that it never saw during training: it ranks risky flights above safe ones ${Math.round(stats.model_auc * 100)}% of the time ` +
-        `(50% would be guessing). Delays depend on things no schedule can show, like a storm next week, ` +
-        `so treat predictions as odds, not certainties.`;
+        `(50% would be guessing)` +
+        (stats.model_auc_with_forecast
+          ? `, rising to ${Math.round(stats.model_auc_with_forecast * 100)}% for flights in the next day, when the airport weather forecast is known. `
+          : ". ") +
+        (() => {
+          const bucket = (stats.calibration || []).find(c => c.predicted === "20-30%");
+          return bucket ? `Of the test flights it gave a 20–30% chance of disruption, ${bucket.actual_disrupted_pct}% were delayed or cancelled. ` : "";
+        })() +
+        `Delays also depend on things no schedule can show, so treat predictions as odds, not certainties.`;
     }
 
     // Carrier chart (top 10)
