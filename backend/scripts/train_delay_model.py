@@ -9,7 +9,7 @@ Data (all free):
   archive (one CSV per airport named <IATA>.csv, UTC times), e.g.
   https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?station=ORD&data=sknt&data=gust&data=vsby&data=skyc1&data=skyl1&data=wxcodes&...
 
-    python scripts/train_delay_model.py --flights DIR [DIR ...] [--weather DIR] [--sample 0.1]
+    python scripts/train_delay_model.py --flights DIR [DIR ...] [--weather DIR] [--sample 0.1] [--out DIR]
 
 The two most recent months are held out as a test set (never seen in
 training), so scores show how the model does on future flights. Weather is
@@ -344,7 +344,12 @@ def main():
     ap.add_argument("--flights", nargs="+", required=True, type=Path)
     ap.add_argument("--weather", type=Path)
     ap.add_argument("--sample", type=float, default=1.0)
+    ap.add_argument("--out", type=Path, help="save here instead of models/ (e.g. to check before publishing)")
     args = ap.parse_args()
+    global MODEL_DIR, MODEL_FILE, STATS_FILE, META_FILE
+    if args.out:
+        MODEL_DIR = args.out
+        MODEL_FILE, STATS_FILE, META_FILE = (args.out / p.name for p in (MODEL_FILE, STATS_FILE, META_FILE))
     started = time.time()
 
     print("Loading flights...", flush=True)

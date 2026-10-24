@@ -1,0 +1,64 @@
+name: Retrain delay model
+
+# Every three months: download the latest two years of US flight records and
+# airport weather, retrain the delay model, and publish it only if it passes
+# the quality check and the test suite. Otherwise the live model is kept and
+# this run fails, so GitHub emails the repository owner.
+on:
+  schedule:
+    - cron: "41 4 12 1,4,7,10 *"   # 04:41 UTC on 12 Jan, Apr, Jul and Oct
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: retrain-model
+  cancel-in-progress: false
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest   # 4 CPUs and 16 GB memory for public repositories
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt pytest
+
+      - name: Download flights and weather
+        working-directory: backend
+        run: python scripts/download_training_data.py "$RUNNER_TEMP/data" --months 24
+
+      - name: Train
+        working-directory: backend
+        run: |
+          python -u scripts/train_delay_model.py \
+            --flights "$RUNNER_TEMP/data/flights" \
+            --weather "$RUNNER_TEMP/data/weather" \
+            --out "$RUNNER_TEMP/new_model"
+
+      - name: Quality check
+        working-directory: backend
+        run: python scripts/check_model.py "$RUNNER_TEMP/new_model" --current ../models/model_meta.json
+
+      - name: Run tests with the new model
+        run: |
+          cp "$RUNNER_TEMP"/new_model/* models/
+          cd backend && python -m pytest tests -q
+
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add models
+          if git diff --cached --quiet; then
+            echo "Model unchanged"
+            exit 0
+          fi
+          months=$(python -c "import json; m=json.load(open('models/model_meta.json')); print(m['data_months'][0], 'to', m['data_months'][-1])")
+          git commit -m "Retrain delay model on flights from $months"
+          git pull --rebase origin main
+          git push origin HEAD:main
