@@ -1,96 +1,141 @@
 {
-  "trained_at": "2026-05-13T04:44:17.217882Z",
-  "n_training": 102000,
-  "n_test": 18000,
-  "log_loss": 0.872,
-  "accuracy": 0.5029,
-  "f1_on_time": 0.5858,
-  "f1_delayed": 0.4214,
-  "f1_cancelled": 0.0,
-  "feature_cols": [
-    "dep_congestion",
-    "arr_congestion",
-    "carrier_otp",
-    "carrier_cancel",
-    "weather_severity",
-    "carrier_AA",
-    "carrier_AF",
-    "carrier_AS",
-    "carrier_B6",
-    "carrier_BA",
-    "carrier_DL",
-    "carrier_EK",
-    "carrier_EY",
-    "carrier_F9",
-    "carrier_G4",
-    "carrier_GF",
-    "carrier_HA",
-    "carrier_LH",
-    "carrier_NK",
-    "carrier_QR",
-    "carrier_SV",
-    "carrier_TK",
-    "carrier_UA",
-    "carrier_WN",
-    "dep_airport_AMS",
-    "dep_airport_ATL",
-    "dep_airport_AUH",
-    "dep_airport_BAH",
-    "dep_airport_BOS",
-    "dep_airport_CDG",
-    "dep_airport_DEN",
-    "dep_airport_DFW",
-    "dep_airport_DOH",
-    "dep_airport_DXB",
-    "dep_airport_EWR",
-    "dep_airport_FRA",
-    "dep_airport_IST",
-    "dep_airport_JFK",
-    "dep_airport_LAS",
-    "dep_airport_LAX",
-    "dep_airport_LGA",
-    "dep_airport_LHR",
-    "dep_airport_MCO",
-    "dep_airport_MIA",
-    "dep_airport_ORD",
-    "dep_airport_PHX",
-    "dep_airport_RUH",
-    "dep_airport_SEA",
-    "dep_airport_SFO",
-    "arr_airport_AMS",
-    "arr_airport_ATL",
-    "arr_airport_AUH",
-    "arr_airport_BAH",
-    "arr_airport_BOS",
-    "arr_airport_CDG",
-    "arr_airport_DEN",
-    "arr_airport_DFW",
-    "arr_airport_DOH",
-    "arr_airport_DXB",
-    "arr_airport_EWR",
-    "arr_airport_FRA",
-    "arr_airport_IST",
-    "arr_airport_JFK",
-    "arr_airport_LAS",
-    "arr_airport_LAX",
-    "arr_airport_LGA",
-    "arr_airport_LHR",
-    "arr_airport_MCO",
-    "arr_airport_MIA",
-    "arr_airport_ORD",
-    "arr_airport_PHX",
-    "arr_airport_RUH",
-    "arr_airport_SEA",
-    "arr_airport_SFO",
-    "month_sin",
-    "month_cos",
-    "day_of_week_sin",
-    "day_of_week_cos",
-    "dep_hour_sin",
-    "dep_hour_cos",
-    "cong_x_weather",
-    "otp_x_cong",
-    "log_distance",
-    "turnaround_risk"
+  "trained_at": "2026-10-24T13:42Z",
+  "data_source": "US Bureau of Transportation Statistics, Reporting Carrier On-Time Performance",
+  "data_months": [
+    "2025-09",
+    "2025-10",
+    "2025-11",
+    "2025-12",
+    "2026-01",
+    "2026-02",
+    "2026-03",
+    "2026-04",
+    "2026-05",
+    "2026-06",
+    "2026-07",
+    "2026-08"
+  ],
+  "n_training": 7049869,
+  "test_months": [
+    "2026-07",
+    "2026-08"
+  ],
+  "trees": 134,
+  "class_rates": {
+    "on_time": 0.7713,
+    "delayed": 0.2103,
+    "cancelled": 0.0183
+  },
+  "test_flights": 300000,
+  "accuracy": 0.7055,
+  "baseline_accuracy_always_on_time": 0.7039,
+  "log_loss": 0.6506,
+  "baseline_log_loss": 0.6991,
+  "auc_delay_or_cancel": 0.6979,
+  "calibration": [
+    {
+      "predicted": "0-10%",
+      "flights": 41637,
+      "actual_disrupted_pct": 9.8
+    },
+    {
+      "predicted": "10-20%",
+      "flights": 101679,
+      "actual_disrupted_pct": 19.8
+    },
+    {
+      "predicted": "20-30%",
+      "flights": 85031,
+      "actual_disrupted_pct": 34.3
+    },
+    {
+      "predicted": "30-40%",
+      "flights": 51735,
+      "actual_disrupted_pct": 46.5
+    },
+    {
+      "predicted": "40-50%",
+      "flights": 17489,
+      "actual_disrupted_pct": 56.2
+    },
+    {
+      "predicted": "50-60%",
+      "flights": 2353,
+      "actual_disrupted_pct": 63.6
+    }
+  ],
+  "monthly": [
+    {
+      "month": 1,
+      "flights": 544003,
+      "delayed_pct": 20.0,
+      "cancelled_pct": 4.71
+    },
+    {
+      "month": 2,
+      "flights": 515037,
+      "delayed_pct": 19.5,
+      "cancelled_pct": 2.25
+    },
+    {
+      "month": 3,
+      "flights": 612102,
+      "delayed_pct": 23.9,
+      "cancelled_pct": 2.9
+    },
+    {
+      "month": 4,
+      "flights": 597919,
+      "delayed_pct": 20.2,
+      "cancelled_pct": 0.9
+    },
+    {
+      "month": 5,
+      "flights": 611735,
+      "delayed_pct": 21.5,
+      "cancelled_pct": 0.92
+    },
+    {
+      "month": 6,
+      "flights": 607577,
+      "delayed_pct": 25.6,
+      "cancelled_pct": 1.65
+    },
+    {
+      "month": 7,
+      "flights": 631970,
+      "delayed_pct": 28.0,
+      "cancelled_pct": 2.62
+    },
+    {
+      "month": 8,
+      "flights": 608389,
+      "delayed_pct": 26.7,
+      "cancelled_pct": 1.86
+    },
+    {
+      "month": 9,
+      "flights": 562439,
+      "delayed_pct": 16.7,
+      "cancelled_pct": 0.51
+    },
+    {
+      "month": 10,
+      "flights": 605844,
+      "delayed_pct": 20.4,
+      "cancelled_pct": 0.53
+    },
+    {
+      "month": 11,
+      "flights": 570550,
+      "delayed_pct": 20.2,
+      "cancelled_pct": 2.49
+    },
+    {
+      "month": 12,
+      "flights": 582304,
+      "delayed_pct": 26.5,
+      "cancelled_pct": 1.55
+    }
   ]
 }

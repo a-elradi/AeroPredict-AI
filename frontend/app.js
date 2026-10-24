@@ -238,12 +238,28 @@ function renderResult(data) {
 
   // Risk factors
   const list = document.getElementById("factorsList");
-  list.innerHTML = factors.map(f => `
-    <div class="factor-item ${f.level}">
-      <span class="factor-icon">${f.icon}</span>
-      <span class="factor-label">${f.label}</span>
-      <span class="factor-value">${f.value}</span>
-    </div>`).join("");
+  list.replaceChildren(...factors.map(f => {
+    const item = document.createElement("div");
+    item.className = `factor-item ${["high", "medium", "low"].includes(f.level) ? f.level : "medium"}`;
+    for (const [cls, text] of [["factor-icon", f.icon], ["factor-label", f.label], ["factor-value", f.value]]) {
+      const span = document.createElement("span");
+      span.className = cls;
+      span.textContent = text;
+      item.appendChild(span);
+    }
+    return item;
+  }));
+
+  const typical = document.getElementById("rTypicalDelay");
+  if (typical && data.expected_delay_minutes != null) {
+    typical.textContent = `If delayed: usually about ${data.expected_delay_minutes} min late (${data.delay_severity}).`;
+  }
+  const basis = document.getElementById("rBasis");
+  if (basis && data.data_basis) {
+    const labels = { high: "High confidence", medium: "Medium confidence", low: "Low confidence", general: "General estimate" };
+    basis.dataset.confidence = data.data_basis.confidence;
+    basis.textContent = `${labels[data.data_basis.confidence] || ""}: ${data.data_basis.note}`;
+  }
 
   const rc = document.getElementById("resultCard");
   rc.hidden = false;
@@ -280,10 +296,21 @@ async function loadAnalytics() {
     const airports = (await airportRes.json()).data;
 
     // KPIs
-    document.getElementById("kpiFlights").textContent = "120K+";
+    const millions = stats.total_flights_analyzed ? (stats.total_flights_analyzed / 1e6).toFixed(1) + "M" : "–";
+    document.getElementById("kpiFlights").textContent = millions;
     document.getElementById("kpiOTP").textContent = `${stats.avg_otp_pct}%`;
     document.getElementById("kpiDelay").textContent = `${stats.avg_delay_pct}%`;
-    document.getElementById("kpiAccuracy").textContent = `${stats.model_accuracy_pct}%`;
+    document.getElementById("kpiAccuracy").textContent = `${stats.avg_cancel_pct}%`;
+    const report = document.getElementById("modelReport");
+    if (report && stats.test_flights) {
+      const months = stats.data_months || [];
+      report.textContent =
+        `Real US flights from ${months[0]} to ${months[months.length - 1]} (US Bureau of Transportation Statistics). ` +
+        `We tested the model on ${stats.test_flights.toLocaleString()} flights from ${stats.test_months.join(" and ")} ` +
+        `that it never saw during training: it ranks risky flights above safe ones ${Math.round(stats.model_auc * 100)}% of the time ` +
+        `(50% would be guessing). Delays depend on things no schedule can show, like a storm next week, ` +
+        `so treat predictions as odds, not certainties.`;
+    }
 
     // Carrier chart (top 10)
     const top10 = carriers.slice(0, 10);
@@ -313,9 +340,9 @@ async function loadAnalytics() {
       data: {
         labels: top12.map(a => a.airport),
         datasets: [{
-          label: "Congestion Index %",
-          data: top12.map(a => a.congestion),
-          backgroundColor: top12.map(a => a.congestion > 85 ? "#EF4444" : a.congestion > 70 ? "#F59E0B" : "#22C55E"),
+          label: "Departures delayed or cancelled %",
+          data: top12.map(a => a.delay_pct),
+          backgroundColor: top12.map(a => a.delay_pct > 25 ? "#EF4444" : a.delay_pct > 20 ? "#F59E0B" : "#22C55E"),
           borderRadius: 6,
         }],
       },
@@ -324,7 +351,7 @@ async function loadAnalytics() {
         responsive: true,
         plugins: { legend: { labels: { color: "#7A8FA6" } } },
         scales: {
-          x: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" }, min: 0, max: 100 },
+          x: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" }, min: 0 },
           y: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" } },
         },
       },
@@ -332,13 +359,14 @@ async function loadAnalytics() {
 
     // Seasonal chart
     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const seasonal = [55,50,45,30,25,25,20,20,30,40,50,60];
+    const byMonth = Object.fromEntries((stats.monthly || []).map(m => [m.month, m.delayed_pct + m.cancelled_pct]));
+    const seasonal = months.map((_, i) => byMonth[i + 1] ?? null);
     new Chart(document.getElementById("seasonChart"), {
       type: "line",
       data: {
         labels: months,
         datasets: [{
-          label: "NAS Delay Risk Index",
+          label: "Flights delayed or cancelled %",
           data: seasonal,
           borderColor: "#6366F1",
           backgroundColor: "rgba(99,102,241,0.1)",
@@ -353,18 +381,16 @@ async function loadAnalytics() {
         plugins: { legend: { labels: { color: "#7A8FA6" } } },
         scales: {
           x: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" } },
-          y: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" }, min: 0, max: 80 },
+          y: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" }, min: 0 },
         },
       },
     });
 
   } catch (err) {
     console.warn("Analytics load failed (backend may be offline):", err);
-    // Show fallback static data for KPIs
-    document.getElementById("kpiFlights").textContent = "120K+";
-    document.getElementById("kpiOTP").textContent = "80.4%";
-    document.getElementById("kpiDelay").textContent = "18.2%";
-    document.getElementById("kpiAccuracy").textContent = "84.7%";
+    for (const id of ["kpiFlights", "kpiOTP", "kpiDelay", "kpiAccuracy"]) {
+      document.getElementById(id).textContent = "–";
+    }
   }
 }
 

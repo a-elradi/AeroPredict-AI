@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AeroPredict – AI Flight Delay Prediction Platform</title>
-  <meta name="description" content="AeroPredict uses advanced AI and machine learning to predict flight delays, cancellations, and on-time arrivals with real-time accuracy for global passengers." />
+  <meta name="description" content="Check your flight's delay risk from a year of real flight records, plan your airport journey, find amenities near your gate, check your bag risk and learn your compensation rights." />
   <meta name="keywords" content="flight delay prediction, AI aviation, flight cancellation risk, IATA flight tracker, machine learning aviation" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -64,16 +64,16 @@
 
   <div class="hero-content">
     <div class="hero-eyebrow">
-      <span class="chip">✦ IATA Compliant · Real-World AI Model · 120K+ Flights Analyzed</span>
+      <span class="chip">✦ Trained on 7 million real flights · Free to use</span>
     </div>
     <h1 class="hero-title">
       Predict Your Flight's Fate<br />
       <span class="gradient-text">Before You Board</span>
     </h1>
     <p class="hero-subtitle">
-      AeroPredict combines machine learning, historical BTS/FAA aviation data,
-      NAS delay patterns, and real-time weather risk indices to give you the most
-      accurate flight outcome predictions available — globally.
+      AeroPredict learns from a year of real flight records to show how likely your
+      flight is to be delayed or cancelled, then helps you through the whole trip:
+      airport timing, amenities near your gate, bag risk and your rights if things go wrong.
     </p>
     <div class="hero-cta">
       <a href="#predict" class="btn btn-primary" id="heroCTA">
@@ -86,18 +86,18 @@
     </div>
     <div class="hero-stats">
       <div class="hero-stat">
-        <span class="stat-value" data-target="84.7">0</span><span class="stat-unit">%</span>
-        <span class="stat-label">Model Accuracy</span>
+        <span class="stat-value" data-target="7.0">0</span><span class="stat-unit">M</span>
+        <span class="stat-label">Real Flights Analyzed</span>
       </div>
       <div class="hero-stat-divider"></div>
       <div class="hero-stat">
-        <span class="stat-value" data-target="120">0</span><span class="stat-unit">K+</span>
-        <span class="stat-label">Flights Analyzed</span>
+        <span class="stat-value" data-target="54">0</span><span class="stat-unit"></span>
+        <span class="stat-label">Airport Maps</span>
       </div>
       <div class="hero-stat-divider"></div>
       <div class="hero-stat">
-        <span class="stat-value" data-target="25">0</span><span class="stat-unit">+</span>
-        <span class="stat-label">Global Airports</span>
+        <span class="stat-value" data-target="5">0</span><span class="stat-unit"></span>
+        <span class="stat-label">Passenger-Rights Laws Covered</span>
       </div>
       <div class="hero-stat-divider"></div>
       <div class="hero-stat">
@@ -135,7 +135,7 @@
     <div class="section-header">
       <span class="section-tag">AI Prediction Engine</span>
       <h2 class="section-title">Flight Risk Analysis</h2>
-      <p class="section-subtitle">Enter your flight details below. Our XGBoost ensemble model — trained on FAA Bureau of Transportation Statistics data — will compute real-time delay, cancellation, and on-time probabilities.</p>
+      <p class="section-subtitle">Enter your flight details below. Our model learned from a year of real flight records from the US Bureau of Transportation Statistics and estimates your chances of an on-time arrival, a delay or a cancellation. Flights to, from and within the US get the most accurate probabilities.</p>
     </div>
 
     <div class="predict-layout">
@@ -291,6 +291,9 @@
           <canvas id="resultChart" height="200"></canvas>
         </div>
 
+        <p class="result-typical" id="rTypicalDelay"></p>
+        <p class="result-basis" id="rBasis"></p>
+
         <!-- Risk Factors -->
         <div class="factors-section">
           <h4>Risk Factor Analysis</h4>
@@ -300,7 +303,7 @@
         <!-- Model confidence note -->
         <div class="model-note">
           <span class="note-icon">🤖</span>
-          <span>Powered by XGBoost + Platt Calibration · Trained on 102K flight records · FAA/BTS Data Sources</span>
+          <span>XGBoost model trained on 7 million real flights (US Bureau of Transportation Statistics, Sep 2025 – Aug 2026). Predictions are odds, not certainties.</span>
         </div>
       </div>
     </div>
@@ -698,7 +701,7 @@
     <div class="section-header">
       <span class="section-tag">Data Intelligence</span>
       <h2 class="section-title">Aviation Analytics Dashboard</h2>
-      <p class="section-subtitle">Live statistics from our aviation database — carrier on-time performance, airport congestion indices, and global delay trends.</p>
+      <p class="section-subtitle">A year of real US flights: which airlines arrive on time, which busy airports see the most disruption, and how delays change through the year.</p>
     </div>
 
     <!-- KPI Cards -->
@@ -719,25 +722,26 @@
         <div class="kpi-label">Avg. Delay Rate</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-icon">🧠</div>
+        <div class="kpi-icon">❌</div>
         <div class="kpi-value" id="kpiAccuracy">–</div>
-        <div class="kpi-label">Model Accuracy</div>
+        <div class="kpi-label">Cancelled</div>
       </div>
     </div>
+    <p class="model-report" id="modelReport"></p>
 
     <!-- Charts Row -->
     <div class="charts-grid">
       <div class="card chart-card">
         <div class="chart-card-header">
           <h3>Carrier On-Time Performance</h3>
-          <span class="chart-subtitle">OTP % by airline (BTS 2023)</span>
+          <span class="chart-subtitle">Share of flights arriving within 15 min (BTS, last 12 months)</span>
         </div>
         <canvas id="carrierChart" height="300"></canvas>
       </div>
       <div class="card chart-card">
         <div class="chart-card-header">
-          <h3>Airport Congestion Index</h3>
-          <span class="chart-subtitle">Delay pressure by hub (FAA)</span>
+          <h3>Most Disrupted Busy Airports</h3>
+          <span class="chart-subtitle">Departures delayed 15+ min or cancelled, 25 busiest US airports</span>
         </div>
         <canvas id="airportChart" height="300"></canvas>
       </div>
@@ -746,8 +750,8 @@
     <!-- Delay Distribution Chart -->
     <div class="card chart-card-wide">
       <div class="chart-card-header">
-        <h3>Seasonal Delay Risk Profile</h3>
-        <span class="chart-subtitle">Monthly NAS delay risk index across the year</span>
+        <h3>Delays Through the Year</h3>
+        <span class="chart-subtitle">Share of US flights delayed or cancelled each month</span>
       </div>
       <canvas id="seasonChart" height="180"></canvas>
     </div>
@@ -762,23 +766,23 @@
     <div class="section-header">
       <span class="section-tag">Architecture</span>
       <h2 class="section-title">The Technology Behind AeroPredict</h2>
-      <p class="section-subtitle">Built on a production-grade AI pipeline with aviation domain expertise baked into every layer.</p>
+      <p class="section-subtitle">How the predictions are made, and what they can and can't tell you.</p>
     </div>
 
     <div class="tech-pipeline">
       <div class="pipeline-step">
         <div class="pipeline-icon">📡</div>
         <h4>Data Layer</h4>
-        <p>BTS On-Time Performance, FAA OPSNET, METAR weather feeds, IATA schedules</p>
+        <p>12 months of US flight records (BTS), live airport weather (METAR), OpenStreetMap airport maps</p>
         <div class="pipeline-tags">
-          <span>BTS</span><span>FAA</span><span>IATA</span><span>METAR</span>
+          <span>BTS</span><span>METAR</span><span>OpenStreetMap</span>
         </div>
       </div>
       <div class="pipeline-arrow">→</div>
       <div class="pipeline-step">
         <div class="pipeline-icon">⚙️</div>
         <h4>Feature Engineering</h4>
-        <p>Cyclical time encoding, congestion indices, carrier OTP profiles, route distance</p>
+        <p>Past on-time record of each flight number, route, airline and airport, plus time of day, weekday, month and distance</p>
         <div class="pipeline-tags">
           <span>Pandas</span><span>NumPy</span><span>Scikit-learn</span>
         </div>
@@ -787,16 +791,16 @@
       <div class="pipeline-step">
         <div class="pipeline-icon">🧠</div>
         <h4>AI Model</h4>
-        <p>XGBoost ensemble + Platt Scaling calibration for calibrated class probabilities</p>
+        <p>Gradient-boosted trees (XGBoost) predicting on time, delayed 15+ min, or cancelled, tested on later months it never saw</p>
         <div class="pipeline-tags">
-          <span>XGBoost</span><span>Calibration</span><span>3-Class</span>
+          <span>XGBoost</span><span>3 outcomes</span><span>Out-of-time test</span>
         </div>
       </div>
       <div class="pipeline-arrow">→</div>
       <div class="pipeline-step">
         <div class="pipeline-icon">🔌</div>
         <h4>API Layer</h4>
-        <p>Flask REST API with CORS, input validation, and sub-100ms inference latency</p>
+        <p>Flask REST API with input validation and per-visitor rate limits</p>
         <div class="pipeline-tags">
           <span>Flask</span><span>Python</span><span>REST</span>
         </div>
@@ -816,33 +820,33 @@
     <div class="features-grid">
       <div class="feature-card">
         <div class="feature-icon">🎯</div>
-        <h4>IATA-Aligned Data Model</h4>
-        <p>Every airline and airport uses IATA codes ensuring global compatibility and industry-standard identification.</p>
+        <h4>Real Flight History</h4>
+        <p>Every prediction starts from what actually happened to that flight number, route and airport over the past year.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🌦</div>
-        <h4>Weather Risk Integration</h4>
-        <p>Seasonal and diurnal weather patterns integrated as NAS-aligned risk features directly into model training.</p>
+        <h4>Live Airport Weather</h4>
+        <p>Journey plans include current weather reports (METAR) for your departure and arrival airports.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📊</div>
-        <h4>Calibrated Probabilities</h4>
-        <p>Platt Scaling ensures model probabilities are statistically meaningful, not just raw classifier scores.</p>
+        <h4>Honest Odds</h4>
+        <p>We tested the model on flights from later months it never saw, and say how much history each prediction is based on.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
-        <h4>Sub-100ms Inference</h4>
-        <p>Optimized inference pipeline delivers real-time predictions even under concurrent user load.</p>
+        <h4>Free to Use</h4>
+        <p>Delay odds, journey plans, gate maps, bag checks and passenger-rights guidance at no cost.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔒</div>
-        <h4>IOSA Safety Standards</h4>
-        <p>Risk scoring methodology aligns with IOSA (IATA Operational Safety Audit) framework principles.</p>
+        <h4>Know Your Rights</h4>
+        <p>EU261, UK261, Türkiye SHY-YOLCU, US and Canadian rules explained for your exact flight.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📈</div>
         <h4>Explainable AI</h4>
-        <p>Risk factor decomposition tells passengers exactly which factors are driving their flight's risk score.</p>
+        <p>See the track record behind every prediction: the flight's own history, its route, airline and departure hour.</p>
       </div>
     </div>
   </div>
@@ -856,7 +860,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <span class="nav-title">AeroPredict<span class="nav-badge">AI</span></span>
-        <p>Advanced AI-powered flight prediction platform built for global aviation management.</p>
+        <p>Flight delay odds and airport help for passengers, built on real flight data.</p>
         <div class="footer-tech-badges">
           <span>Python</span><span>Flask</span><span>XGBoost</span><span>Chart.js</span>
         </div>
@@ -864,33 +868,33 @@
       <div class="footer-col">
         <h5>Data Sources</h5>
         <ul>
-          <li>BTS On-Time Performance Database</li>
-          <li>FAA OPSNET NAS Delay System</li>
-          <li>IATA Global Schedule Data</li>
-          <li>METAR/NOAA Weather API</li>
+          <li>US BTS On-Time Performance</li>
+          <li>aviationweather.gov (METAR)</li>
+          <li>OpenStreetMap contributors</li>
+          <li>SITA Baggage IT Insights</li>
         </ul>
       </div>
       <div class="footer-col">
-        <h5>Aviation Standards</h5>
+        <h5>Passenger Rights</h5>
         <ul>
-          <li>IATA Airport Codes (IATA)</li>
-          <li>IOSA Safety Framework</li>
-          <li>NAS Delay Classification</li>
-          <li>FAA OTP Reporting Standards</li>
+          <li>EU261 and UK261</li>
+          <li>Türkiye SHY-YOLCU</li>
+          <li>US DOT refund rules</li>
+          <li>Montreal Convention</li>
         </ul>
       </div>
       <div class="footer-col">
-        <h5>Project</h5>
+        <h5>Features</h5>
         <ul>
-          <li>Final Year Research Project</li>
-          <li>Aviation Management Dept.</li>
-          <li>AI & Machine Learning Integration</li>
-          <li>Commercial Aviation Analytics</li>
+          <li><a href="#predict">Delay prediction</a></li>
+          <li><a href="#journey">Journey planner</a></li>
+          <li><a href="#wayfinding">Near my gate</a></li>
+          <li><a href="#rights">Delay &amp; cancellation rights</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 AeroPredict · AI-Powered Flight Intelligence Platform · Academic Research Project</p>
+      <p>© 2026 AeroPredict · Flight delay odds and airport help for passengers</p>
       <p class="footer-disclaimer">Predictions are probabilistic estimates for informational purposes. Always verify with your airline.</p>
     </div>
   </div>

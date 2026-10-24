@@ -18,6 +18,12 @@ def create_app():
     app.register_blueprint(analytics_bp, url_prefix="/api")
     app.register_blueprint(concierge_bp, url_prefix="/api")
 
+    # Load the delay model in the background so the first prediction is fast
+    from .services import delay_model
+    if delay_model.is_available():
+        import threading
+        threading.Thread(target=delay_model._load, daemon=True).start()
+
     @app.route("/")
     def index():
         return send_from_directory(str(FRONTEND_DIR), "index.html")
