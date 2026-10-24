@@ -55,6 +55,7 @@ _NOT_A_LOUNGE = {"bar", "pub", "nightclub", "hookah_lounge"}
 # Big airports can take Overpass a minute or more on a first load, so loads
 # run in a background thread and the browser checks back until they finish.
 OVERPASS_TIMEOUT_S = 120
+NAME_QUERY_TIMEOUT_S = 60
 CACHE_TTL_S = 86400
 FAILURE_COOLDOWN_S = 120
 
@@ -76,8 +77,9 @@ class MapLoading(Exception):
     """The airport's map is being downloaded; ask again shortly."""
 
 
-def _query(iata: str, icao: str | None, kind: str) -> str:
-    """Overpass query for one element kind ("node" or "way") at an airport."""
+def _query(iata: str, icao: str | None, kind: str, by_name: bool = False) -> str:
+    """Overpass query for one element kind ("node", "way" or "nwr") at an airport.
+    by_name searches place names only (lounges and prayer rooms tagged oddly)."""
     amenity_re = "|".join(_AMENITY_VALUES)
     head = f"[out:json][timeout:{OVERPASS_TIMEOUT_S - 10}];"
     bounds = airports.BOUNDS.get(iata)
@@ -93,23 +95,22 @@ def _query(iata: str, icao: str | None, kind: str) -> str:
             union += ".a2;"
         setup += f"({union})->.a;"
         scope = "(area.a)"
-    return (
-        head + setup + "("
-        f'{kind}{scope}["amenity"~"^({amenity_re})$"];'
-        f'{kind}{scope}["shop"];'
-        f'{kind}{scope}["aeroway"="gate"];'
-        f'{kind}{scope}["name"~"{_NAME_RE}",i];'
-        ");out center tags;"
-    )
+    if by_name:
+        body = f'{kind}{scope}["name"~"{_NAME_RE}",i];'
+    else:
+        body = (f'{kind}{scope}["amenity"~"^({amenity_re})$"];'
+                f'{kind}{scope}["shop"];'
+                f'{kind}{scope}["aeroway"="gate"];')
+    return head + setup + "(" + body + ");out center tags;"
 
 
 # Last failure reason per airport (no secrets), shown on /api/concierge/status
 last_errors: dict[str, str] = {}
 
 
-def _run(query: str, timeout: int) -> tuple[list | None, list[str]]:
+def _run(query: str, timeout: int, urls: list[str] = OVERPASS_URLS) -> tuple[list | None, list[str]]:
     reasons = []
-    for url in OVERPASS_URLS:
+    for url in urls:
         host = url.split("/")[2]
         try:
             resp = requests.post(url, data={"data": query}, timeout=timeout,
@@ -138,8 +139,19 @@ def _fetch(iata: str, timeout: int = OVERPASS_TIMEOUT_S) -> list | None:
     ways, reasons = _run(_query(iata, icao, "way"), timeout)
     if ways is None:
         log.warning("Overpass ways query failed for %s, using nodes only: %s", iata, reasons)
+    # Name search is slow for the servers, so it gets a short limit and is optional
+    named, reasons = _run(_query(iata, icao, "nwr", by_name=True), min(timeout, NAME_QUERY_TIMEOUT_S),
+                          OVERPASS_URLS[:2])
+    if named is None:
+        log.warning("Overpass name query failed for %s: %s", iata, reasons)
     last_errors.pop(iata, None)
-    return nodes + (ways or [])
+    elements, seen = [], set()
+    for el in nodes + (ways or []) + (named or []):
+        key = (el.get("type"), el.get("id"))
+        if key not in seen:
+            seen.add(key)
+            elements.append(el)
+    return elements
 
 
 def _load(iata: str) -> None:

@@ -22,7 +22,7 @@ PAUSE_BETWEEN_AIRPORTS_S = 10  # be polite to the free Overpass servers
 
 def build(iata: str) -> bool:
     started = time.time()
-    elements = wayfinding._fetch(iata, timeout=300)
+    elements = wayfinding._fetch(iata, timeout=180)
     if elements is None:
         print(f"{iata}: FAILED ({wayfinding.last_errors.get(iata, 'unknown error')[:300]})")
         return False
