@@ -46,11 +46,12 @@ _AMENITY_VALUES = sorted({v for c in CATEGORIES.values() for v in (c.get("amenit
 # Lounges and prayer rooms are often mapped only by name (e.g. a lounge tagged
 # office=company), so names are matched too. Overpass and Python share these words.
 NAME_WORDS = {
-    "lounge": ["lounge", "salonu"],
+    "lounge": ["lounge"],
     "prayer_room": ["prayer", "mescit", "namaz", "masjid", "musalla", "chapel", "multi-faith", "multifaith"],
 }
 _NAME_RE = "|".join(w for words in NAME_WORDS.values() for w in words)
 _NOT_A_LOUNGE = {"bar", "pub", "nightclub", "hookah_lounge"}
+_NOT_A_LOUNGE_WORDS = ("smoking",)
 
 # Big airports can take Overpass a minute or more on a first load, so loads
 # run in a background thread and the browser checks back until they finish.
@@ -253,6 +254,8 @@ def _category(tags: dict) -> str | None:
     if label and tags.get("amenity") not in _NOT_A_LOUNGE:
         for category, words in NAME_WORDS.items():
             if any(w in label for w in words):
+                if category == "lounge" and any(w in label for w in _NOT_A_LOUNGE_WORDS):
+                    continue
                 return category
     return None
 
