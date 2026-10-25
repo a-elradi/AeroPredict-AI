@@ -6,20 +6,26 @@ history, so the route statistics can cover a full year:
   ~36 hours (free to use; label "Flight data from Avinor", www.avinor.no)
   https://partner.avinor.no/en/services/flight-data/
 - Hong Kong: Airport Authority Hong Kong flight records (keeps 91 days)
+- Taiwan: Taoyuan International Airport open flight data (today and the next
+  two days only, so it runs just before midnight Taiwan time). Its actual times
+  look like take-off/landing times, so it's collected raw and not used in the
+  route statistics until it has been calibrated.
 
 Records are stored by month in data/collected/<source>/<YYYY-MM>.json.gz as
 {key: [date, airline, number, origin, dest, delay_min, cancelled]} and read by
 scripts/build_route_stats.py. Run daily by .github/workflows/collect-flights.yml.
 
-    python scripts/collect_flights.py
+    python scripts/collect_flights.py [source ...]   (default: avinor hongkong)
 """
+import csv
+import io
 import gzip
 import json
 import re
 import sys
 import time
 import xml.etree.ElementTree as ET
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -29,6 +35,8 @@ COLLECTED = DATA_DIR / "collected"
 HEADERS = {"User-Agent": "Mozilla/5.0 (AeroPredict flight collector; github.com/a-elradi/AeroPredict-AI)"}
 AVINOR_FEED = "https://asrv.avinor.no/XmlFeed/v1.0"
 HKG_PAST = "https://www.hongkongairport.com/flightinfo-rest/rest/flights/past"
+TAOYUAN_FEED = "https://www.taoyuan-airport.com/uploads/flightx/a_flight_v4.txt"
+TAIWAN_UTC_OFFSET = timedelta(hours=8)
 
 
 def get(url: str, **kw) -> requests.Response:
@@ -116,6 +124,32 @@ def collect_hongkong(day: date) -> dict:
     return out
 
 
+def collect_taoyuan() -> dict:
+    """Today's flights at Taipei Taoyuan (Taiwan time) that have departed, arrived or been cancelled."""
+    today = (datetime.now(timezone.utc) + TAIWAN_UTC_OFFSET).strftime("%Y/%m/%d")
+    text = get(TAOYUAN_FEED).content.decode("big5", errors="replace")
+    out, seen = {}, set()
+    for r in csv.reader(io.StringIO(text)):
+        if len(r) < 14 or r[6] != today:
+            continue
+        direction, airline, number = r[1], r[2].strip(), r[4].strip()
+        other, status = r[10].strip(), r[13].strip().upper()
+        flight = (direction, r[7], other, r[8], r[9])  # codeshares repeat the operating flight's row
+        if flight in seen or not number.isdigit() or not other:
+            continue
+        seen.add(flight)
+        origin, dest = ("TPE", other) if direction == "D" else (other, "TPE")
+        record = [today.replace("/", "-"), airline, str(int(number)), origin, dest]
+        key = f"{record[0]}|{airline}{int(number)}|{direction}"
+        if "CANCELLED" in status:
+            out[key] = record + [None, 1]
+        elif ("DEPARTED" in status or "ARRIVED" in status) and r[8].strip() and r[9].strip():
+            sched = datetime.strptime(f"{r[6]} {r[7]}", "%Y/%m/%d %H:%M:%S")
+            actual = datetime.strptime(f"{r[8]} {r[9]}", "%Y/%m/%d %H:%M:%S")
+            out[key] = record + [round((actual - sched).total_seconds() / 60), 0]
+    return out
+
+
 def save(source: str, records: dict) -> int:
     """Merge into the month files; newer records replace older ones (status updates)."""
     by_month = {}
@@ -142,17 +176,23 @@ def load(source: str, months: int) -> list[list]:
     return [rec for p in files for rec in json.load(gzip.open(p, "rt", encoding="utf-8")).values()]
 
 
+SOURCES = {"avinor": collect_avinor,
+           "hongkong": lambda: collect_hongkong(date.today() - timedelta(days=1)),
+           "taoyuan": collect_taoyuan}
+
+
 def main():
+    names = sys.argv[1:] or ["avinor", "hongkong"]
     failed = []
-    for source, collect in (("avinor", collect_avinor),
-                            ("hongkong", lambda: collect_hongkong(date.today() - timedelta(days=1)))):
+    for source in names:
+        collect = SOURCES[source]
         try:
             records = collect()
             print(f"{source}: {len(records):,} flights, {save(source, records):,} new", flush=True)
         except Exception as e:  # one source failing shouldn't block the others
             print(f"{source} failed: {e}", flush=True)
             failed.append(source)
-    if len(failed) == 2:
+    if len(failed) == len(names):
         sys.exit("All sources failed")
 
 

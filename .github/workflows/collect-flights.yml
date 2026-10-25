@@ -1,11 +1,12 @@
-name: Collect daily flights (Norway, Hong Kong)
+name: Collect daily flights (Norway, Hong Kong, Taiwan)
 
 # Daily: save yesterday's flights from open airport feeds that keep only a short
 # history (Avinor ~36 hours, Hong Kong 91 days). The monthly route-stats job
 # turns them into route history.
 on:
   schedule:
-    - cron: "17 3 * * *"   # 03:17 UTC every day
+    - cron: "17 3 * * *"    # 03:17 UTC: Norway and Hong Kong (yesterday)
+    - cron: "52 15 * * *"   # 15:52 UTC = 23:52 in Taiwan: Taoyuan (today)
   workflow_dispatch:
 
 permissions:
@@ -24,7 +25,12 @@ jobs:
         run: pip install requests
       - name: Collect flights
         working-directory: backend
-        run: python -u scripts/collect_flights.py
+        run: |
+          if [ "${{ github.event.schedule }}" = "52 15 * * *" ]; then
+            python -u scripts/collect_flights.py taoyuan
+          else
+            python -u scripts/collect_flights.py avinor hongkong taoyuan
+          fi
       - name: Commit
         run: |
           git config user.name "github-actions[bot]"
