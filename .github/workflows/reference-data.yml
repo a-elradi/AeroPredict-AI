@@ -1,0 +1,38 @@
+name: Refresh airport reference data
+
+# Weekly: world airport list (OurAirports) and European airport punctuality
+# (EUROCONTROL), used for routes without their own flight history.
+on:
+  schedule:
+    - cron: "29 5 * * 1"   # Mondays 05:29 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install requests pandas openpyxl
+      - name: Build reference data
+        working-directory: backend
+        run: python scripts/build_reference_data.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/data/airports_world.json backend/data/eurocontrol_punctuality.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Refresh airport reference data"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

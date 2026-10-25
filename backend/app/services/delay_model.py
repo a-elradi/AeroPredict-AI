@@ -114,13 +114,38 @@ def _route_info(m: dict, origin: str, dest: str) -> tuple[float, int | None]:
     info = m["routes"].get(f"{origin}|{dest}")
     if info:
         return float(info[0]), int(info[1])
-    a, b = airports.BOUNDS.get(origin), airports.BOUNDS.get(dest)
-    if a and b:
-        lat1, lon1 = math.radians((a[0] + a[2]) / 2), math.radians((a[1] + a[3]) / 2)
-        lat2, lon2 = math.radians((b[0] + b[2]) / 2), math.radians((b[1] + b[3]) / 2)
+    a, b = airports.lookup(origin), airports.lookup(dest)
+    if a["lat"] is not None and b["lat"] is not None:
+        lat1, lon1, lat2, lon2 = map(math.radians, (a["lat"], a["lon"], b["lat"], b["lon"]))
         h = math.sin((lat2 - lat1) / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
         return 2 * 3959 * math.asin(math.sqrt(h)), None
     return 1000.0, None
+
+
+def _odds(p: float) -> float:
+    p = min(max(p, 1e-4), 1 - 1e-4)
+    return p / (1 - p)
+
+
+def _airport_late_shares(tables: dict, origin: str, dest: str) -> list[dict]:
+    """
+    Share of flights that run 15+ minutes late at each airport, from US
+    records where we have them and official EUROCONTROL punctuality otherwise.
+    """
+    shares = []
+    for side, airport, table, field, weight in (("origin", origin, "origin", "dep_on_time_pct", 0.4),
+                                                ("dest", dest, "dest", "arr_on_time_pct", 0.6)):
+        e = tables[table].get(airport)
+        if e and e[0] >= 1000:
+            shares.append({"side": side, "airport": airport, "late": (e[1] + e[2]) / e[0], "weight": weight,
+                           "source": "US flight records", "on_time_pct": round((e[0] - e[1] - e[2]) / e[0] * 100, 1)})
+            continue
+        p = airports.punctuality(airport)
+        if p and p.get(field) is not None:
+            shares.append({"side": side, "airport": airport, "late": 1 - p[field] / 100, "weight": weight,
+                           "source": "EUROCONTROL", "level": p["level"], "period": p["period"],
+                           "on_time_pct": p[field], "on_time_pct_7d": p.get(field.replace("_pct", "_pct_7d"))})
+    return shares
 
 
 def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: datetime) -> dict:
@@ -139,14 +164,36 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
     weather, weather_used = ({}, False)
     if any(n in WX_FEATURES for n in names):
         weather, weather_used = live_features(origin, dest, dep_local, offset)
-    row = build_features(tables, prior, carrier=carrier, flight_no=flight_no, origin=origin, dest=dest,
-                         flight_date=dep_local.date(), dep_hour=dep_hour, arr_hour=arr_hour,
-                         distance=distance, weather=weather or None)
-    x = np.array([[row[f] for f in names]], dtype=np.float32)
-    proba = m["booster"].predict(xgb.DMatrix(x, feature_names=names))[0]
+    def run(stats: dict) -> np.ndarray:
+        row = build_features(stats, prior, carrier=carrier, flight_no=flight_no, origin=origin, dest=dest,
+                             flight_date=dep_local.date(), dep_hour=dep_hour, arr_hour=arr_hour,
+                             distance=distance, weather=weather or None)
+        x = np.array([[row[f] for f in names]], dtype=np.float32)
+        return m["booster"].predict(xgb.DMatrix(x, feature_names=names))[0]
+
+    proba = run(tables)
+    method, airport_shares = "model", []
+    route_known = any(tables[k].get(key) for k, key in (("flight", f"{carrier}{flight_no}|{origin}"),
+                                                         ("route", f"{origin}|{dest}")))
+    if not route_known:
+        # No history for this flight or route (e.g. outside the US). Start from the airports'
+        # real punctuality and apply the time-of-day / season / weather effect the model
+        # learned, measured against an 'average flight' with no history at all.
+        airport_shares = _airport_late_shares(tables, origin, dest)
+        if any(a["source"] == "EUROCONTROL" for a in airport_shares):
+            base = sum(a["late"] * a["weight"] for a in airport_shares) / sum(a["weight"] for a in airport_shares)
+            generic = run({name: {} for name in STAT_KEYS})
+            avg = prior["delay"] + prior["cancel"]
+            context = _odds(generic[1] + generic[2]) / _odds(avg)
+            odds = _odds(base) * context
+            disrupted = odds / (1 + odds)
+            cancel_share = generic[2] / max(generic[1] + generic[2], 1e-6)
+            proba = np.array([1 - disrupted, disrupted * (1 - cancel_share), disrupted * cancel_share])
+            method = "airport_punctuality"
 
     keys = stat_keys(carrier, flight_no, origin, dest, dep_hour, arr_hour)
     history = {name: tables[name].get(key) for name, key in keys.items()}
     return {"proba": [float(p) for p in proba], "history": history, "prior": prior,
             "distance_miles": distance, "meta": m["meta"],
-            "weather_used": weather_used, "weather": weather if weather_used else None}
+            "weather_used": weather_used, "weather": weather if weather_used else None,
+            "method": method, "airport_shares": airport_shares}

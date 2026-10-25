@@ -32,11 +32,30 @@ def test_us_route_uses_flight_history(client):
     assert any("route" in f["label"] for f in d["factors"])
 
 
+def predict_route(client, origin, dest, **extra):
+    body = dict(US_FLIGHT, flight_number="XX100", airline="XX", dep_airport=origin, arr_airport=dest, **extra)
+    return client.post("/api/predict", json=body).get_json()["data"]
+
+
 @needs_model
-def test_route_without_us_history_is_labelled_general(client):
-    r = client.post("/api/predict", json=dict(US_FLIGHT, flight_number="TK1", airline="TK",
-                                              dep_airport="IST", arr_airport="DXB"))
-    d = r.get_json()["data"]
+def test_european_route_uses_eurocontrol_airport_punctuality(client):
+    d = predict_route(client, "IST", "LHR")
+    assert d["data_basis"]["confidence"] == "airport"
+    assert any("EUROCONTROL" in f["label"] for f in d["factors"])
+
+
+@needs_model
+def test_unknown_routes_differ_by_airport_punctuality(client):
+    def disrupted(origin, dest):
+        p = predict_route(client, origin, dest)["probabilities"]
+        return p["delayed"] + p["cancelled"]
+    # Zurich departures are far less punctual than Istanbul's (EUROCONTROL)
+    assert disrupted("ZRH", "FCO") > disrupted("IST", "FCO") + 3
+
+
+@needs_model
+def test_route_without_any_data_is_labelled_estimate_only(client):
+    d = predict_route(client, "DXB", "SIN")
     assert d["data_basis"]["confidence"] == "general"
 
 
