@@ -203,8 +203,12 @@ def collect_schiphol(day: date) -> dict:
     headers = {"Accept": "application/json", "Authorization": f"Bearer {token.json()['access_token']}"}
     check = requests.get(SCHIPHOL_FLIGHTS, headers={**HEADERS, **headers}, timeout=120,
                          params={"scheduleDate": day.isoformat(), "flightDirection": "D", "page": 0})
-    if not check.ok:
-        raise RuntimeError(f"Schiphol API {check.status_code}: {check.text[:300]}")
+    if not check.ok:  # show what the token allows (its public claims, not the token itself)
+        import base64
+        part = token.json()["access_token"].split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(part + "=" * (-len(part) % 4)))
+        shown = {k: claims.get(k) for k in ("aud", "scope", "permissions", "gty", "azp") if k in claims}
+        raise RuntimeError(f"Schiphol API {check.status_code}: {' '.join(check.text.split())[:300]} token {shown}")
     out = {}
     for direction in ("D", "A"):
         for page in range(200):
