@@ -462,15 +462,15 @@ KR_TAXI_MINUTES = 15  # actual departure times are take-off times; on-time fligh
 
 def airportal(path: str, body: dict) -> requests.Response:
     headers = {**HEADERS, "Content-Type": "application/json;charset=UTF-8", "request-call": "web-rest"}
-    for attempt in range(5):  # the site drops connections now and then
+    for attempt in range(8):  # the site often drops connections
         try:
             r = requests.post(AIRPORTAL + path, json=body, headers=headers, timeout=300)
             r.raise_for_status()
             return r
         except requests.RequestException:
-            if attempt == 4:
+            if attempt == 7:
                 raise
-            time.sleep(2 ** attempt)
+            time.sleep(min(5 * 2 ** attempt, 120))
 
 
 def _minutes(hhmm: str) -> int | None:
@@ -491,6 +491,7 @@ def build_korea(ref: Ref, stats: Stats, months: int) -> dict:
     kr_iata = {ref.icao_to_iata[i] for i in KR_AIRPORTS if i in ref.icao_to_iata}
     names = {}  # Korean airport name -> IATA, learned from the daily feed (it carries both)
     pending = []  # rows whose airport name hasn't been seen in the feed yet
+    failures = 0
     unmatched = defaultdict(int)
     flights_total = 0
 
@@ -524,14 +525,21 @@ def build_korea(ref: Ref, stats: Stats, months: int) -> dict:
         for icao in KR_AIRPORTS:
             here = ref.icao_to_iata.get(icao)
             for context, key in (("departure", "depAirport"), ("arrival", "arrAirport")):
-                feed = airportal("/airport/getFlightArrivalDepartureInfo.do",
-                                 {"searchContext": context, "ymd": f"{y}{m:02d}15", "loadType": "", key: icao})
-                for f in feed.json().get("content") or []:
-                    if f.get("apKr") and f.get("apIata"):
-                        names[f["apKr"]] = f["apIata"]
-                raw = airportal("/airport/exportDepArr.do",
-                                {"searchContext": context, "ymd1": f"{y}{m:02d}01", "ymd2": f"{y}{m:02d}{last}",
-                                 "loadType": "", key: icao}).content
+                try:
+                    feed = airportal("/airport/getFlightArrivalDepartureInfo.do",
+                                     {"searchContext": context, "ymd": f"{y}{m:02d}15", "loadType": "", key: icao})
+                    for f in feed.json().get("content") or []:
+                        if f.get("apKr") and f.get("apIata"):
+                            names[f["apKr"]] = f["apIata"]
+                    raw = airportal("/airport/exportDepArr.do",
+                                    {"searchContext": context, "ymd1": f"{y}{m:02d}01", "ymd2": f"{y}{m:02d}{last}",
+                                     "loadType": "", key: icao}).content
+                except requests.RequestException as e:  # skip this airport-month rather than all of Korea
+                    print(f"  Korea {icao} {context} {y}-{m:02d} skipped: {e}", flush=True)
+                    failures += 1
+                    if failures > 30:
+                        raise
+                    continue
                 if not raw.startswith(b"PK"):
                     continue  # no flights (small airports) or an error page
                 df = pd.read_excel(io.BytesIO(raw), dtype=str)
