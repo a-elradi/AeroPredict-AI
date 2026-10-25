@@ -138,3 +138,23 @@ def test_brazil_flight_history_gives_high_confidence(client):
     d = predict_route(client, "IST", "GRU", flight_number="TK15", airline="TK")
     assert d["data_basis"]["confidence"] == "high"
     assert "ANAC" in d["data_basis"]["note"]
+
+
+@needs_model
+def test_australian_domestic_route_uses_bitre(client):
+    from app.services import route_history
+    if not route_history._load():
+        pytest.skip("route statistics not built")
+    d = predict_route(client, "SYD", "MEL", flight_number="QF401", airline="QF")
+    assert d["data_basis"]["confidence"] in ("high", "medium")
+    assert "BITRE" in d["data_basis"]["note"] or "Australia" in d["data_basis"]["note"]
+
+
+def test_airline_national_record_used_for_unlisted_domestic_route():
+    from app.services import route_history
+    if not route_history._load():
+        pytest.skip("route statistics not built")
+    h = route_history.lookup("JQ", "9999", "CBR", "BME")
+    assert h and h["level"] == "airline_country" and h["country"] == "AU"
+    assert route_history.lookup("JQ", "9999", "CBR", "LHR") is None or \
+        route_history.lookup("JQ", "9999", "CBR", "LHR")["level"] != "airline_country"

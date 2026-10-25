@@ -8,9 +8,12 @@ for flights the US data doesn't cover:
 - Brazil: ANAC "Voo Regular Ativo" (VRA), every scheduled flight to, from and
   within Brazil with scheduled and actual times
   https://sistemas.anac.gov.br/dadosabertos/
+- Australia: BITRE domestic on-time performance by route and airline on
+  competitive routes (via data.gov.au)
 
 Names are matched to IATA codes using OurAirports (airports, countries) and
-OpenFlights (airlines). Output: data/route_stats.json.gz with three tables:
+OpenFlights (airlines). Output: data/route_stats.json.gz with four tables:
+  airline_country "AIRLINE|COUNTRY"         (an airline's national domestic record: Australia, Brazil)
   flight         "AIRLINE+NUMBER|ORIGIN"   (Brazil only: flight-level data)
   route_airline  "AIRLINE|ORIGIN|DEST"
   route          "ORIGIN|DEST"
@@ -74,7 +77,11 @@ DEST_NAME_OVERRIDES = {
     "BARI (PALESE)": "BRI", "CHISINAU INTERNATIONAL": "RMO", "ILHA DO SAL C.VERDE": "SID", "SEOUL (INCHEON)": "ICN",
     "KERRY COUNTY": "KIR", "BELGRADE": "BEG", "HANOVER": "HAJ", "TIVAT": "TIV", "MIKONOS": "JMK",
     "EAST MIDLANDS INTERNATIONAL": "EMA", "BOA VISTA (RABIL)": "BVC", "LODZ LUBLINEK": "LCJ", "HALIFAX INT": "YHZ",
-    "SZCZECIN (GOLENOW)": "SZZ", "MALE INTERNATIONAL": "MLE",
+    "SZCZECIN (GOLENOW)": "SZZ", "MALE INTERNATIONAL": "MLE", "CARDIFF WALES": "CWL", "TROMSOE": "TOS",
+    "MAURITIUS": "MRU", "MINNEAPOLIS-ST PAUL": "MSP", "NASHVILLE METROPOLITAN": "BNA",
+    "BAKU (HEYDER ALIYEV INT'L)": "GYD", "ANTIGUA": "ANU", "PODGORICA": "TGD", "BERMUDA": "BDA",
+    "ANCONA": "AOI", "AARHUS (TIRSTRUP)": "AAR", "GRENADA": "GND", "GRAND CAYMAN": "GCM",
+    "TARBES-LOURDES INTERNATIONAL": "LDE", "SHENZHEN (HUANGTIAN)": "SZX",
 }
 COUNTRY_ALIASES = {"IRISH REPUBLIC": "IE", "IRELAND": "IE", "SLOVAK REPUBLIC": "SK", "REPUBLIC OF SOUTH AFRICA": "ZA","TURKIYE": "TR", "TURKEY": "TR", "UNITED STATES OF AMERICA": "US", "USA": "US",
                    "RUSSIA": "RU", "RUSSIAN FEDERATION": "RU", "SOUTH KOREA": "KR", "KOREA REPUBLIC OF": "KR",
@@ -105,7 +112,8 @@ AIRLINE_OVERRIDES = {"THY TURKISH AIRLINES": "TK", "EASYJET UK": "U2", "EASYJET 
                      "LUFTHANSA CITY AIRLINES": "LH", "LUFTHANSA CITYLINE": "LH", "EUROWINGS LUFTVERKEHRS": "EW",
                      "TRANSAVIA": "HV", "ARKIA": "IZ", "UZBEKISTAN AIRLINES": "HY", "NOUVELAIR TUNISIE": "BJ",
                      "ENTER AIR": "E4", "CORENDON AIRLINES EUROPE": "XR", "TIANJIN AIRLINES": "GS",
-                     "BEIJING CAPITAL AIRLINES": "JD", "NORSE ATLANTIC UK": "Z0"}
+                     "BEIJING CAPITAL AIRLINES": "JD", "NORSE ATLANTIC UK": "Z0",
+                     "VOLOTEA": "V7", "FLY PLAY HF": "OG", "HISKY": "H4", "TITAN AIRWAYS": "ZT"}
 # ICAO airline codes whose IATA code in OpenFlights is out of date or missing
 ICAO_OVERRIDES = {"TAM": "LA", "JAT": "JA", "DWI": "DM", "ITY": "AZ"}
 NOISE = {"PLC", "LTD", "LIMITED", "SA", "AG", "AB", "AS", "ASA", "INC", "CORPORATION", "CORP", "COMPANY", "CO",
@@ -200,7 +208,8 @@ class Ref:
 
 class Stats:
     def __init__(self):
-        self.t = {"flight": defaultdict(lambda: [0, 0.0, 0, 0.0]),
+        self.t = {"airline_country": defaultdict(lambda: [0, 0.0, 0, 0.0]),
+                  "flight": defaultdict(lambda: [0, 0.0, 0, 0.0]),
                   "route_airline": defaultdict(lambda: [0, 0.0, 0, 0.0]),
                   "route": defaultdict(lambda: [0, 0.0, 0, 0.0])}
 
@@ -221,7 +230,7 @@ class Stats:
     def export(self) -> dict:
         out = {}
         for name, table in self.t.items():
-            out[name] = {k: [n, round(late), c, round(lm / late) if late >= 1 else None]
+            out[name] = {k: [n, round(late), c, round(lm / late) if late >= 1 and lm > 0 else None]
                          for k, (n, late, c, lm) in table.items() if n + c >= MIN_FLIGHTS}
         return out
 
@@ -299,6 +308,62 @@ def build_uk(ref: Ref, stats: Stats, months: int) -> dict:
             "flights": flights_total}
 
 
+# ── Australia (BITRE via data.gov.au) ────────────────────────────────────────
+
+AUSTRALIA_CSV = ("https://data.gov.au/data/dataset/29128ebd-dbaa-4ff5-8b86-d9f30de56452/resource/"
+                 "cf663ed1-0c5e-497f-aea9-e74bfda9cf44/download/otp_time_series_web.csv")
+AU_AIRLINES = {"Jetstar": "JQ", "Qantas": "QF", "QantasLink": "QF", "Virgin Australia": "VA",
+               "Virgin Australia Regional Airlines": "VA", "Regional Express": "ZL", "Rex Airlines": "ZL",
+               "Tigerair Australia": "TT", "Bonza": "AB"}
+AU_CITIES = {"Sydney": "SYD", "Melbourne": "MEL", "Brisbane": "BNE", "Adelaide": "ADL", "Perth": "PER",
+             "Canberra": "CBR", "Gold Coast": "OOL", "Cairns": "CNS", "Hobart": "HBA", "Darwin": "DRW",
+             "Townsville": "TSV", "Launceston": "LST", "Sunshine Coast": "MCY", "Mackay": "MKY",
+             "Rockhampton": "ROK", "Ballina": "BNK", "Coffs Harbour": "CFS", "Newcastle": "NTL",
+             "Albury": "ABX", "Alice Springs": "ASP", "Kalgoorlie": "KGI", "Karratha": "KTA",
+             "Port Hedland": "PHE", "Proserpine": "PPP", "Hamilton Island": "HTI", "Wagga Wagga": "WGA",
+             "Mildura": "MQL", "Gladstone": "GLT", "Emerald": "EMD", "Broome": "BME", "Ayers Rock": "AYQ",
+             "Port Lincoln": "PLO", "Dubbo": "DBO", "Armidale": "ARM", "Avalon": "AVV", "Mount Isa": "ISA",
+             "Bundaberg": "BDB", "Hervey Bay": "HVB", "Mount Gambier": "MGB", "Devonport": "DPO",
+             "Burnie": "BWT", "Geraldton": "GET", "Newman": "ZNE", "Paraburdoo": "PBO", "Exmouth": "LEA",
+             "Learmonth": "LEA", "Port Macquarie": "PQQ", "Tamworth": "TMW", "Toowoomba": "WTB", "Orange": "OAG"}
+
+
+def build_australia(ref: Ref, stats: Stats, months: int) -> dict:
+    rows = list(csv.DictReader(io.StringIO(get(AUSTRALIA_CSV).content.decode("utf-8-sig", errors="replace"))))
+    latest = max((int(r["Year"]), int(r["Month_Num"])) for r in rows if r.get("Year"))
+    keep = set(month_list(months, latest))
+    unmatched = defaultdict(int)
+    flights_total = 0
+    for r in rows:
+        if not r.get("Year") or (int(r["Year"]), int(r["Month_Num"])) not in keep:
+            continue
+        flown, cancelled = int(r["Sectors_Flown"] or 0), int(r["Cancellations"] or 0)
+        if r["Departing_Port"] == "All Ports":
+            # Each airline's national record: a fallback for domestic routes not listed one by one
+            airline = AU_AIRLINES.get(r["Airline"])
+            if airline:
+                stats.add("airline_country", f"{airline}|AU", flown, int(r["Arrivals_Delayed"] or 0), cancelled, 0)
+            continue
+        origin, dest = AU_CITIES.get(r["Departing_Port"]), AU_CITIES.get(r["Arriving_Port"])
+        if not origin or not dest:
+            unmatched[f"{r['Departing_Port']}/{r['Arriving_Port']}"] += flown
+            continue
+        late = int(r["Arrivals_Delayed"] or 0)  # arrived 15+ minutes after schedule
+        if r["Airline"] == "All Airlines":
+            stats.add("route", f"{origin}|{dest}", flown, late, cancelled, 0)
+            flights_total += flown
+        else:
+            airline = AU_AIRLINES.get(r["Airline"])
+            if airline:
+                stats.add("route_airline", f"{airline}|{origin}|{dest}", flown, late, cancelled, 0)
+            else:
+                unmatched[r["Airline"]] += flown
+    report_unmatched("Australia", unmatched)
+    first = min(keep)
+    return {"name": "BITRE Australia, domestic airline on-time performance",
+            "period": f"{first[0]}-{first[1]:02d} to {latest[0]}-{latest[1]:02d}", "flights": flights_total}
+
+
 # ── Brazil (ANAC VRA) ────────────────────────────────────────────────────────
 
 def anac_url(y: int, m: int) -> str:
@@ -333,8 +398,11 @@ def build_brazil(ref: Ref, stats: Stats, months: int) -> dict:
                 unmatched[f"{r['ICAO Aeródromo Origem']}/{r['ICAO Aeródromo Destino']}"] += 1
                 continue
             number = str(int(r["Número Voo"])) if r["Número Voo"].isdigit() else None
+            domestic = airline and ref.country_of.get(origin) == ref.country_of.get(dest) == "BR"
             if status == "CANCELADO":
                 stats.add_all(airline, number, origin, dest, 0, 0, 1, 0)
+                if domestic:
+                    stats.add("airline_country", f"{airline}|BR", 0, 0, 1, 0)
                 continue
             if status != "REALIZADO" or not r["Chegada Prevista"] or not r["Chegada Real"]:
                 continue
@@ -346,6 +414,8 @@ def build_brazil(ref: Ref, stats: Stats, months: int) -> dict:
                 continue
             late = delay > 15
             stats.add_all(airline, number, origin, dest, 1, int(late), 0, delay if late else 0)
+            if domestic:
+                stats.add("airline_country", f"{airline}|BR", 1, int(late), 0, delay if late else 0)
             flights_total += 1
         print(f"  Brazil {y}-{m:02d}: done", flush=True)
     report_unmatched("Brazil airports", unmatched)
@@ -368,7 +438,7 @@ def main():
     ref = Ref()
     stats = Stats()
     sources = {}
-    for key, builder in (("uk", build_uk), ("brazil", build_brazil)):
+    for key, builder in (("uk", build_uk), ("brazil", build_brazil), ("australia", build_australia)):
         try:
             sources[key] = builder(ref, stats, args.months)
         except Exception as e:  # one country failing shouldn't block the others

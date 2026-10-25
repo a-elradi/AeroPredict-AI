@@ -10,7 +10,7 @@ from pathlib import Path
 from . import airports
 
 STATS_FILE = Path(__file__).resolve().parents[2] / "data" / "route_stats.json.gz"
-MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30}
+MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200}
 SOURCE_BY_COUNTRY = {"BR": "brazil", "GB": "uk", "JE": "uk", "GG": "uk", "IM": "uk"}
 
 
@@ -27,9 +27,14 @@ def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
     data = _load()
     if not data:
         return None
+    o_country, d_country = airports.lookup(origin)["country"], airports.lookup(dest)["country"]
+    domestic = o_country if o_country and o_country == d_country else None
     for level, key in (("flight", f"{carrier}{flight_no}|{origin}"),
                        ("route_airline", f"{carrier}|{origin}|{dest}"),
-                       ("route", f"{origin}|{dest}")):
+                       ("route", f"{origin}|{dest}"),
+                       ("airline_country", f"{carrier}|{domestic}" if domestic else None)):
+        if key is None:
+            continue
         e = data.get(level, {}).get(key)
         if not e or e[0] + e[2] < MIN_FLIGHTS[level]:
             continue
@@ -37,7 +42,7 @@ def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
             continue  # flight numbers can be reused on other routes
         flights, late, cancelled, typical = e
         total = flights + cancelled
-        return {"level": level, "flights": total, "late": late, "cancelled": cancelled,
+        return {"level": level, "flights": total, "late": late, "cancelled": cancelled, "country": domestic,
                 "disrupted_share": (late + cancelled) / total, "cancel_share_of_disrupted":
                 cancelled / (late + cancelled) if late + cancelled else 0.0,
                 "typical_delay": typical, "source": _source(data, origin, dest)}
@@ -50,5 +55,5 @@ def _same_route(data: dict, carrier: str, origin: str, dest: str) -> bool:
 
 def _source(data: dict, origin: str, dest: str) -> dict:
     countries = {airports.lookup(origin)["country"], airports.lookup(dest)["country"]}
-    key = "brazil" if "BR" in countries else "uk"
+    key = "brazil" if "BR" in countries else "australia" if countries == {"AU"} else "uk"
     return data.get("sources", {}).get(key, {"name": "national aviation statistics"})

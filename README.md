@@ -126,6 +126,7 @@ the model's time-of-day, season, holiday and weather effects:
 |---|---|---|
 | UK CAA punctuality statistics | every airline on every route to/from 25 UK airports | monthly (`route-stats.yml`) |
 | ANAC Brazil VRA | every flight to/from/within Brazil, flight by flight | monthly (`route-stats.yml`) |
+| BITRE Australia on-time performance | every major airline on every Australian domestic route, plus each airline's national record | monthly (`route-stats.yml`) |
 | EUROCONTROL airport punctuality | ~110 European and Turkish airports, plus country averages | weekly (`reference-data.yml`) |
 | Airport weather forecasts (TAF) | any airport worldwide, flights in the next ~30 hours | live |
 

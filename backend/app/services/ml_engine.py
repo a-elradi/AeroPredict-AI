@@ -135,7 +135,8 @@ def _combine_factors(weather: list, airport: list, history: list) -> list[dict]:
 def _route_history_label(rh: dict, carrier: str, number: str, dep: str, arr: str) -> str:
     return {"flight": f"{number} track record",
             "route_airline": f"{carrier} on {dep} → {arr}",
-            "route": f"All airlines on {dep} → {arr}"}[rh["level"]]
+            "route": f"All airlines on {dep} → {arr}",
+            "airline_country": f"{carrier} domestic flights ({rh.get('country')})"}[rh["level"]]
 
 
 def _route_history_factors(rh: dict | None, carrier, number, dep, arr) -> list[dict]:
@@ -175,13 +176,17 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
     if method == "route_history" and rh:
         what = {"flight": f"this flight's {rh['flights']:,} departures",
                 "route_airline": f"{rh['flights']:,} {carrier} flights from {dep} to {arr}",
-                "route": f"{rh['flights']:,} flights by all airlines from {dep} to {arr}"}[rh["level"]]
+                "route": f"{rh['flights']:,} flights by all airlines from {dep} to {arr}",
+                "airline_country": f"{rh['flights']:,} {carrier} domestic flights across the country"}[rh["level"]]
         src = rh["source"]
         level = "high" if rh["level"] == "flight" else "medium"
         note = (f"Based on {what} ({src.get('name')}, {src.get('period')}), adjusted for time of day, "
                 f"season and holidays.")
         if rh["level"] == "route":
             note += " Your airline's own record on this route isn't available."
+        elif rh["level"] == "airline_country":
+            level = "airport"
+            note += " This route isn't reported on its own, so this uses the airline's national record."
     elif method == "airport_punctuality":
         used = ", ".join(f"{a['airport']} ({a['on_time_pct']:.0f}% on time)" for a in shares or [])
         level, note = "airport", (f"No history for this exact flight or route. Based on official airport "
@@ -195,7 +200,7 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
         level, note = "low", "Little history for this route. Based mainly on airline and airport records."
     else:
         level, note = "general", ("We don't have punctuality data for this flight, its route or these "
-                                  "airports yet (we cover US, UK and Brazil flights, and European and "
+                                  "airports yet (we cover US, UK, Brazil and Australia flights, and European and "
                                   "Turkish airports). "
                                   "This is only a general estimate from time of day and season, so the "
                                   "numbers will look similar for many flights. Treat it as a rough guide.")
