@@ -141,7 +141,8 @@ def lookup(iata: str) -> dict:
         icao, country = icao or w[0], country or w[2]
         name = name or w[1]
     return {"iata": code, "icao": icao, "name": name, "country": country,
-            "lat": w[3] if w else None, "lon": w[4] if w else None}
+            "lat": w[3] if w else None, "lon": w[4] if w else None,
+            "tz": w[5] if w and len(w) > 5 else None}
 
 
 def punctuality(iata: str) -> dict | None:

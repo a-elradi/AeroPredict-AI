@@ -95,3 +95,25 @@ def test_holiday_distance():
     assert holiday_distance(date(2026, 11, 26)) == 0   # Thanksgiving 2026
     assert holiday_distance(date(2026, 12, 23)) == 2
     assert holiday_distance(date(2026, 3, 15)) == 15
+
+
+def test_forecast_works_for_non_us_airports_and_ignores_prob30(monkeypatch):
+    from datetime import datetime, timezone
+    from app.services import weather_features as wf
+    from app.utils import cache
+    cache.clear()
+    start, end = 1_800_000_000, 1_800_086_400
+    fake_taf = {"fcsts": [
+        {"timeFrom": start, "timeTo": end, "visib": "6+", "wspd": 10, "wgst": None, "wxString": None,
+         "clouds": [{"cover": "SCT", "base": 3000}]},
+        {"timeFrom": start, "timeTo": end, "fcstChange": "TEMPO", "visib": 1.55, "wspd": 15, "wgst": 25,
+         "wxString": "TSRA", "clouds": [{"cover": "BKN", "base": 800}]},
+        {"timeFrom": start, "timeTo": end, "fcstChange": "TEMPO", "probability": 30, "visib": 0.2,
+         "wxString": "FG", "clouds": []},
+    ]}
+    asked = []
+    monkeypatch.setattr(wf, "_fetch_taf", lambda icao: asked.append(icao) or fake_taf)
+    fc = wf.forecast_for("IST", datetime.fromtimestamp(start + 3600, tz=timezone.utc))
+    assert asked == ["LTFM"]
+    assert fc["ts"] == 1 and fc["ceiling"] == 800 and fc["vis"] == 1.55
+    assert fc["fog"] == 0  # the PROB30 fog group is ignored

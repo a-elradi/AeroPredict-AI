@@ -78,11 +78,17 @@ def _vis_miles(v) -> float:
         return math.nan
 
 
+def _airport_icao_tz(iata: str) -> tuple[str | None, str | None]:
+    from . import airports
+    info = airports.lookup(iata)
+    return info["icao"], info["tz"] or AIRPORT_TZ.get(iata)
+
+
 def forecast_for(iata: str, when_utc: datetime) -> dict | None:
-    """Forecast conditions at an airport around a UTC time, or None if not covered."""
-    if iata not in AIRPORT_TZ:
+    """Forecast conditions at any airport around a UTC time, or None if no forecast covers it."""
+    icao, _ = _airport_icao_tz(iata)
+    if not icao or len(icao) != 4:
         return None
-    icao = "P" + iata if iata in ("HNL", "OGG") else "T" + iata if iata == "SJU" else "K" + iata
     taf = cached(f"taf:{icao}", 1800, lambda: _fetch_taf(icao))
     if not taf:
         return None
@@ -90,9 +96,12 @@ def forecast_for(iata: str, when_utc: datetime) -> dict | None:
     period = None
     for f in taf.get("fcsts", []):
         start, end = f.get("timeFrom"), f.get("timeTo")
-        if start and end and start <= ts < end:
-            # Later groups (FM/TEMPO/BECMG) refine earlier ones; keep the last match
-            period = {**(period or {}), **{k: v for k, v in f.items() if v not in (None, [], "")}}
+        if not (start and end and start <= ts < end):
+            continue
+        if f.get("probability") and f["probability"] < 40:
+            continue  # PROB30-style groups: possible, not expected
+        # Later groups (FM/TEMPO/BECMG) refine earlier ones; keep the last match
+        period = {**(period or {}), **{k: v for k, v in f.items() if v not in (None, [], "")}}
     if not period:
         return None
     ceiling = NO_CEILING_FT
@@ -109,19 +118,25 @@ def forecast_for(iata: str, when_utc: datetime) -> dict | None:
     return out
 
 
-def live_features(origin: str, dest: str, dep_local: datetime, arr_hour_offset: int) -> tuple[dict, bool]:
-    """Weather features for a flight from current forecasts. Returns (features, any_found)."""
-    from zoneinfo import ZoneInfo
+def live_features(origin: str, dest: str, dep_local: datetime, flight_hours: float) -> tuple[dict, bool]:
+    """
+    Weather features for a flight from current airport forecasts (any airport in
+    the world with a TAF). dep_local is in the origin's local time; the arrival
+    forecast is read at departure + flight time. Returns (features, any_found).
+    """
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
     feats = empty()
+    _, tz = _airport_icao_tz(origin)
+    if not tz:
+        return feats, False
+    try:
+        dep_utc = dep_local.replace(tzinfo=ZoneInfo(tz)).astimezone(timezone.utc)
+    except ZoneInfoNotFoundError:
+        return feats, False
+    now = datetime.now(timezone.utc)
     found = False
-    for side, airport, local in (("o", origin, dep_local),
-                                 ("d", dest, dep_local + timedelta(hours=arr_hour_offset))):
-        tz = AIRPORT_TZ.get(airport)
-        if not tz:
-            continue
-        # Arrival offsets are local-to-local; close enough for picking a forecast hour
-        when = local.replace(tzinfo=ZoneInfo(AIRPORT_TZ.get(origin, tz))).astimezone(timezone.utc)
-        if not (datetime.now(timezone.utc) - timedelta(hours=2) <= when <= datetime.now(timezone.utc) + timedelta(hours=30)):
+    for side, airport, when in (("o", origin, dep_utc), ("d", dest, dep_utc + timedelta(hours=flight_hours))):
+        if not (now - timedelta(hours=2) <= when <= now + timedelta(hours=30)):
             continue
         fc = forecast_for(airport, when)
         if fc:
