@@ -163,7 +163,7 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
     names = m["booster"].feature_names or FEATURES
     weather, weather_used = ({}, False)
     if any(n in WX_FEATURES for n in names):
-        weather, weather_used = live_features(origin, dest, dep_local, offset)
+        weather, weather_used = live_features(origin, dest, dep_local, distance / 450 + 0.5)
     def run(stats: dict) -> np.ndarray:
         row = build_features(stats, prior, carrier=carrier, flight_no=flight_no, origin=origin, dest=dest,
                              flight_date=dep_local.date(), dep_hour=dep_hour, arr_hour=arr_hour,

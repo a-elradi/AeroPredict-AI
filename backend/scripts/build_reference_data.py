@@ -2,7 +2,7 @@
 Build the reference data files the website loads at startup:
 
 - data/airports_world.json: every airport with scheduled passenger service
-  (IATA -> ICAO, name, country, latitude, longitude), from OurAirports
+  (IATA -> ICAO, name, country, latitude, longitude, time zone), from OurAirports
   (public domain): https://davidmegginson.github.io/ourairports-data/airports.csv
 - data/eurocontrol_punctuality.json: official departure and arrival
   punctuality (share within 15 minutes of schedule) for ~110 European
@@ -11,7 +11,8 @@ Build the reference data files the website loads at startup:
 
     python scripts/build_reference_data.py
 
-Needs openpyxl to read the EUROCONTROL spreadsheet (only for this script).
+Needs openpyxl (EUROCONTROL spreadsheet) and timezonefinder (airport time
+zones); only this script uses them.
 Run weekly by .github/workflows/reference-data.yml.
 """
 import csv
@@ -42,6 +43,8 @@ COUNTRY_CODES = {
 
 
 def build_airports() -> dict:
+    from timezonefinder import TimezoneFinder  # only needed here
+    tf = TimezoneFinder()
     text = requests.get(OURAIRPORTS_URL, headers=HEADERS, timeout=120).text
     out = {}
     for r in csv.DictReader(io.StringIO(text)):
@@ -52,8 +55,9 @@ def build_airports() -> dict:
         # Prefer the larger airport when two share an IATA code
         if iata in out and r["type"] != "large_airport":
             continue
-        out[iata] = [icao, r["name"], r["iso_country"], round(float(r["latitude_deg"]), 4),
-                     round(float(r["longitude_deg"]), 4)]
+        lat, lon = float(r["latitude_deg"]), float(r["longitude_deg"])
+        out[iata] = [icao, r["name"], r["iso_country"], round(lat, 4), round(lon, 4),
+                     tf.timezone_at(lat=lat, lng=lon)]
     return dict(sorted(out.items()))
 
 

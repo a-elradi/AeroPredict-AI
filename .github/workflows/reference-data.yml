@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install requests pandas openpyxl
+        run: pip install requests pandas openpyxl timezonefinder
       - name: Build reference data
         working-directory: backend
         run: python scripts/build_reference_data.py
