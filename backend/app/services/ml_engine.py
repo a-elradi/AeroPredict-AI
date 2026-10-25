@@ -61,7 +61,8 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
     else:
         risk_tier, risk_color = "LOW", "#00C851"
 
-    expected = _expected_delay(hist, prior)
+    rh = r.get("route_history")
+    expected = rh["typical_delay"] if rh and rh.get("typical_delay") else _expected_delay(hist, prior)
     severity = "Minor" if expected < 30 else "Moderate" if expected < 60 else "Severe"
 
     return {
@@ -80,10 +81,11 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
         "expected_delay_minutes": expected,
         "delay_severity": severity,
         "data_basis": _data_basis(hist, r["meta"], r.get("weather_used", False),
-                                  r.get("method"), r.get("airport_shares", [])),
+                                  r.get("method"), r.get("airport_shares", []),
+                                  rh, carrier, number, dep_ap, arr_ap),
         "factors": _combine_factors(
             _weather_factors(r.get("weather"), dep_ap, arr_ap),
-            _airport_factors(r.get("airport_shares", [])),
+            _route_history_factors(rh, carrier, number, dep_ap, arr_ap) + _airport_factors(r.get("airport_shares", [])),
             _explain_factors(hist, prior, carrier, number, dep_ap, arr_ap, dt)),
     }
 
@@ -130,6 +132,22 @@ def _combine_factors(weather: list, airport: list, history: list) -> list[dict]:
     return weather + airport + history
 
 
+def _route_history_label(rh: dict, carrier: str, number: str, dep: str, arr: str) -> str:
+    return {"flight": f"{number} track record",
+            "route_airline": f"{carrier} on {dep} → {arr}",
+            "route": f"All airlines on {dep} → {arr}"}[rh["level"]]
+
+
+def _route_history_factors(rh: dict | None, carrier, number, dep, arr) -> list[dict]:
+    if not rh:
+        return []
+    on_time = 100 - rh["disrupted_share"] * 100
+    late = rh["disrupted_share"]
+    level = "high" if late > 0.30 else "low" if late < 0.18 else "medium"
+    return [{"icon": "✈", "label": _route_history_label(rh, carrier, number, dep, arr),
+             "value": f"{on_time:.0f}% on time ({rh['flights']:,} flights)", "level": level}]
+
+
 def _airport_factors(shares: list[dict]) -> list[dict]:
     """Official airport punctuality used for routes without their own history."""
     out = []
@@ -148,12 +166,23 @@ def _airport_factors(shares: list[dict]) -> list[dict]:
 
 
 def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
-                method: str | None = None, shares: list | None = None) -> dict:
+                method: str | None = None, shares: list | None = None, rh: dict | None = None,
+                carrier: str = "", number: str = "", dep: str = "", arr: str = "") -> dict:
     months = meta.get("data_months") or []
     period = f"{months[0]} to {months[-1]}" if months else "the past year"
     flight = hist.get("flight")
     route = hist.get("route")
-    if method == "airport_punctuality":
+    if method == "route_history" and rh:
+        what = {"flight": f"this flight's {rh['flights']:,} departures",
+                "route_airline": f"{rh['flights']:,} {carrier} flights from {dep} to {arr}",
+                "route": f"{rh['flights']:,} flights by all airlines from {dep} to {arr}"}[rh["level"]]
+        src = rh["source"]
+        level = "high" if rh["level"] == "flight" else "medium"
+        note = (f"Based on {what} ({src.get('name')}, {src.get('period')}), adjusted for time of day, "
+                f"season and holidays.")
+        if rh["level"] == "route":
+            note += " Your airline's own record on this route isn't available."
+    elif method == "airport_punctuality":
         used = ", ".join(f"{a['airport']} ({a['on_time_pct']:.0f}% on time)" for a in shares or [])
         level, note = "airport", (f"No history for this exact flight or route. Based on official airport "
                                   f"punctuality: {used}, adjusted for time of day, season and holidays. "
@@ -166,7 +195,8 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
         level, note = "low", "Little history for this route. Based mainly on airline and airport records."
     else:
         level, note = "general", ("We don't have punctuality data for this flight, its route or these "
-                                  "airports yet (we cover US flights and European and Turkish airports). "
+                                  "airports yet (we cover US, UK and Brazil flights, and European and "
+                                  "Turkish airports). "
                                   "This is only a general estimate from time of day and season, so the "
                                   "numbers will look similar for many flights. Treat it as a rough guide.")
     if weather_used:

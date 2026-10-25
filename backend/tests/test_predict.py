@@ -33,13 +33,13 @@ def test_us_route_uses_flight_history(client):
 
 
 def predict_route(client, origin, dest, **extra):
-    body = dict(US_FLIGHT, flight_number="XX100", airline="XX", dep_airport=origin, arr_airport=dest, **extra)
+    body = {**US_FLIGHT, "flight_number": "XX100", "airline": "XX", "dep_airport": origin, "arr_airport": dest, **extra}
     return client.post("/api/predict", json=body).get_json()["data"]
 
 
 @needs_model
 def test_european_route_uses_eurocontrol_airport_punctuality(client):
-    d = predict_route(client, "IST", "LHR")
+    d = predict_route(client, "IST", "FCO")
     assert d["data_basis"]["confidence"] == "airport"
     assert any("EUROCONTROL" in f["label"] for f in d["factors"])
 
@@ -117,3 +117,24 @@ def test_forecast_works_for_non_us_airports_and_ignores_prob30(monkeypatch):
     assert asked == ["LTFM"]
     assert fc["ts"] == 1 and fc["ceiling"] == 800 and fc["vis"] == 1.55
     assert fc["fog"] == 0  # the PROB30 fog group is ignored
+
+
+@needs_model
+def test_uk_route_history_is_used_for_airline_on_route(client):
+    from app.services import route_history
+    if not route_history._load():
+        pytest.skip("route statistics not built")
+    d = predict_route(client, "DXB", "LHR", flight_number="EK1", airline="EK")
+    assert d["data_basis"]["confidence"] == "medium"
+    assert "UK Civil Aviation Authority" in d["data_basis"]["note"]
+    assert any(f["label"] == "EK on DXB → LHR" for f in d["factors"])
+
+
+@needs_model
+def test_brazil_flight_history_gives_high_confidence(client):
+    from app.services import route_history
+    if not route_history._load():
+        pytest.skip("route statistics not built")
+    d = predict_route(client, "IST", "GRU", flight_number="TK15", airline="TK")
+    assert d["data_basis"]["confidence"] == "high"
+    assert "ANAC" in d["data_basis"]["note"]
