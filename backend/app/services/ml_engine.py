@@ -82,10 +82,11 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
         "delay_severity": severity,
         "data_basis": _data_basis(hist, r["meta"], r.get("weather_used", False),
                                   r.get("method"), r.get("airport_shares", []),
-                                  rh, carrier, number, dep_ap, arr_ap),
+                                  rh, carrier, number, dep_ap, arr_ap, r.get("airline_record")),
         "factors": _combine_factors(
             _weather_factors(r.get("weather"), dep_ap, arr_ap),
-            _route_history_factors(rh, carrier, number, dep_ap, arr_ap) + _airport_factors(r.get("airport_shares", [])),
+            _route_history_factors(rh or r.get("airline_record"), carrier, number, dep_ap, arr_ap)
+            + _airport_factors(r.get("airport_shares", [])),
             _explain_factors(hist, prior, carrier, number, dep_ap, arr_ap, dt)),
     }
 
@@ -136,7 +137,8 @@ def _route_history_label(rh: dict, carrier: str, number: str, dep: str, arr: str
     return {"flight": f"{number} track record",
             "route_airline": f"{carrier} on {dep} → {arr}",
             "route": f"All airlines on {dep} → {arr}",
-            "airline_country": f"{carrier} domestic flights ({rh.get('country')})"}[rh["level"]]
+            "airline_country": f"{carrier} domestic flights ({rh.get('country')})",
+            "airline": f"{carrier} on all reported routes"}[rh["level"]]
 
 
 def _route_history_factors(rh: dict | None, carrier, number, dep, arr) -> list[dict]:
@@ -168,7 +170,8 @@ def _airport_factors(shares: list[dict]) -> list[dict]:
 
 def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
                 method: str | None = None, shares: list | None = None, rh: dict | None = None,
-                carrier: str = "", number: str = "", dep: str = "", arr: str = "") -> dict:
+                carrier: str = "", number: str = "", dep: str = "", arr: str = "",
+                airline_rec: dict | None = None) -> dict:
     months = meta.get("data_months") or []
     period = f"{months[0]} to {months[-1]}" if months else "the past year"
     flight = hist.get("flight")
@@ -177,7 +180,8 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
         what = {"flight": f"this flight's {rh['flights']:,} departures",
                 "route_airline": f"{rh['flights']:,} {carrier} flights from {dep} to {arr}",
                 "route": f"{rh['flights']:,} flights by all airlines from {dep} to {arr}",
-                "airline_country": f"{rh['flights']:,} {carrier} domestic flights across the country"}[rh["level"]]
+                "airline_country": f"{rh['flights']:,} {carrier} domestic flights across the country",
+                "airline": f"{rh['flights']:,} {carrier} flights on the routes we have data for"}[rh["level"]]
         src = rh["source"]
         level = "high" if rh["level"] == "flight" else "medium"
         note = (f"Based on {what} ({src.get('name')}, {src.get('period')}), adjusted for time of day, "
@@ -187,11 +191,17 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
         elif rh["level"] == "airline_country":
             level = "airport"
             note += " This route isn't reported on its own, so this uses the airline's national record."
+        elif rh["level"] == "airline":
+            level = "low"
+            note += (" There's no data for this route or these airports, so this is the airline's "
+                     "overall punctuality, which can differ from route to route.")
     elif method == "airport_punctuality":
         used = ", ".join(f"{a['airport']} ({a['on_time_pct']:.0f}% on time)" for a in shares or [])
         level, note = "airport", (f"No history for this exact flight or route. Based on official airport "
                                   f"punctuality: {used}, adjusted for time of day, season and holidays. "
-                                  f"Airline-specific performance isn't included.")
+                                  + (f"Adjusted for {carrier}'s own punctuality ({airline_rec['flights']:,} flights, "
+                                     f"{airline_rec['source']['name']})." if airline_rec else
+                                     "Airline-specific performance isn't included."))
     elif flight and flight[0] >= MIN_HISTORY:
         level, note = "high", f"Based on this flight's {flight[0]} departures from {period}, plus route, airline and airport history."
     elif route and route[0] >= MIN_HISTORY:

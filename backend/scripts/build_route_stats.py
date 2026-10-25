@@ -14,6 +14,7 @@ for flights the US data doesn't cover:
 Names are matched to IATA codes using OurAirports (airports, countries) and
 OpenFlights (airlines). Output: data/route_stats.json.gz with four tables:
   airline_country "AIRLINE|COUNTRY"         (an airline's national domestic record: Australia, Brazil)
+  airline         "AIRLINE"                 (an airline's record on every route above, all countries)
   flight         "AIRLINE+NUMBER|ORIGIN"   (Brazil only: flight-level data)
   route_airline  "AIRLINE|ORIGIN|DEST"
   route          "ORIGIN|DEST"
@@ -208,7 +209,10 @@ class Ref:
 
 class Stats:
     def __init__(self):
-        self.t = {"airline_country": defaultdict(lambda: [0, 0.0, 0, 0.0]),
+        self.source = None  # set by main() before each country's builder
+        self.airline_sources = defaultdict(set)
+        self.t = {"airline": defaultdict(lambda: [0, 0.0, 0, 0.0]),
+                  "airline_country": defaultdict(lambda: [0, 0.0, 0, 0.0]),
                   "flight": defaultdict(lambda: [0, 0.0, 0, 0.0]),
                   "route_airline": defaultdict(lambda: [0, 0.0, 0, 0.0]),
                   "route": defaultdict(lambda: [0, 0.0, 0, 0.0])}
@@ -219,6 +223,10 @@ class Stats:
         e[1] += late
         e[2] += cancelled
         e[3] += late_minutes
+        if table == "route_airline":  # every airline's overall record, across all countries
+            airline = key.split("|")[0]
+            self.add("airline", airline, flights, late, cancelled, late_minutes)
+            self.airline_sources[airline].add(self.source)
 
     def add_all(self, airline, number, origin, dest, flights, late, cancelled, late_minutes):
         if number and airline:
@@ -389,6 +397,7 @@ def build_brazil(ref: Ref, stats: Stats, months: int) -> dict:
         text = get(anac_url(y, m)).content.decode("utf-8-sig", errors="replace")
         lines = text.splitlines()
         start = next(i for i, line in enumerate(lines) if line.startswith('"ICAO Empresa'))
+        operated, cancelled = defaultdict(int), defaultdict(int)
         for r in csv.DictReader(lines[start:], delimiter=";"):
             status = r["Situação Voo"]
             airline = ref.airline_by_icao.get(r["ICAO Empresa Aérea"])
@@ -400,9 +409,7 @@ def build_brazil(ref: Ref, stats: Stats, months: int) -> dict:
             number = str(int(r["Número Voo"])) if r["Número Voo"].isdigit() else None
             domestic = airline and ref.country_of.get(origin) == ref.country_of.get(dest) == "BR"
             if status == "CANCELADO":
-                stats.add_all(airline, number, origin, dest, 0, 0, 1, 0)
-                if domestic:
-                    stats.add("airline_country", f"{airline}|BR", 0, 0, 1, 0)
+                cancelled[(airline, number, origin, dest, domestic)] += 1
                 continue
             if status != "REALIZADO" or not r["Chegada Prevista"] or not r["Chegada Real"]:
                 continue
@@ -416,7 +423,17 @@ def build_brazil(ref: Ref, stats: Stats, months: int) -> dict:
             stats.add_all(airline, number, origin, dest, 1, int(late), 0, delay if late else 0)
             if domestic:
                 stats.add("airline_country", f"{airline}|BR", 1, int(late), 0, delay if late else 0)
+            operated[(airline, number, origin, dest)] += 1
             flights_total += 1
+        # The data also lists schedule placeholders that never flew (hundreds of 'cancelled'
+        # flights on routes with one real flight a day), so only cancellations of flights that
+        # did operate that month count, and at most as many as operated.
+        for (airline, number, origin, dest, domestic), c in cancelled.items():
+            c = min(c, operated.get((airline, number, origin, dest), 0))
+            if c:
+                stats.add_all(airline, number, origin, dest, 0, 0, c, 0)
+                if domestic:
+                    stats.add("airline_country", f"{airline}|BR", 0, 0, c, 0)
         print(f"  Brazil {y}-{m:02d}: done", flush=True)
     report_unmatched("Brazil airports", unmatched)
     return {"name": "ANAC Brazil, Voo Regular Ativo (VRA)",
@@ -440,6 +457,7 @@ def main():
     sources = {}
     for key, builder in (("uk", build_uk), ("brazil", build_brazil), ("australia", build_australia)):
         try:
+            stats.source = key
             sources[key] = builder(ref, stats, args.months)
         except Exception as e:  # one country failing shouldn't block the others
             print(f"  {key} failed: {e}", flush=True)
@@ -448,7 +466,9 @@ def main():
         sys.exit("Too little route data; not trusting this build")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with gzip.open(DATA_DIR / "route_stats.json.gz", "wt", encoding="utf-8") as f:
-        json.dump({"sources": sources, **tables}, f, separators=(",", ":"))
+        json.dump({"sources": sources, **tables,
+                   "airline_sources": {a: sorted(s) for a, s in stats.airline_sources.items() if a in tables["airline"]}},
+                  f, separators=(",", ":"))
     print("route_stats.json.gz: " + ", ".join(f"{k} {len(v):,}" for k, v in tables.items()) +
           " | " + ", ".join(f"{k}: {v['flights']:,} flights {v['period']}" for k, v in sources.items()))
 

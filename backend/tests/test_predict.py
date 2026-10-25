@@ -158,3 +158,35 @@ def test_airline_national_record_used_for_unlisted_domestic_route():
     assert h and h["level"] == "airline_country" and h["country"] == "AU"
     assert route_history.lookup("JQ", "9999", "CBR", "LHR") is None or \
         route_history.lookup("JQ", "9999", "CBR", "LHR")["level"] != "airline_country"
+
+
+@needs_model
+def test_airline_record_used_where_no_route_or_airport_data(client):
+    from app.services import route_history
+    if not route_history.airline_record("EK"):
+        pytest.skip("route statistics not built")
+    ek = predict_route(client, "DXB", "BKK", flight_number="EK384", airline="EK")
+    sq = predict_route(client, "DXB", "BKK", flight_number="SQ1", airline="SQ")
+    assert ek["data_basis"]["confidence"] == "low"
+    assert "EK flights" in ek["data_basis"]["note"]
+    assert ek["probabilities"] != sq["probabilities"]
+
+
+@needs_model
+def test_airline_record_adjusts_airport_punctuality(client):
+    from app.services import route_history
+    if not route_history.airline_record("FR"):
+        pytest.skip("route statistics not built")
+    d = predict_route(client, "IST", "FCO", flight_number="FR1", airline="FR")
+    assert d["data_basis"]["confidence"] == "airport"
+    assert "FR's own punctuality" in d["data_basis"]["note"]
+
+
+def test_brazil_placeholder_cancellations_are_dropped():
+    from app.services import route_history
+    data = route_history._load()
+    if not data:
+        pytest.skip("route statistics not built")
+    for key in ("G3|BR", "LA|BR", "AD|BR"):
+        flights, _, cancelled, _ = data["airline_country"][key]
+        assert cancelled / (flights + cancelled) < 0.05

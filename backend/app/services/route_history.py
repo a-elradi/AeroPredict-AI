@@ -1,6 +1,7 @@
 """
 AeroPredict — route and flight history outside the US, from official
-national data (UK CAA, Brazil ANAC). Built by scripts/build_route_stats.py.
+national data (UK CAA, Brazil ANAC, Australia BITRE), plus each
+airline's overall record across all of them. Built by scripts/build_route_stats.py.
 """
 import gzip
 import json
@@ -10,7 +11,8 @@ from pathlib import Path
 from . import airports
 
 STATS_FILE = Path(__file__).resolve().parents[2] / "data" / "route_stats.json.gz"
-MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200}
+MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200, "airline": 1000}
+SOURCE_COUNTRY = {"uk": "the UK", "brazil": "Brazil", "australia": "Australia"}
 SOURCE_BY_COUNTRY = {"BR": "brazil", "GB": "uk", "JE": "uk", "GG": "uk", "IM": "uk"}
 
 
@@ -47,6 +49,34 @@ def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
                 cancelled / (late + cancelled) if late + cancelled else 0.0,
                 "typical_delay": typical, "source": _source(data, origin, dest)}
     return None
+
+
+def airline_record(carrier: str) -> dict | None:
+    """
+    An airline's overall record on every route we have data for (any country), and the
+    average across all airlines, so callers can tell how this airline compares.
+    """
+    data = _load()
+    table = data.get("airline", {})
+    e = table.get(carrier)
+    if not e or e[0] + e[2] < MIN_FLIGHTS["airline"]:
+        return None
+    flights, late, cancelled, typical = e
+    total = flights + cancelled
+    all_total = sum(v[0] + v[2] for v in table.values())
+    all_disrupted = sum(v[1] + v[2] for v in table.values())
+    names = [SOURCE_COUNTRY.get(k, k) for k in data.get("airline_sources", {}).get(carrier, [])]
+    return {"level": "airline", "flights": total, "late": late, "cancelled": cancelled, "country": None,
+            "disrupted_share": (late + cancelled) / total,
+            "cancel_share_of_disrupted": cancelled / (late + cancelled) if late + cancelled else 0.0,
+            "typical_delay": typical, "average_share": all_disrupted / all_total,
+            "source": {"name": "official punctuality statistics from " + _join(names), "period": "the last 12 months"}}
+
+
+def _join(names: list[str]) -> str:
+    if len(names) < 2:
+        return names[0] if names else "national statistics"
+    return ", ".join(names[:-1]) + " and " + names[-1]
 
 
 def _same_route(data: dict, carrier: str, origin: str, dest: str) -> bool:

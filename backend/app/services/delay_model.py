@@ -148,6 +148,19 @@ def _airport_late_shares(tables: dict, origin: str, dest: str) -> list[dict]:
     return shares
 
 
+def _us_airline_record(tables: dict, prior: dict, carrier: str) -> dict | None:
+    """A US airline's record on its US flights, for its routes we have no other data on."""
+    e = tables["carrier"].get(carrier)
+    if not e or e[0] < 1000:
+        return None
+    n, late, cancelled, typical = e
+    return {"level": "airline", "flights": n, "late": late, "cancelled": cancelled, "country": None,
+            "disrupted_share": (late + cancelled) / n,
+            "cancel_share_of_disrupted": cancelled / (late + cancelled) if late + cancelled else 0.0,
+            "typical_delay": typical, "average_share": prior["delay"] + prior["cancel"],
+            "source": {"name": "US Bureau of Transportation Statistics (its US flights)", "period": "the last 2 years"}}
+
+
 def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: datetime) -> dict:
     """dep_local: scheduled departure in the origin airport's local time."""
     import xgboost as xgb
@@ -172,7 +185,7 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
         return m["booster"].predict(xgb.DMatrix(x, feature_names=names))[0]
 
     proba = run(tables)
-    method, airport_shares, route_hist = "model", [], None
+    method, airport_shares, route_hist, airline_rec = "model", [], None, None
     route_known = any(tables[k].get(key) for k, key in (("flight", f"{carrier}{flight_no}|{origin}"),
                                                          ("route", f"{origin}|{dest}")))
     if not route_known:
@@ -182,13 +195,21 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
         # 'average flight' with no history at all.
         route_hist = route_history.lookup(carrier, flight_no, origin, dest)
         airport_shares = [] if route_hist else _airport_late_shares(tables, origin, dest)
+        airline_rec = None if route_hist else (route_history.airline_record(carrier)
+                                               or _us_airline_record(tables, prior, carrier))
         base = cancel_share = None
         if route_hist:
             base, cancel_share = route_hist["disrupted_share"], route_hist["cancel_share_of_disrupted"]
             method = "route_history"
         elif any(a["source"] == "EUROCONTROL" for a in airport_shares):
             base = sum(a["late"] * a["weight"] for a in airport_shares) / sum(a["weight"] for a in airport_shares)
+            if airline_rec:  # how much better or worse this airline does than airlines on average
+                odds = _odds(base) * _odds(airline_rec["disrupted_share"]) / _odds(airline_rec["average_share"])
+                base = odds / (1 + odds)
             method = "airport_punctuality"
+        elif airline_rec:
+            base, cancel_share = airline_rec["disrupted_share"], airline_rec["cancel_share_of_disrupted"]
+            route_hist, method = airline_rec, "route_history"
         if base is not None:
             generic = run({name: {} for name in STAT_KEYS})
             avg = prior["delay"] + prior["cancel"]
@@ -204,4 +225,5 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
     return {"proba": [float(p) for p in proba], "history": history, "prior": prior,
             "distance_miles": distance, "meta": m["meta"],
             "weather_used": weather_used, "weather": weather if weather_used else None,
-            "method": method, "airport_shares": airport_shares, "route_history": route_hist}
+            "method": method, "airport_shares": airport_shares, "route_history": route_hist,
+            "airline_record": airline_rec if method == "airport_punctuality" else None}
