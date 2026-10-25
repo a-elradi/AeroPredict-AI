@@ -189,6 +189,10 @@ def collect_schiphol(day: date) -> dict:
     """Every flight at Amsterdam Schiphol on one day: pushback and on-block times (gate times)."""
     app_id, app_key = _key("SCHIPHOL_APP_ID", "SCHIPHOL_APP_KEY")
     headers = {"Accept": "application/json", "app_id": app_id, "app_key": app_key, "ResourceVersion": "v4"}
+    check = requests.get(SCHIPHOL_FLIGHTS, headers={**HEADERS, **headers}, timeout=120,
+                         params={"scheduleDate": day.isoformat(), "flightDirection": "D", "page": 0})
+    if not check.ok:  # say why (e.g. key not yet active) rather than retrying
+        raise RuntimeError(f"Schiphol API {check.status_code}: {check.text[:300]}")
     out = {}
     for direction in ("D", "A"):
         for page in range(200):
