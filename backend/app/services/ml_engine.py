@@ -79,9 +79,12 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
         "risk_color": risk_color,
         "expected_delay_minutes": expected,
         "delay_severity": severity,
-        "data_basis": _data_basis(hist, r["meta"], r.get("weather_used", False)),
-        "factors": (_weather_factors(r.get("weather"), dep_ap, arr_ap)
-                    + _explain_factors(hist, prior, carrier, number, dep_ap, arr_ap, dt)),
+        "data_basis": _data_basis(hist, r["meta"], r.get("weather_used", False),
+                                  r.get("method"), r.get("airport_shares", [])),
+        "factors": _combine_factors(
+            _weather_factors(r.get("weather"), dep_ap, arr_ap),
+            _airport_factors(r.get("airport_shares", [])),
+            _explain_factors(hist, prior, carrier, number, dep_ap, arr_ap, dt)),
     }
 
 
@@ -121,21 +124,51 @@ def _weather_factors(wx: dict | None, dep: str, arr: str) -> list[dict]:
     return out
 
 
-def _data_basis(hist: dict, meta: dict, weather_used: bool = False) -> dict:
+def _combine_factors(weather: list, airport: list, history: list) -> list[dict]:
+    if airport:  # airport punctuality replaces the "no history" placeholder
+        history = [f for f in history if f["label"] != "No flight history for this route"]
+    return weather + airport + history
+
+
+def _airport_factors(shares: list[dict]) -> list[dict]:
+    """Official airport punctuality used for routes without their own history."""
+    out = []
+    for a in shares:
+        if a["source"] != "EUROCONTROL":
+            continue
+        what = "departures" if a["side"] == "origin" else "arrivals"
+        where = a["airport"] if a.get("level") == "airport" else f"{a['airport']} (country average)"
+        value = f"{a['on_time_pct']:.0f}% on time this year"
+        if a.get("on_time_pct_7d") is not None:
+            value += f", {a['on_time_pct_7d']:.0f}% last 7 days"
+        late = 100 - a["on_time_pct"]
+        level = "high" if late > 30 else "low" if late < 18 else "medium"
+        out.append({"icon": "🇪🇺", "label": f"{where} {what} (EUROCONTROL)", "value": value, "level": level})
+    return out
+
+
+def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
+                method: str | None = None, shares: list | None = None) -> dict:
     months = meta.get("data_months") or []
     period = f"{months[0]} to {months[-1]}" if months else "the past year"
     flight = hist.get("flight")
     route = hist.get("route")
-    if flight and flight[0] >= MIN_HISTORY:
+    if method == "airport_punctuality":
+        used = ", ".join(f"{a['airport']} ({a['on_time_pct']:.0f}% on time)" for a in shares or [])
+        level, note = "airport", (f"No history for this exact flight or route. Based on official airport "
+                                  f"punctuality: {used}, adjusted for time of day, season and holidays. "
+                                  f"Airline-specific performance isn't included.")
+    elif flight and flight[0] >= MIN_HISTORY:
         level, note = "high", f"Based on this flight's {flight[0]} departures from {period}, plus route, airline and airport history."
     elif route and route[0] >= MIN_HISTORY:
         level, note = "medium", f"Based on {route[0]:,} flights on this route from {period}. This flight number has little history."
     elif hist.get("carrier") or hist.get("origin") or hist.get("dest"):
         level, note = "low", "Little history for this route. Based mainly on airline and airport records."
     else:
-        level, note = "general", ("We don't have flight records for this route (our data covers flights "
-                                  "to, from and within the US). This is a general estimate from time of "
-                                  "day and season, so treat it as a rough guide.")
+        level, note = "general", ("We don't have punctuality data for this flight, its route or these "
+                                  "airports yet (we cover US flights and European and Turkish airports). "
+                                  "This is only a general estimate from time of day and season, so the "
+                                  "numbers will look similar for many flights. Treat it as a rough guide.")
     if weather_used:
         note += " Includes the current airport weather forecast."
     return {"confidence": level, "note": note, "weather_forecast_used": weather_used,

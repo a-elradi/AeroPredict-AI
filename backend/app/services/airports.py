@@ -2,6 +2,10 @@
 AeroPredict — Airport reference data
 IATA -> ICAO / name / country, used when live flight data is unavailable.
 """
+import json
+from functools import lru_cache
+from pathlib import Path
+
 AIRPORTS = {
     # North America
     "ATL": ("KATL", "Atlanta Hartsfield-Jackson", "US"),
@@ -113,10 +117,49 @@ SCHENGEN = {"AT", "BE", "CH", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "H
             "SI", "SK", "HR", "BG", "RO"}
 
 
+_DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+
+
+@lru_cache(maxsize=1)
+def _world() -> dict:
+    """All airports with scheduled service (OurAirports), see scripts/build_reference_data.py."""
+    path = _DATA_DIR / "airports_world.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+@lru_cache(maxsize=1)
+def _eurocontrol() -> dict:
+    path = _DATA_DIR / "eurocontrol_punctuality.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
 def lookup(iata: str) -> dict:
     code = (iata or "").upper().strip()
+    w = _world().get(code)
     icao, name, country = AIRPORTS.get(code, (None, None, None))
-    return {"iata": code, "icao": icao, "name": name, "country": country}
+    if w:
+        icao, country = icao or w[0], country or w[2]
+        name = name or w[1]
+    return {"iata": code, "icao": icao, "name": name, "country": country,
+            "lat": w[3] if w else None, "lon": w[4] if w else None}
+
+
+def punctuality(iata: str) -> dict | None:
+    """
+    Official EUROCONTROL punctuality for a European airport (or, failing that,
+    its country): share of departures/arrivals within 15 minutes of schedule.
+    """
+    euro = _eurocontrol()
+    if not euro:
+        return None
+    info = lookup(iata)
+    apt = euro["airports"].get(info["icao"] or "")
+    if apt and apt.get("dep_on_time_pct") is not None:
+        return {**apt, "level": "airport", "period": euro["period"], "source": euro["source"]}
+    cty = euro["countries"].get(info["country"] or "")
+    if cty and cty.get("dep_on_time_pct") is not None:
+        return {**cty, "level": "country", "period": euro["period"], "source": euro["source"]}
+    return None
 
 
 def needs_passport_control(dep_country: str | None, arr_country: str | None) -> bool:

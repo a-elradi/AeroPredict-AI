@@ -197,10 +197,13 @@ function renderResult(data) {
   document.getElementById("rTime").textContent = departure;
 
   const badge = document.getElementById("riskBadge");
-  badge.textContent = `${risk_tier} RISK`;
-  badge.style.background = risk_color + "22";
-  badge.style.color = risk_color;
-  badge.style.border = `1px solid ${risk_color}44`;
+  // Without data for this flight, its route or its airports, don't present a confident risk level
+  const generic = data.data_basis && data.data_basis.confidence === "general";
+  badge.textContent = generic ? "ESTIMATE ONLY" : `${risk_tier} RISK`;
+  const badgeColor = generic ? "#7A8FA6" : risk_color;
+  badge.style.background = badgeColor + "22";
+  badge.style.color = badgeColor;
+  badge.style.border = `1px solid ${badgeColor}44`;
 
   document.getElementById("pOnTime").textContent = `${p.on_time}%`;
   document.getElementById("pDelayed").textContent = `${p.delayed}%`;
@@ -256,7 +259,8 @@ function renderResult(data) {
   }
   const basis = document.getElementById("rBasis");
   if (basis && data.data_basis) {
-    const labels = { high: "High confidence", medium: "Medium confidence", low: "Low confidence", general: "General estimate" };
+    const labels = { high: "High confidence", medium: "Medium confidence", airport: "Airport-level estimate",
+                     low: "Low confidence", general: "Estimate only" };
     basis.dataset.confidence = data.data_basis.confidence;
     basis.textContent = `${labels[data.data_basis.confidence] || ""}: ${data.data_basis.note}`;
   }
