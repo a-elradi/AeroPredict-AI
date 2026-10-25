@@ -10,8 +10,9 @@ history, so the route statistics can cover a full year:
   two days only, so it runs just before midnight Taiwan time). Its actual times
   look like take-off/landing times, so it's collected raw and not used in the
   route statistics until it has been calibrated.
-- Netherlands: Schiphol Public Flight API (free key: SCHIPHOL_APP_ID and
-  SCHIPHOL_APP_KEY, from https://developer.schiphol.nl)
+- Netherlands: Schiphol Public Flight API v4 (free: the application's Client ID
+  in SCHIPHOL_APP_ID and Client Secret in SCHIPHOL_APP_KEY, from
+  https://developer.schiphol.nl; exchanged for an OAuth token on each run)
 - Sweden: Swedavia FlightInfo API, Sweden's 10 state airports (free key:
   SWEDAVIA_KEY, from https://apideveloper.swedavia.se)
 Sources whose key isn't set are skipped. The first run of each also saves one
@@ -44,7 +45,9 @@ AVINOR_FEED = "https://asrv.avinor.no/XmlFeed/v1.0"
 HKG_PAST = "https://www.hongkongairport.com/flightinfo-rest/rest/flights/past"
 TAOYUAN_FEED = "https://www.taoyuan-airport.com/uploads/flightx/a_flight_v4.txt"
 TAIWAN_UTC_OFFSET = timedelta(hours=8)
-SCHIPHOL_FLIGHTS = "https://api.schiphol.nl/public-flights/flights"
+SCHIPHOL_TOKEN = "https://api.auth.schiphol.nl/oauth/token"
+SCHIPHOL_AUDIENCE = "https://api.schiphol.nl/public"
+SCHIPHOL_FLIGHTS = "https://api.schiphol.nl/public/public-flights/v4/flights"
 SWEDAVIA_FLIGHTS = "https://api.swedavia.se/flightinfo/v2/{airport}/{direction}/{day}"
 SWEDAVIA_AIRPORTS = ["ARN", "GOT", "BMA", "MMX", "LLA", "UME", "OSD", "VBY", "KRN", "RNB"]
 
@@ -187,11 +190,16 @@ def _utc(text: str | None) -> datetime | None:
 
 def collect_schiphol(day: date) -> dict:
     """Every flight at Amsterdam Schiphol on one day: pushback and on-block times (gate times)."""
-    app_id, app_key = _key("SCHIPHOL_APP_ID", "SCHIPHOL_APP_KEY")
-    headers = {"Accept": "application/json", "app_id": app_id, "app_key": app_key, "ResourceVersion": "v4"}
+    client_id, client_secret = _key("SCHIPHOL_APP_ID", "SCHIPHOL_APP_KEY")
+    token = requests.post(SCHIPHOL_TOKEN, timeout=60, data={
+        "grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret,
+        "audience": SCHIPHOL_AUDIENCE})
+    if not token.ok:  # say why (e.g. wrong secret) rather than retrying
+        raise RuntimeError(f"Schiphol sign-in {token.status_code}: {token.text[:300]}")
+    headers = {"Accept": "application/json", "Authorization": f"Bearer {token.json()['access_token']}"}
     check = requests.get(SCHIPHOL_FLIGHTS, headers={**HEADERS, **headers}, timeout=120,
                          params={"scheduleDate": day.isoformat(), "flightDirection": "D", "page": 0})
-    if not check.ok:  # say why (e.g. key not yet active) rather than retrying
+    if not check.ok:
         raise RuntimeError(f"Schiphol API {check.status_code}: {check.text[:300]}")
     out = {}
     for direction in ("D", "A"):
