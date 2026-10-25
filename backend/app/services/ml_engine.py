@@ -210,8 +210,8 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
         level, note = "low", "Little history for this route. Based mainly on airline and airport records."
     else:
         level, note = "general", ("We don't have punctuality data for this flight, its route or these "
-                                  "airports yet (we cover US, UK, Brazil and Australia flights, and European and "
-                                  "Turkish airports). "
+                                  "airports yet (we cover US, UK, Brazil, Australia, South Korea and Hong Kong "
+                                  "flights, Japanese airlines, and European and Turkish airports). "
                                   "This is only a general estimate from time of day and season, so the "
                                   "numbers will look similar for many flights. Treat it as a rough guide.")
     if weather_used:

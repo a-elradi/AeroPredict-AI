@@ -1,6 +1,7 @@
 """
 AeroPredict — route and flight history outside the US, from official
-national data (UK CAA, Brazil ANAC, Australia BITRE), plus each
+national data (UK CAA, Brazil ANAC, Australia BITRE, Korea Airportal, Hong Kong
+airport, Japan MLIT), plus each
 airline's overall record across all of them. Built by scripts/build_route_stats.py.
 """
 import gzip
@@ -12,7 +13,8 @@ from . import airports
 
 STATS_FILE = Path(__file__).resolve().parents[2] / "data" / "route_stats.json.gz"
 MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200, "airline": 1000}
-SOURCE_COUNTRY = {"uk": "the UK", "brazil": "Brazil", "australia": "Australia"}
+SOURCE_COUNTRY = {"uk": "the UK", "brazil": "Brazil", "australia": "Australia", "korea": "South Korea",
+                  "hongkong": "Hong Kong", "japan": "Japan"}
 SOURCE_BY_COUNTRY = {"BR": "brazil", "GB": "uk", "JE": "uk", "GG": "uk", "IM": "uk"}
 
 
@@ -85,5 +87,6 @@ def _same_route(data: dict, carrier: str, origin: str, dest: str) -> bool:
 
 def _source(data: dict, origin: str, dest: str) -> dict:
     countries = {airports.lookup(origin)["country"], airports.lookup(dest)["country"]}
-    key = "brazil" if "BR" in countries else "australia" if countries == {"AU"} else "uk"
+    key = ("brazil" if "BR" in countries else "korea" if "KR" in countries else "hongkong" if "HK" in countries
+           else "australia" if countries == {"AU"} else "japan" if countries == {"JP"} else "uk")
     return data.get("sources", {}).get(key, {"name": "national aviation statistics"})

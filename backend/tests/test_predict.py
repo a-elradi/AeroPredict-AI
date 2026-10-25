@@ -190,3 +190,34 @@ def test_brazil_placeholder_cancellations_are_dropped():
     for key in ("G3|BR", "LA|BR", "AD|BR"):
         flights, _, cancelled, _ = data["airline_country"][key]
         assert cancelled / (flights + cancelled) < 0.05
+
+
+def _source_built(name):
+    from app.services import route_history
+    if name not in route_history._load().get("sources", {}):
+        pytest.skip(f"{name} statistics not built")
+
+
+@needs_model
+def test_korean_domestic_flight_uses_airportal(client):
+    _source_built("korea")
+    d = predict_route(client, "GMP", "CJU", flight_number="KE1201", airline="KE")
+    assert d["data_basis"]["confidence"] in ("high", "medium")
+    assert "Airportal" in d["data_basis"]["note"]
+
+
+@needs_model
+def test_hong_kong_route_uses_airport_records(client):
+    _source_built("hongkong")
+    d = predict_route(client, "HKG", "TPE", flight_number="CX400", airline="CX")
+    assert d["data_basis"]["confidence"] in ("high", "medium")
+    assert "Hong Kong" in d["data_basis"]["note"]
+
+
+def test_japanese_airline_national_record():
+    _source_built("japan")
+    from app.services import route_history
+    h = route_history.lookup("NH", "9999", "HND", "KMQ")
+    assert h and h["level"] in ("airline_country", "route_airline", "route")
+    if h["level"] == "airline_country":
+        assert h["country"] == "JP" and "MLIT" in h["source"]["name"]

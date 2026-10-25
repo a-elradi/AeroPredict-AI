@@ -1,7 +1,8 @@
-name: Refresh route history (UK and Brazil)
+name: Refresh route history (UK, Brazil, Australia, Korea, Hong Kong, Japan)
 
-# Monthly: last 12 months of official route punctuality from the UK CAA and
-# Brazil's ANAC, used for flights the US data doesn't cover.
+# Monthly: official punctuality data from the UK CAA, Brazil's ANAC, Australia's
+# BITRE, Korea's Airportal, Hong Kong airport and Japan's MLIT, used for flights
+# the US data doesn't cover.
 on:
   schedule:
     - cron: "37 6 22 * *"   # 06:37 UTC on the 22nd of each month
@@ -13,14 +14,14 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Install dependencies
-        run: pip install requests
+        run: pip install requests pandas openpyxl
       - name: Build route history
         working-directory: backend
         run: python -u scripts/build_route_stats.py --months 12
@@ -32,7 +33,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes"
           else
-            git commit -m "Refresh UK and Brazil route history"
+            git commit -m "Refresh route history"
             git pull --rebase origin main
             git push origin HEAD:main
           fi
