@@ -15,6 +15,9 @@ for flights the US data doesn't cover:
   https://www.airportal.go.kr/
 - Hong Kong: Airport Authority Hong Kong flight records, every flight over
   the last ~90 days (the feed's limit), via DATA.GOV.HK
+- Norway: Avinor flight data, every flight at Norway's airports, saved daily by
+  scripts/collect_flights.py (the feed keeps ~36 hours); Hong Kong older than
+  the feed's 90 days comes from the same collector
 - Japan: MLIT on-time performance of the 10 main Japanese airlines on
   domestic routes, latest fiscal year (airline level only)
   https://www.mlit.go.jp/koku/15_bf_000727.html
@@ -45,6 +48,8 @@ from pathlib import Path
 from urllib.parse import quote
 
 import requests
+
+import collect_flights
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 HEADERS = {"User-Agent": "Mozilla/5.0 (AeroPredict route statistics; github.com/a-elradi/AeroPredict-AI)"}
@@ -605,9 +610,53 @@ def build_hongkong(ref: Ref, stats: Stats, months: int) -> dict:
                     late = delay > 15
                     stats.add_all(airline, number, origin, dest, 1, int(late), 0, delay if late else 0)
                     flights_total += 1
+    # Older days saved by the daily collector (scripts/collect_flights.py)
+    older = [r for r in collect_flights.load("hongkong", months) if r[0] < days[0].isoformat()]
+    first = min([r[0] for r in older], default=days[0].isoformat())
+    flights_total += add_collected(ref, stats, older, skip_countries=("GB", "BR", "KR"))
     print(f"  Hong Kong: {flights_total:,} flights", flush=True)
     return {"name": "Airport Authority Hong Kong flight records (DATA.GOV.HK)",
-            "period": f"{days[0]:%Y-%m-%d} to {days[-1]:%Y-%m-%d}", "flights": flights_total}
+            "period": f"{first} to {days[-1]:%Y-%m-%d}", "flights": flights_total}
+
+
+def add_collected(ref: Ref, stats: Stats, records: list, skip_countries=(), domestic_country: str | None = None) -> int:
+    """Records saved by scripts/collect_flights.py: [date, airline, number, origin, dest, delay, cancelled]."""
+    n = 0
+    for _, airline, number, origin, dest, delay, cancelled in records:
+        if ref.country_of.get(origin) in skip_countries or ref.country_of.get(dest) in skip_countries:
+            continue
+        domestic = domestic_country and airline and \
+            ref.country_of.get(origin) == ref.country_of.get(dest) == domestic_country
+        if cancelled:
+            stats.add_all(airline, number, origin, dest, 0, 0, 1, 0)
+            if domestic:
+                stats.add("airline_country", f"{airline}|{domestic_country}", 0, 0, 1, 0)
+            continue
+        if delay is None:
+            continue
+        late = delay > 15
+        stats.add_all(airline, number, origin, dest, 1, int(late), 0, delay if late else 0)
+        if domestic:
+            stats.add("airline_country", f"{airline}|{domestic_country}", 1, int(late), 0, delay if late else 0)
+        n += 1
+    return n
+
+
+# ── Norway (Avinor, collected daily) ─────────────────────────────────────────
+
+def build_norway(ref: Ref, stats: Stats, months: int) -> dict:
+    """
+    Every flight at Norway's airports, saved daily from Avinor's flight data feed (it only keeps
+    ~36 hours). Flights to the UK, Brazil, Korea and Hong Kong are left to those sources.
+    """
+    records = collect_flights.load("avinor", months)
+    if not records:
+        raise RuntimeError("no collected Avinor data yet")
+    n = add_collected(ref, stats, records, skip_countries=("GB", "BR", "KR", "HK"), domestic_country="NO")
+    dates = sorted(r[0] for r in records)
+    print(f"  Norway: {n:,} flights", flush=True)
+    return {"name": "Flight data from Avinor (www.avinor.no)", "period": f"{dates[0]} to {dates[-1]}",
+            "flights": n}
 
 
 # ── Japan (MLIT Civil Aviation Bureau) ───────────────────────────────────────
@@ -693,7 +742,7 @@ def main():
     sources = {}
     for key, builder in (("uk", build_uk), ("brazil", build_brazil), ("australia", build_australia),
                          ("korea", build_korea), ("hongkong", build_hongkong),
-                         ("japan", build_japan)):
+                         ("japan", build_japan), ("norway", build_norway)):
         try:
             stats.source = key
             sources[key] = builder(ref, stats, args.months)

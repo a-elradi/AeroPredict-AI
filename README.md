@@ -128,6 +128,7 @@ the model's time-of-day, season, holiday and weather effects:
 | ANAC Brazil VRA | every flight to/from/within Brazil, flight by flight | monthly (`route-stats.yml`) |
 | Airportal (South Korea) | every flight at Korea's 15 airports, flight by flight | monthly (`route-stats.yml`) |
 | Airport Authority Hong Kong | every flight at Hong Kong, last ~90 days, flight by flight | monthly (`route-stats.yml`) |
+| Avinor flight data (Norway) | every flight at Norway's airports, saved daily (`collect-flights.yml`) | monthly (`route-stats.yml`) |
 | MLIT Japan | national on-time record of the 10 main Japanese airlines (domestic) | monthly check, published yearly |
 | BITRE Australia on-time performance | every major airline on every Australian domestic route, plus each airline's national record | monthly (`route-stats.yml`) |
 | EUROCONTROL airport punctuality | ~110 European and Turkish airports, plus country averages | weekly (`reference-data.yml`) |

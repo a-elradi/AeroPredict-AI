@@ -1,0 +1,40 @@
+name: Collect daily flights (Norway, Hong Kong)
+
+# Daily: save yesterday's flights from open airport feeds that keep only a short
+# history (Avinor ~36 hours, Hong Kong 91 days). The monthly route-stats job
+# turns them into route history.
+on:
+  schedule:
+    - cron: "17 3 * * *"   # 03:17 UTC every day
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install requests
+      - name: Collect flights
+        working-directory: backend
+        run: python -u scripts/collect_flights.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/data/collected
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            # [skip render]: data for the monthly build only, no need to redeploy the site
+            git commit -m "Collect daily flights [skip render]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
