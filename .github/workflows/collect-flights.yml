@@ -1,4 +1,4 @@
-name: Collect daily flights (Norway, Hong Kong, Taiwan)
+name: Collect daily flights (Norway, Hong Kong, Taiwan, Netherlands, Sweden)
 
 # Daily: save yesterday's flights from open airport feeds that keep only a short
 # history (Avinor ~36 hours, Hong Kong 91 days). The monthly route-stats job
@@ -25,11 +25,15 @@ jobs:
         run: pip install requests
       - name: Collect flights
         working-directory: backend
+        env:  # free keys, see scripts/collect_flights.py; sources without one are skipped
+          SCHIPHOL_APP_ID: ${{ secrets.SCHIPHOL_APP_ID }}
+          SCHIPHOL_APP_KEY: ${{ secrets.SCHIPHOL_APP_KEY }}
+          SWEDAVIA_KEY: ${{ secrets.SWEDAVIA_KEY }}
         run: |
           if [ "${{ github.event.schedule }}" = "52 15 * * *" ]; then
             python -u scripts/collect_flights.py taoyuan
           else
-            python -u scripts/collect_flights.py avinor hongkong taoyuan
+            python -u scripts/collect_flights.py avinor hongkong taoyuan schiphol swedavia
           fi
       - name: Commit
         run: |

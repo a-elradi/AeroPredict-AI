@@ -10,6 +10,12 @@ history, so the route statistics can cover a full year:
   two days only, so it runs just before midnight Taiwan time). Its actual times
   look like take-off/landing times, so it's collected raw and not used in the
   route statistics until it has been calibrated.
+- Netherlands: Schiphol Public Flight API (free key: SCHIPHOL_APP_ID and
+  SCHIPHOL_APP_KEY, from https://developer.schiphol.nl)
+- Sweden: Swedavia FlightInfo API, Sweden's 10 state airports (free key:
+  SWEDAVIA_KEY, from https://apideveloper.swedavia.se)
+Sources whose key isn't set are skipped. The first run of each also saves one
+raw response to data/collected/<source>/sample.json so the parsing can be checked.
 
 Records are stored by month in data/collected/<source>/<YYYY-MM>.json.gz as
 {key: [date, airline, number, origin, dest, delay_min, cancelled]} and read by
@@ -21,6 +27,7 @@ import csv
 import io
 import gzip
 import json
+import os
 import re
 import sys
 import time
@@ -37,12 +44,19 @@ AVINOR_FEED = "https://asrv.avinor.no/XmlFeed/v1.0"
 HKG_PAST = "https://www.hongkongairport.com/flightinfo-rest/rest/flights/past"
 TAOYUAN_FEED = "https://www.taoyuan-airport.com/uploads/flightx/a_flight_v4.txt"
 TAIWAN_UTC_OFFSET = timedelta(hours=8)
+SCHIPHOL_FLIGHTS = "https://api.schiphol.nl/public-flights/flights"
+SWEDAVIA_FLIGHTS = "https://api.swedavia.se/flightinfo/v2/{airport}/{direction}/{day}"
+SWEDAVIA_AIRPORTS = ["ARN", "GOT", "BMA", "MMX", "LLA", "UME", "OSD", "VBY", "KRN", "RNB"]
 
 
-def get(url: str, **kw) -> requests.Response:
+class KeyMissing(Exception):
+    pass
+
+
+def get(url: str, headers: dict | None = None, **kw) -> requests.Response:
     for attempt in range(5):
         try:
-            r = requests.get(url, headers=HEADERS, timeout=120, **kw)
+            r = requests.get(url, headers={**HEADERS, **(headers or {})}, timeout=120, **kw)
             r.raise_for_status()
             return r
         except requests.RequestException:
@@ -150,6 +164,97 @@ def collect_taoyuan() -> dict:
     return out
 
 
+def _key(*names: str) -> list[str]:
+    values = [os.environ.get(n, "").strip() for n in names]
+    if not all(values):
+        raise KeyMissing(" and ".join(names) + " not set")
+    return values
+
+
+def _save_sample(source: str, payload) -> None:
+    path = COLLECTED / source / "sample.json"
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, indent=1)[:200_000], encoding="utf-8")
+
+
+def _utc(text: str | None) -> datetime | None:
+    if not text:
+        return None
+    t = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
+
+
+def collect_schiphol(day: date) -> dict:
+    """Every flight at Amsterdam Schiphol on one day: pushback and on-block times (gate times)."""
+    app_id, app_key = _key("SCHIPHOL_APP_ID", "SCHIPHOL_APP_KEY")
+    headers = {"Accept": "application/json", "app_id": app_id, "app_key": app_key, "ResourceVersion": "v4"}
+    out = {}
+    for direction in ("D", "A"):
+        for page in range(200):
+            resp = get(SCHIPHOL_FLIGHTS, headers=headers, params={
+                "scheduleDate": day.isoformat(), "flightDirection": direction, "page": page,
+                "includedelays": "false", "sort": "+scheduleTime"})
+            flights = resp.json().get("flights", []) if resp.content else []
+            if page == 0:
+                _save_sample("schiphol", resp.json() if resp.content else {})
+            for f in flights:
+                if f.get("serviceType") not in ("J", "C") or f.get("flightName") != f.get("mainFlight"):
+                    continue  # passenger flights only; codeshares repeat the operating flight
+                route = (f.get("route") or {}).get("destinations") or []
+                if not route:
+                    continue
+                other = route[0] if direction == "D" else route[-1]
+                origin, dest = ("AMS", other) if direction == "D" else (other, "AMS")
+                airline, number = f.get("prefixIATA"), str(f.get("flightNumber") or "") or None
+                states = (f.get("publicFlightState") or {}).get("flightStates") or []
+                key = f"{day}|{f.get('flightName')}|{direction}"
+                if "CNX" in states:
+                    out[key] = [day.isoformat(), airline, number, origin, dest, None, 1]
+                    continue
+                sched = _utc(f.get("scheduleDateTime"))
+                actual = _utc(f.get("actualOffBlockTime") if direction == "D" else f.get("actualOnBlockTime"))
+                if sched and actual:
+                    out[key] = [day.isoformat(), airline, number, origin, dest,
+                                round((actual - sched).total_seconds() / 60), 0]
+            if 'rel="next"' not in resp.headers.get("Link", ""):
+                break
+    return out
+
+
+def collect_swedavia(day: date) -> dict:
+    """Departures from Sweden's 10 state airports, plus arrivals from abroad."""
+    (key,) = _key("SWEDAVIA_KEY")
+    headers = {"Accept": "application/json", "Ocp-Apim-Subscription-Key": key, "Cache-Control": "no-cache"}
+    out = {}
+    for airport in SWEDAVIA_AIRPORTS:
+        for direction in ("departures", "arrivals"):
+            resp = get(SWEDAVIA_FLIGHTS.format(airport=airport, direction=direction, day=day.isoformat()),
+                       headers=headers)
+            data = resp.json()
+            _save_sample("swedavia", data)
+            for f in data.get("flights", []):
+                dep = direction == "departures"
+                other = f.get("arrivalAirportIata" if dep else "departureAirportIata")
+                if not other or (not dep and other in SWEDAVIA_AIRPORTS):
+                    continue
+                origin, dest = (airport, other) if dep else (other, airport)
+                airline = (f.get("airlineOperator") or {}).get("iata")
+                fm = re.fullmatch(r"[A-Z0-9]{2}\s*0*(\d{1,4})[A-Z]?", f.get("flightId") or "")
+                number = fm.group(1) if fm else None
+                times = f.get("departureTime" if dep else "arrivalTime") or {}
+                status = str((f.get("locationAndStatus") or {}).get("flightLegStatus") or "").upper()
+                rec = f"{day}|{f.get('flightId')}|{airport}|{direction[0].upper()}"
+                if status in ("CAN", "CANCELLED", "CANCELED"):
+                    out[rec] = [day.isoformat(), airline, number, origin, dest, None, 1]
+                    continue
+                sched, actual = _utc(times.get("scheduledUtc")), _utc(times.get("actualUtc"))
+                if sched and actual:
+                    out[rec] = [day.isoformat(), airline, number, origin, dest,
+                                round((actual - sched).total_seconds() / 60), 0]
+    return out
+
+
 def save(source: str, records: dict) -> int:
     """Merge into the month files; newer records replace older ones (status updates)."""
     by_month = {}
@@ -178,21 +283,26 @@ def load(source: str, months: int) -> list[list]:
 
 SOURCES = {"avinor": collect_avinor,
            "hongkong": lambda: collect_hongkong(date.today() - timedelta(days=1)),
-           "taoyuan": collect_taoyuan}
+           "taoyuan": collect_taoyuan,
+           "schiphol": lambda: collect_schiphol(date.today() - timedelta(days=1)),
+           "swedavia": lambda: collect_swedavia(date.today() - timedelta(days=1))}
 
 
 def main():
     names = sys.argv[1:] or ["avinor", "hongkong"]
-    failed = []
+    failed, skipped = [], []
     for source in names:
         collect = SOURCES[source]
         try:
             records = collect()
             print(f"{source}: {len(records):,} flights, {save(source, records):,} new", flush=True)
+        except KeyMissing as e:
+            print(f"{source} skipped: {e}", flush=True)
+            skipped.append(source)
         except Exception as e:  # one source failing shouldn't block the others
             print(f"{source} failed: {e}", flush=True)
             failed.append(source)
-    if len(failed) == len(names):
+    if failed and len(failed) + len(skipped) == len(names):
         sys.exit("All sources failed")
 
 
