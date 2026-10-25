@@ -229,7 +229,7 @@ def test_collected_flights_round_trip(tmp_path, monkeypatch):
     monkeypatch.setattr(collect_flights, "COLLECTED", tmp_path)
     assert collect_flights.flight_code("DY 1302") == ("DY", "1302")
     assert collect_flights.flight_code("WF012") == ("WF", "12")
-    rec = {"1|D": ["2026-10-24", "DY", "1302", "OSL", "BGO", 7, 0}
+    rec = {"1|D": ["2026-10-24", "DY", "1302", "OSL", "BGO", 7, 0]}
     assert collect_flights.save("avinor", rec) == 1
     assert collect_flights.save("avinor", {"1|D": ["2026-10-24", "DY", "1302", "OSL", "BGO", 9, 0]}) == 0
     assert collect_flights.load("avinor", 12) == [["2026-10-24", "DY", "1302", "OSL", "BGO", 9, 0]]
