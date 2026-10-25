@@ -16,7 +16,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import airports
+from . import airports, route_history
 from .weather_features import WX_FEATURES, empty as empty_weather
 
 MODEL_DIR = Path(__file__).resolve().parents[3] / "models"
@@ -172,28 +172,36 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
         return m["booster"].predict(xgb.DMatrix(x, feature_names=names))[0]
 
     proba = run(tables)
-    method, airport_shares = "model", []
+    method, airport_shares, route_hist = "model", [], None
     route_known = any(tables[k].get(key) for k, key in (("flight", f"{carrier}{flight_no}|{origin}"),
                                                          ("route", f"{origin}|{dest}")))
     if not route_known:
-        # No history for this flight or route (e.g. outside the US). Start from the airports'
-        # real punctuality and apply the time-of-day / season / weather effect the model
-        # learned, measured against an 'average flight' with no history at all.
-        airport_shares = _airport_late_shares(tables, origin, dest)
-        if any(a["source"] == "EUROCONTROL" for a in airport_shares):
+        # No US history for this flight or route. Start from the best real record we have
+        # elsewhere (UK/Brazil route history, else EUROCONTROL airport punctuality) and apply
+        # the time-of-day / season / weather effect the model learned, measured against an
+        # 'average flight' with no history at all.
+        route_hist = route_history.lookup(carrier, flight_no, origin, dest)
+        airport_shares = [] if route_hist else _airport_late_shares(tables, origin, dest)
+        base = cancel_share = None
+        if route_hist:
+            base, cancel_share = route_hist["disrupted_share"], route_hist["cancel_share_of_disrupted"]
+            method = "route_history"
+        elif any(a["source"] == "EUROCONTROL" for a in airport_shares):
             base = sum(a["late"] * a["weight"] for a in airport_shares) / sum(a["weight"] for a in airport_shares)
+            method = "airport_punctuality"
+        if base is not None:
             generic = run({name: {} for name in STAT_KEYS})
             avg = prior["delay"] + prior["cancel"]
             context = _odds(generic[1] + generic[2]) / _odds(avg)
             odds = _odds(base) * context
             disrupted = odds / (1 + odds)
-            cancel_share = generic[2] / max(generic[1] + generic[2], 1e-6)
+            if cancel_share is None:
+                cancel_share = generic[2] / max(generic[1] + generic[2], 1e-6)
             proba = np.array([1 - disrupted, disrupted * (1 - cancel_share), disrupted * cancel_share])
-            method = "airport_punctuality"
 
     keys = stat_keys(carrier, flight_no, origin, dest, dep_hour, arr_hour)
     history = {name: tables[name].get(key) for name, key in keys.items()}
     return {"proba": [float(p) for p in proba], "history": history, "prior": prior,
             "distance_miles": distance, "meta": m["meta"],
             "weather_used": weather_used, "weather": weather if weather_used else None,
-            "method": method, "airport_shares": airport_shares}
+            "method": method, "airport_shares": airport_shares, "route_history": route_hist}
