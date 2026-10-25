@@ -194,8 +194,12 @@ def collect_schiphol(day: date) -> dict:
     token = requests.post(SCHIPHOL_TOKEN, timeout=60, data={
         "grant_type": "client_credentials", "client_id": client_id, "client_secret": client_secret,
         "audience": SCHIPHOL_AUDIENCE})
-    if not token.ok:  # say why (e.g. wrong secret) rather than retrying
-        raise RuntimeError(f"Schiphol sign-in {token.status_code}: {token.text[:300]}")
+    if token.status_code == 401:  # some OAuth servers only take the credentials as HTTP Basic auth
+        token = requests.post(SCHIPHOL_TOKEN, timeout=60, auth=(client_id, client_secret),
+                              data={"grant_type": "client_credentials", "audience": SCHIPHOL_AUDIENCE})
+    if not token.ok:  # say why (e.g. wrong secret) rather than retrying; lengths only, never the values
+        raise RuntimeError(f"Schiphol sign-in {token.status_code}: {token.text[:300]} "
+                           f"(client id {len(client_id)} chars, secret {len(client_secret)} chars)")
     headers = {"Accept": "application/json", "Authorization": f"Bearer {token.json()['access_token']}"}
     check = requests.get(SCHIPHOL_FLIGHTS, headers={**HEADERS, **headers}, timeout=120,
                          params={"scheduleDate": day.isoformat(), "flightDirection": "D", "page": 0})
