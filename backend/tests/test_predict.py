@@ -275,3 +275,12 @@ def test_small_airports_are_smoothed():
     if not rec:
         pytest.skip("route statistics not built")
     assert 0.15 < rec["late_share"] < 0.45
+
+
+@needs_model
+def test_us_airport_to_airport_without_route_history(client):
+    # a US airport record next to a non-US airport record used to crash (missing "level")
+    for dest in ("DXB", "LOS", "BOG"):
+        r = client.post("/api/predict", json={**US_FLIGHT, "flight_number": "AA1", "airline": "AA",
+                                              "dep_airport": "JFK", "arr_airport": dest})
+        assert r.status_code == 200

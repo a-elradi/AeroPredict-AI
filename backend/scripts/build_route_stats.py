@@ -415,52 +415,67 @@ def latest_anac_month() -> tuple[int, int]:
     raise SystemExit("No recent ANAC VRA file found")
 
 
+def brazil_month(ref: Ref, y: int, m: int, unmatched: dict) -> tuple[list, list]:
+    """
+    One month of ANAC VRA flights: (flown, cancelled), each a list of
+    (airline, number, origin, dest, domestic, scheduled_departure, arrival_delay_min or None).
+    """
+    fmt = "%Y-%m-%d %H:%M:%S"
+    text = get(anac_url(y, m)).content.decode("utf-8-sig", errors="replace")
+    lines = text.splitlines()
+    start = next(i for i, line in enumerate(lines) if line.startswith('"ICAO Empresa'))
+    flown, cancelled, operated = [], defaultdict(list), defaultdict(int)
+    for r in csv.DictReader(lines[start:], delimiter=";"):
+        status = r["Situação Voo"]
+        airline = ref.airline_by_icao.get(r["ICAO Empresa Aérea"])
+        origin = ref.icao_to_iata.get(r["ICAO Aeródromo Origem"])
+        dest = ref.icao_to_iata.get(r["ICAO Aeródromo Destino"])
+        if not origin or not dest:
+            unmatched[f"{r['ICAO Aeródromo Origem']}/{r['ICAO Aeródromo Destino']}"] += 1
+            continue
+        number = str(int(r["Número Voo"])) if r["Número Voo"].isdigit() else None
+        domestic = bool(airline) and ref.country_of.get(origin) == ref.country_of.get(dest) == "BR"
+        sched_dep = (r.get("Partida Prevista") or "")[:19]
+        if status == "CANCELADO":
+            cancelled[(airline, number, origin, dest)].append((airline, number, origin, dest, domestic, sched_dep, None))
+            continue
+        if status != "REALIZADO" or not r["Chegada Prevista"] or not r["Chegada Real"]:
+            continue
+        try:
+            # Some airlines' times carry fractions of a second ("04:25:00.100000000")
+            delay = (datetime.strptime(r["Chegada Real"][:19], fmt)
+                     - datetime.strptime(r["Chegada Prevista"][:19], fmt)).total_seconds() / 60
+        except ValueError:
+            continue
+        flown.append((airline, number, origin, dest, domestic, sched_dep, delay))
+        operated[(airline, number, origin, dest)] += 1
+    # The data also lists schedule placeholders that never flew (hundreds of 'cancelled'
+    # flights on routes with one real flight a day), so only cancellations of flights that
+    # did operate that month count, and at most as many as operated.
+    kept = [row for key, rows in cancelled.items() for row in rows[:operated.get(key, 0)]]
+    return flown, kept
+
+
+def add_brazil(stats: Stats, flown: list, cancelled: list) -> None:
+    for airline, number, origin, dest, domestic, _, delay in flown:
+        late = delay > 15
+        stats.add_all(airline, number, origin, dest, 1, int(late), 0, delay if late else 0)
+        if domestic:
+            stats.add("airline_country", f"{airline}|BR", 1, int(late), 0, delay if late else 0)
+    for airline, number, origin, dest, domestic, _, _ in cancelled:
+        stats.add_all(airline, number, origin, dest, 0, 0, 1, 0)
+        if domestic:
+            stats.add("airline_country", f"{airline}|BR", 0, 0, 1, 0)
+
+
 def build_brazil(ref: Ref, stats: Stats, months: int) -> dict:
     periods = month_list(months, latest_anac_month())
     unmatched = defaultdict(int)
     flights_total = 0
-    fmt = "%Y-%m-%d %H:%M:%S"
     for y, m in periods:
-        text = get(anac_url(y, m)).content.decode("utf-8-sig", errors="replace")
-        lines = text.splitlines()
-        start = next(i for i, line in enumerate(lines) if line.startswith('"ICAO Empresa'))
-        operated, cancelled = defaultdict(int), defaultdict(int)
-        for r in csv.DictReader(lines[start:], delimiter=";"):
-            status = r["Situação Voo"]
-            airline = ref.airline_by_icao.get(r["ICAO Empresa Aérea"])
-            origin = ref.icao_to_iata.get(r["ICAO Aeródromo Origem"])
-            dest = ref.icao_to_iata.get(r["ICAO Aeródromo Destino"])
-            if not origin or not dest:
-                unmatched[f"{r['ICAO Aeródromo Origem']}/{r['ICAO Aeródromo Destino']}"] += 1
-                continue
-            number = str(int(r["Número Voo"])) if r["Número Voo"].isdigit() else None
-            domestic = airline and ref.country_of.get(origin) == ref.country_of.get(dest) == "BR"
-            if status == "CANCELADO":
-                cancelled[(airline, number, origin, dest, domestic)] += 1
-                continue
-            if status != "REALIZADO" or not r["Chegada Prevista"] or not r["Chegada Real"]:
-                continue
-            try:
-                # Some airlines' times carry fractions of a second ("04:25:00.100000000")
-                delay = (datetime.strptime(r["Chegada Real"][:19], fmt)
-                         - datetime.strptime(r["Chegada Prevista"][:19], fmt)).total_seconds() / 60
-            except ValueError:
-                continue
-            late = delay > 15
-            stats.add_all(airline, number, origin, dest, 1, int(late), 0, delay if late else 0)
-            if domestic:
-                stats.add("airline_country", f"{airline}|BR", 1, int(late), 0, delay if late else 0)
-            operated[(airline, number, origin, dest)] += 1
-            flights_total += 1
-        # The data also lists schedule placeholders that never flew (hundreds of 'cancelled'
-        # flights on routes with one real flight a day), so only cancellations of flights that
-        # did operate that month count, and at most as many as operated.
-        for (airline, number, origin, dest, domestic), c in cancelled.items():
-            c = min(c, operated.get((airline, number, origin, dest), 0))
-            if c:
-                stats.add_all(airline, number, origin, dest, 0, 0, c, 0)
-                if domestic:
-                    stats.add("airline_country", f"{airline}|BR", 0, 0, c, 0)
+        flown, cancelled = brazil_month(ref, y, m, unmatched)
+        add_brazil(stats, flown, cancelled)
+        flights_total += len(flown)
         print(f"  Brazil {y}-{m:02d}: done", flush=True)
     report_unmatched("Brazil airports", unmatched)
     return {"name": "ANAC Brazil, Voo Regular Ativo (VRA)",

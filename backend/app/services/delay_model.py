@@ -215,7 +215,7 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
             method = "route_history"
         elif any(a["source"] != "US flight records" for a in airport_shares):
             base = sum(a["late"] * a["weight"] for a in airport_shares) / sum(a["weight"] for a in airport_shares)
-            if any(a["level"] == "airport_airline" for a in airport_shares):
+            if any(a.get("level") == "airport_airline" for a in airport_shares):
                 airline_rec = None  # the airport figures are already this airline's own
             elif airline_rec and any(a["source"] == "flight records" for a in airport_shares):
                 # Airport and airline records come from the same flights (a hub's record is largely its
