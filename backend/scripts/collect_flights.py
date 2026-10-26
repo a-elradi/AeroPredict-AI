@@ -10,6 +10,10 @@ history, so the route statistics can cover a full year:
   two days only, so it runs just before midnight Taiwan time). Its actual times
   look like take-off/landing times, so it's collected raw and not used in the
   route statistics until it has been calibrated.
+- Israel: Israel Airports Authority flight board for Ben Gurion (TLV) on
+  data.gov.il, which keeps about a day back (run twice a day). Its times are
+  take-off and landing times, so departures have the typical taxi-out time
+  taken off and arrivals the taxi-in time added, to approximate gate times.
 - Netherlands: Schiphol Public Flight API v4 (free: the application's Client ID
   in SCHIPHOL_APP_ID and Client Secret in SCHIPHOL_APP_KEY, from
   https://developer.schiphol.nl; exchanged for an OAuth token on each run)
@@ -45,6 +49,9 @@ AVINOR_FEED = "https://asrv.avinor.no/XmlFeed/v1.0"
 HKG_PAST = "https://www.hongkongairport.com/flightinfo-rest/rest/flights/past"
 TAOYUAN_FEED = "https://www.taoyuan-airport.com/uploads/flightx/a_flight_v4.txt"
 TAIWAN_UTC_OFFSET = timedelta(hours=8)
+ISRAEL_BOARD = "https://data.gov.il/api/3/action/datastore_search"
+ISRAEL_RESOURCE = "e83f763b-b7d7-479e-b172-ae981ddc6de5"
+TLV_TAXI_OUT, TLV_TAXI_IN = 15, 5  # minutes between gate and runway
 SCHIPHOL_TOKEN = "https://api.auth.schiphol.nl/oauth/token"
 SCHIPHOL_AUDIENCE = "https://api.schiphol.nl/public"
 SCHIPHOL_FLIGHTS = "https://api.schiphol.nl/public/public-flights/v4/flights"
@@ -164,6 +171,31 @@ def collect_taoyuan() -> dict:
             sched = datetime.strptime(f"{r[6]} {r[7]}", "%Y/%m/%d %H:%M:%S")
             actual = datetime.strptime(f"{r[8]} {r[9]}", "%Y/%m/%d %H:%M:%S")
             out[key] = record + [round((actual - sched).total_seconds() / 60), 0]
+    return out
+
+
+def collect_israel() -> dict:
+    """Flights at Tel Aviv Ben Gurion that have departed, landed or been cancelled."""
+    records = get(ISRAEL_BOARD, params={"resource_id": ISRAEL_RESOURCE, "limit": 10000}).json()["result"]["records"]
+    out, seen = {}, set()
+    for r in sorted(records, key=lambda r: r["_id"]):
+        direction, other, status = r.get("CHAORD"), (r.get("CHLOC1") or "").strip(), (r.get("CHRMINE") or "").upper()
+        sched, actual = r.get("CHSTOL"), r.get("CHPTOL")
+        flight = (direction, sched, other, actual)  # codeshares repeat the same flight
+        if direction not in ("A", "D") or not other or not sched or flight in seen:
+            continue
+        seen.add(flight)
+        airline, number = r.get("CHOPER"), str(r.get("CHFLTN") or "").strip()
+        number = str(int(number)) if number.isdigit() else None
+        origin, dest = ("TLV", other) if direction == "D" else (other, "TLV")
+        day = sched[:10]
+        key = f"{day}|{airline}{number}|{direction}"
+        if status in ("CANCELED", "CANCELLED"):
+            out[key] = [day, airline, number, origin, dest, None, 1]
+        elif status in ("DEPARTED", "LANDED") and actual:
+            delay = (datetime.fromisoformat(actual) - datetime.fromisoformat(sched)).total_seconds() / 60
+            delay += -TLV_TAXI_OUT if direction == "D" else TLV_TAXI_IN
+            out[key] = [day, airline, number, origin, dest, round(delay), 0]
     return out
 
 
@@ -304,6 +336,7 @@ def load(source: str, months: int) -> list[list]:
 SOURCES = {"avinor": collect_avinor,
            "hongkong": lambda: collect_hongkong(date.today() - timedelta(days=1)),
            "taoyuan": collect_taoyuan,
+           "israel": collect_israel,
            "schiphol": lambda: collect_schiphol(date.today() - timedelta(days=1)),
            "swedavia": lambda: collect_swedavia(date.today() - timedelta(days=1))}
 

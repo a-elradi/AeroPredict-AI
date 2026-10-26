@@ -15,7 +15,7 @@ STATS_FILE = Path(__file__).resolve().parents[2] / "data" / "route_stats.json.gz
 MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200, "airline": 1000}
 SOURCE_COUNTRY = {"uk": "the UK", "brazil": "Brazil", "australia": "Australia", "korea": "South Korea",
                   "hongkong": "Hong Kong", "japan": "Japan", "norway": "Norway",
-                  "netherlands": "the Netherlands"}
+                  "netherlands": "the Netherlands", "israel": "Israel"}
 SOURCE_BY_COUNTRY = {"BR": "brazil", "GB": "uk", "JE": "uk", "GG": "uk", "IM": "uk"}
 
 
@@ -88,7 +88,8 @@ def _same_route(data: dict, carrier: str, origin: str, dest: str) -> bool:
 
 def _source(data: dict, origin: str, dest: str) -> dict:
     countries = {airports.lookup(origin)["country"], airports.lookup(dest)["country"]}
-    key = ("brazil" if "BR" in countries else "korea" if "KR" in countries else "hongkong" if "HK" in countries
+    key = ("israel" if "IL" in countries and not countries & {"GB", "BR", "KR", "HK", "NO"}
+           else "brazil" if "BR" in countries else "korea" if "KR" in countries else "hongkong" if "HK" in countries
            else "australia" if countries == {"AU"} else "japan" if countries == {"JP"}
            else "norway" if "NO" in countries and "GB" not in countries
            else "netherlands" if "NL" in countries and not countries & {"GB", "NO"} else "uk")
