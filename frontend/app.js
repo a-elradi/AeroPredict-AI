@@ -320,6 +320,13 @@ async function loadAnalytics() {
           const bucket = (stats.calibration || []).find(c => c.predicted === "20-30%");
           return bucket ? `Of the test flights it gave a 20–30% chance of disruption, ${bucket.actual_disrupted_pct}% were delayed or cancelled. ` : "";
         })() +
+        (() => {
+          const t = stats.international_test;
+          return t ? `Outside the US we tested the same way on ${t.test_flights.toLocaleString()} ${t.country} flights ` +
+            `from ${t.test_months}: ${Math.round(t.auc * 100)}% (up from ${Math.round(t.auc_before * 100)}% before route history was added)` +
+            (t.riskiest_predicted_pct ? `, and of the riskiest tenth, predicted at ${t.riskiest_predicted_pct}%, ${t.riskiest_actual_pct}% were delayed or cancelled. ` : ". ")
+            : "";
+        })() +
         `Delays also depend on things no schedule can show, so treat predictions as odds, not certainties.`;
     }
 

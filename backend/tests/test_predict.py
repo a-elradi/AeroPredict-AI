@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -284,3 +285,11 @@ def test_us_airport_to_airport_without_route_history(client):
         r = client.post("/api/predict", json={**US_FLIGHT, "flight_number": "AA1", "airline": "AA",
                                               "dep_airport": "JFK", "arr_airport": dest})
         assert r.status_code == 200
+
+
+def test_route_history_calibration_is_sane():
+    path = delay_model.CALIBRATION_FILE
+    if not path.exists():
+        pytest.skip("no calibration fitted")
+    cal = json.loads(path.read_text())
+    assert 0.5 < cal["b"] < 1.5 and -1.5 < cal["a"] < 1.5

@@ -1,0 +1,159 @@
+{
+ "country": "Brazil",
+ "source": "ANAC VRA, every flight",
+ "history_months": "2025-09 to 2026-06",
+ "test_months": "2026-07 to 2026-08",
+ "test_flights": 30000,
+ "actual_late_share": 0.186,
+ "with_route_history": {
+  "auc": 0.672,
+  "brier": 0.1428,
+  "log_loss": 0.4552
+ },
+ "before_route_history": {
+  "auc": 0.542,
+  "brier": 0.1575,
+  "log_loss": 0.4963
+ },
+ "overall_average_guess": {
+  "auc": 0.5,
+  "brier": 0.1517,
+  "log_loss": 0.4811
+ },
+ "by_data_level": {
+  "flight": {
+   "flights": 27121,
+   "actual_late": 0.185,
+   "auc": 0.675,
+   "brier": 0.1418,
+   "log_loss": 0.4528
+  },
+  "route_airline": {
+   "flights": 2406,
+   "actual_late": 0.187,
+   "auc": 0.637,
+   "brier": 0.1455,
+   "log_loss": 0.4626
+  }
+ },
+ "calibration": [
+  {
+   "predicted": 0.05,
+   "actual": 0.066,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.09,
+   "actual": 0.104,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.116,
+   "actual": 0.117,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.142,
+   "actual": 0.137,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.171,
+   "actual": 0.152,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.202,
+   "actual": 0.175,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.237,
+   "actual": 0.188,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.281,
+   "actual": 0.225,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.345,
+   "actual": 0.287,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.494,
+   "actual": 0.415,
+   "flights": 3000
+  }
+ ],
+ "recalibration": {
+  "a": -0.4052,
+  "b": 0.7991,
+  "held_out_half_before": {
+   "auc": 0.672,
+   "brier": 0.1417,
+   "log_loss": 0.4539
+  },
+  "held_out_half_after": {
+   "auc": 0.672,
+   "brier": 0.1401,
+   "log_loss": 0.4491
+  },
+  "calibration_after": [
+   {
+    "predicted": 0.058,
+    "actual": 0.07,
+    "flights": 1502
+   },
+   {
+    "predicted": 0.094,
+    "actual": 0.106,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.116,
+    "actual": 0.106,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.136,
+    "actual": 0.134,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.159,
+    "actual": 0.157,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.182,
+    "actual": 0.163,
+    "flights": 1502
+   },
+   {
+    "predicted": 0.207,
+    "actual": 0.191,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.238,
+    "actual": 0.221,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.285,
+    "actual": 0.284,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.398,
+    "actual": 0.414,
+    "flights": 1502
+   }
+  ]
+ },
+ "distinct_predictions_before": 391,
+ "distinct_predictions_with": 774
+}

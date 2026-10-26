@@ -1,3 +1,4 @@
+import json
 from functools import lru_cache
 
 from flask import Blueprint, jsonify
@@ -51,6 +52,22 @@ def airport_stats():
     return jsonify({"data": _airports()})
 
 
+@lru_cache(maxsize=1)
+def _international_test() -> dict | None:
+    """Held-out test of route-history predictions (scripts/backtest_route_history.py)."""
+    path = delay_model.MODEL_DIR / "route_history_backtest.json"
+    if not path.exists():
+        return None
+    r = json.loads(path.read_text())
+    cal = r.get("recalibration") or {}
+    after = cal.get("calibration_after") or []
+    top = after[-1] if after else None
+    return {"country": r["country"], "test_months": r["test_months"], "test_flights": r["test_flights"],
+            "auc": r["with_route_history"]["auc"], "auc_before": r["before_route_history"]["auc"],
+            "riskiest_predicted_pct": round(top["predicted"] * 100) if top else None,
+            "riskiest_actual_pct": round(top["actual"] * 100) if top else None}
+
+
 @analytics_bp.route("/analytics/global-stats", methods=["GET"])
 def global_stats():
     meta = delay_model._load()["meta"] if delay_model.is_available() else {}
@@ -68,6 +85,7 @@ def global_stats():
         "model_auc": meta.get("auc_delay_or_cancel"),
         "model_auc_with_forecast": (meta.get("with_weather") or {}).get("auc_delay_or_cancel"),
         "test_flights": meta.get("test_flights"),
+        "international_test": _international_test(),
         "test_months": meta.get("test_months", []),
         "calibration": meta.get("calibration", []),
         "monthly": meta.get("monthly", []),

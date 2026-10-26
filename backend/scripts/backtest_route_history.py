@@ -9,7 +9,11 @@ route data: a general estimate) and simply guessing the overall average.
 
     python scripts/backtest_route_history.py [--months 12] [--test 2] [--sample 40000]
 
-Writes models/route_history_backtest.json.
+It also fits a calibration (logistic on the log-odds) on a random half of the
+held-out flights and scores it on the other half; the live code applies it to
+route-history predictions.
+
+Writes models/route_history_backtest.json and models/route_history_calibration.json.
 """
 import argparse
 import json
@@ -29,6 +33,27 @@ import build_route_stats as brs  # noqa: E402
 from app.services import delay_model, route_history  # noqa: E402
 
 OUT = ROOT.parent / "models" / "route_history_backtest.json"
+CALIBRATION = ROOT.parent / "models" / "route_history_calibration.json"
+
+
+def logit(p: np.ndarray) -> np.ndarray:
+    p = np.clip(p, 1e-4, 1 - 1e-4)
+    return np.log(p / (1 - p))
+
+
+def fit_calibration(y: np.ndarray, p: np.ndarray) -> tuple[float, float]:
+    """a, b so that sigmoid(a + b * logit(p)) matches outcomes (Newton's method)."""
+    x = np.column_stack([np.ones(len(p)), logit(p)])
+    w = np.array([0.0, 1.0])
+    for _ in range(50):
+        q = 1 / (1 + np.exp(-x @ w))
+        grad = x.T @ (y - q)
+        hess = -(x.T * (q * (1 - q))) @ x
+        step = np.linalg.solve(hess, grad)
+        w -= step
+        if np.abs(step).max() < 1e-8:
+            break
+    return float(w[0]), float(w[1])
 
 
 def auc(y: np.ndarray, p: np.ndarray) -> float:
@@ -74,6 +99,7 @@ def predict_all(flights: list) -> tuple[np.ndarray, list]:
 def use_history(data: dict) -> None:
     route_history._load = lambda: data
     route_history._airport_average.cache_clear()
+    delay_model._load()["calibration"] = None  # measure the uncorrected predictions
 
 
 def main():
@@ -109,6 +135,13 @@ def main():
     p_old, _ = predict_all(test)
     p_avg = np.full(len(y), y.mean())
 
+    rng = np.random.default_rng(0)
+    half = rng.random(len(y)) < 0.5
+    a, b = fit_calibration(y[half], p_new[half])
+    p_cal = 1 / (1 + np.exp(-(a + b * logit(p_new))))
+    CALIBRATION.write_text(json.dumps({"a": round(a, 4), "b": round(b, 4), "fitted_on": "Brazil " + fmt(test_periods),
+                                       "flights": int(half.sum())}, indent=1))
+
     by_level = {}
     for level in sorted(set(methods)):
         idx = np.array([m == level for m in methods])
@@ -121,6 +154,10 @@ def main():
         "with_route_history": scores(y, p_new), "before_route_history": scores(y, p_old),
         "overall_average_guess": scores(y, p_avg), "by_data_level": by_level,
         "calibration": calibration(y, p_new),
+        "recalibration": {"a": round(a, 4), "b": round(b, 4),
+                          "held_out_half_before": scores(y[~half], p_new[~half]),
+                          "held_out_half_after": scores(y[~half], p_cal[~half]),
+                          "calibration_after": calibration(y[~half], p_cal[~half])},
         "distinct_predictions_before": int(len(np.unique(np.round(p_old, 3)))),
         "distinct_predictions_with": int(len(np.unique(np.round(p_new, 3)))),
     }

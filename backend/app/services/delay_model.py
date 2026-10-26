@@ -23,6 +23,8 @@ MODEL_DIR = Path(__file__).resolve().parents[3] / "models"
 MODEL_FILE = MODEL_DIR / "delay_model.ubj"
 STATS_FILE = MODEL_DIR / "delay_stats.json.gz"
 META_FILE = MODEL_DIR / "model_meta.json"
+# Correction for route-history predictions, fitted on held-out flights (scripts/backtest_route_history.py)
+CALIBRATION_FILE = MODEL_DIR / "route_history_calibration.json"
 
 STAT_KEYS = ["flight", "route_carrier", "route", "origin_hour", "dest_hour", "carrier", "origin", "dest"]
 SMOOTHING = 50  # flights of "average" history blended into every rate
@@ -104,8 +106,9 @@ def _load() -> dict:
             with gzip.open(STATS_FILE, "rt", encoding="utf-8") as f:
                 stats = json.load(f)
             meta = json.loads(META_FILE.read_text()) if META_FILE.exists() else {}
+            calibration = json.loads(CALIBRATION_FILE.read_text()) if CALIBRATION_FILE.exists() else None
             _loaded = {"booster": booster, "tables": stats["tables"], "prior": stats["prior"],
-                       "routes": stats.get("routes", {}), "meta": meta}
+                       "routes": stats.get("routes", {}), "meta": meta, "calibration": calibration}
     return _loaded
 
 
@@ -234,6 +237,9 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
             avg = prior["delay"] + prior["cancel"]
             context = _odds(generic[1] + generic[2]) / _odds(avg)
             odds = _odds(base) * context
+            cal = m.get("calibration")
+            if cal and method == "route_history":  # predictions ran high on held-out flights
+                odds = math.exp(cal["a"]) * odds ** cal["b"]
             disrupted = odds / (1 + odds)
             if cancel_share is None:
                 cancel_share = generic[2] / max(generic[1] + generic[2], 1e-6)
