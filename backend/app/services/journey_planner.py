@@ -51,7 +51,7 @@ def build_plan(req: dict) -> dict:
     if plan is None:
         plan = _rule_based_plan(facts, baseline)
     if ai_generated:
-        sources.append({"name": "Claude AI (personalized plan)", "type": "ai"})
+        sources.append({"name": "Personalised plan", "type": "ai"})
 
     return {
         "flight": facts["flight"],

@@ -4,15 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AeroPredict – Will Your Flight Be On Time?</title>
-  <meta name="description" content="Check your flight's delay risk from a year of real flight records, plan your airport journey, find amenities near your gate, check your bag risk and learn your compensation rights." />
-  <meta name="keywords" content="flight delay prediction, is my flight on time, flight cancellation risk, airline on-time performance, flight delay compensation" />
+  <meta name="description" content="Check the chance your flight is delayed or cancelled, based on real on-time records for your flight, route, airline and airports. Free, with airport tools and your passenger rights." />
+  <meta name="theme-color" content="#0C1117" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
 
@@ -20,64 +18,40 @@
      NAVIGATION
 ═══════════════════════════════════════════════════════ -->
 <nav class="navbar" id="navbar">
-  <div class="nav-brand">
-    <div class="nav-logo">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <path d="M16 2L28 8V20L16 30L4 20V8L16 2Z" fill="url(#hexGrad)" />
-        <path d="M10 16L14 12L20 16L14 20L10 16Z" fill="white" opacity="0.9"/>
-        <path d="M14 12L22 14L20 16L14 12Z" fill="white" opacity="0.6"/>
-        <defs>
-          <linearGradient id="hexGrad" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#0EA5E9"/>
-            <stop offset="100%" stop-color="#6366F1"/>
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-    <span class="nav-title">AeroPredict<span class="nav-badge">AI</span></span>
-  </div>
-  <ul class="nav-links">
-    <li><a href="#hero" class="nav-link active" data-section="hero">Check a Flight</a></li>
-    <li><a href="#journey" class="nav-link" data-section="journey">Journey Plan</a></li>
-    <li><a href="#wayfinding" class="nav-link" data-section="wayfinding">Near My Gate</a></li>
-    <li><a href="#baggage" class="nav-link" data-section="baggage">Bag Check</a></li>
-    <li><a href="#rights" class="nav-link" data-section="rights">My Rights</a></li>
+  <a class="brand" href="/" aria-label="AeroPredict home">
+    <span class="brand-mark"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 13.5 3 11l1.5-1.5 8 1L17 6c1-1 2.7-1.2 3.3-.6s.4 2.3-.6 3.3l-4.5 4.5 1 8L14.7 22l-2.5-7.5-4 4 .3 2.5-1.5 1.5-1.5-3.5L2 17.5 3.5 16l2.5.3 4-4"/></svg></span>
+    <span class="brand-name">AeroPredict</span>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li class="menu-only"><a href="#hero" class="nav-link menu-cta">Check a flight</a></li>
+    <li><a href="#journey" class="nav-link" data-section="journey">Journey plan</a></li>
+    <li><a href="#wayfinding" class="nav-link" data-section="wayfinding">Near my gate</a></li>
+    <li><a href="#baggage" class="nav-link" data-section="baggage">Bag check</a></li>
+    <li><a href="#rights" class="nav-link" data-section="rights">My rights</a></li>
     <li><a href="#analytics" class="nav-link" data-section="analytics">Analytics</a></li>
-    <li><a href="/how-it-works" class="nav-link">How It Works</a></li>
+    <li><a href="/how-it-works" class="nav-link">How it works</a></li>
   </ul>
-  <div class="nav-status">
-    <span class="status-dot" id="apiStatus"></span>
-    <span id="apiStatusText">Connecting…</span>
-  </div>
-  <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Toggle menu">☰</button>
+  <a href="#hero" class="btn btn-primary btn-sm nav-cta">Check a flight</a>
+  <button class="nav-toggle" id="mobileToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
 </nav>
 
 <!-- ═══════════════════════════════════════════════════════
      HERO SECTION
 ═══════════════════════════════════════════════════════ -->
 <section class="hero" id="hero">
-  <div class="hero-bg">
-    <canvas id="particleCanvas"></canvas>
-    <div class="hero-grid"></div>
-  </div>
-
-  <div class="hero-content">
-    <div class="hero-eyebrow">
-      <span class="chip">✦ Real flight records · Live airport weather · Free</span>
+  <div class="container">
+    <div class="hero-copy">
+      <h1 class="hero-title">Will your flight be on time?</h1>
+      <p class="hero-subtitle">See the chance of a delay or cancellation, based on how your flight, route,
+        airline and airports have actually performed. Free, no sign-up.</p>
     </div>
-    <h1 class="hero-title">
-      Will Your Flight<br />
-      <span class="gradient-text">Be On Time?</span>
-    </h1>
-    <p class="hero-subtitle">
-      Check the odds of a delay or cancellation, based on how your flight, route, airline and airports
-      have actually performed.
-    </p>
 
     <form class="search-card" id="flightForm" novalidate>
       <div class="search-fields">
         <label class="search-field search-field-wide">
-          <span class="search-label">Flight number</span>
+          <span class="search-label">Flight</span>
           <input type="text" id="flightNumber" class="search-input" placeholder="e.g. EK384" maxlength="8"
                  autocomplete="off" autocapitalize="characters" required />
         </label>
@@ -106,34 +80,19 @@
       </div>
       <div class="form-error" id="formError" hidden></div>
       <div class="search-examples">
-        <span>Try:</span>
-        <button type="button" class="demo-chip" onclick="fillDemo('EK384','DXB','BKK','09:30')">Emirates DXB → BKK</button>
-        <button type="button" class="demo-chip" onclick="fillDemo('BA117','LHR','JFK','11:40')">British Airways LHR → JFK</button>
-        <button type="button" class="demo-chip" onclick="fillDemo('KE1201','GMP','CJU','08:00')">Korean Air Seoul → Jeju</button>
+        <span class="examples-label">Examples</span>
+        <button type="button" class="demo-chip" onclick="fillDemo('EK384','DXB','BKK','09:30')">EK384 · Dubai → Bangkok</button>
+        <button type="button" class="demo-chip" onclick="fillDemo('BA117','LHR','JFK','11:40')">BA117 · London → New York</button>
+        <button type="button" class="demo-chip" onclick="fillDemo('KE1201','GMP','CJU','08:00')">KE1201 · Seoul → Jeju</button>
       </div>
     </form>
 
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <span class="stat-value" id="statCountries">138</span>
-        <span class="stat-label">Countries with real data</span>
-      </div>
-      <div class="hero-stat-divider"></div>
-      <div class="hero-stat">
-        <span class="stat-value" id="statAirports">900+</span>
-        <span class="stat-label">Airports</span>
-      </div>
-      <div class="hero-stat-divider"></div>
-      <div class="hero-stat">
-        <span class="stat-value" id="statAirlines">150+</span>
-        <span class="stat-label">Airlines</span>
-      </div>
-      <div class="hero-stat-divider"></div>
-      <div class="hero-stat">
-        <span class="stat-value" id="statFlights">14M+</span>
-        <span class="stat-label">Flights studied</span>
-      </div>
-    </div>
+    <ul class="hero-facts" aria-label="Coverage">
+      <li><strong id="statCountries">138</strong> countries</li>
+      <li><strong id="statAirports">900+</strong> airports</li>
+      <li><strong id="statAirlines">150+</strong> airlines</li>
+      <li><strong id="statFlights">14M+</strong> past flights studied</li>
+    </ul>
   </div>
 </section>
 
@@ -147,54 +106,36 @@
       <!-- RESULT PANEL (initially hidden) -->
       <div class="card result-card" id="resultCard" hidden>
         <div class="result-header" id="resultHeader">
-          <div class="result-flight-info">
+          <div class="result-flight">
             <span class="result-flight-num" id="rFlightNum">–</span>
             <span class="result-route" id="rRoute">– → –</span>
             <span class="result-time" id="rTime">–</span>
           </div>
-          <div class="risk-badge" id="riskBadge">–</div>
+          <span class="risk-badge" id="riskBadge">–</span>
         </div>
+
+        <div class="result-main">
+          <div class="result-figure">
+            <span class="result-pct" id="pOnTime">–</span>
+            <span class="result-pct-label">chance of arriving on time</span>
+          </div>
+          <div class="outcome-bar" role="img" id="outcomeBar" aria-label="">
+            <span class="ob-on" id="barOnTime"></span><span class="ob-delay" id="barDelayed"></span><span class="ob-cancel" id="barCancelled"></span>
+          </div>
+          <ul class="outcome-legend">
+            <li><i class="dot dot-on"></i>On time <strong id="lOnTime">–</strong></li>
+            <li><i class="dot dot-delay"></i>Delayed 15+ min <strong id="pDelayed">–</strong></li>
+            <li><i class="dot dot-cancel"></i>Cancelled <strong id="pCancelled">–</strong></li>
+          </ul>
+          <p class="result-typical" id="rTypicalDelay"></p>
+        </div>
+
         <p class="result-basis" id="rBasis"></p>
-
-        <!-- Probability Gauges -->
-        <div class="proba-grid" id="probaGrid">
-          <div class="proba-card on-time">
-            <div class="proba-icon">✅</div>
-            <div class="proba-label">On-Time Arrival</div>
-            <div class="proba-value" id="pOnTime">–%</div>
-            <div class="proba-bar-wrap">
-              <div class="proba-bar" id="barOnTime"></div>
-            </div>
-          </div>
-          <div class="proba-card delayed">
-            <div class="proba-icon">⚠️</div>
-            <div class="proba-label">Flight Delayed</div>
-            <div class="proba-value" id="pDelayed">–%</div>
-            <div class="proba-bar-wrap">
-              <div class="proba-bar" id="barDelayed"></div>
-            </div>
-          </div>
-          <div class="proba-card cancelled">
-            <div class="proba-icon">❌</div>
-            <div class="proba-label">Cancelled</div>
-            <div class="proba-value" id="pCancelled">–%</div>
-            <div class="proba-bar-wrap">
-              <div class="proba-bar" id="barCancelled"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Doughnut Chart -->
-        <div class="chart-wrap">
-          <canvas id="resultChart" height="200"></canvas>
-        </div>
-
-        <p class="result-typical" id="rTypicalDelay"></p>
 
         <!-- Rights for this flight, right after the result -->
         <div class="rights-box" id="rbBox" hidden>
           <div class="rb-head">
-            <span class="rb-icon">⚖️</span>
+            <span class="rb-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M7 20h10M5 8h14M5 8l-3 6a3 3 0 0 0 6 0L5 8zM19 8l-3 6a3 3 0 0 0 6 0l-3-6z"/></svg></span>
             <div>
               <h4 id="rbTitle">If your flight is delayed or cancelled</h4>
               <p id="rbSummary"></p>
@@ -249,17 +190,15 @@
           </div>
         </div>
 
-        <!-- Risk Factors -->
+        <!-- What the estimate is based on -->
         <div class="factors-section">
-          <h4>Risk Factor Analysis</h4>
+          <h4>What affects this flight</h4>
           <div class="factors-list" id="factorsList"></div>
         </div>
 
         <!-- Model confidence note -->
-        <div class="model-note">
-          <span class="note-icon">🤖</span>
-          <span>Based on real flight records from official sources and airport weather forecasts. These are odds, not certainties: always check with your airline. <a href="/how-it-works">How it works</a></span>
-        </div>
+        <p class="model-note">Estimates come from official flight records and airport weather forecasts. They are odds,
+          not certainties, so always check with your airline. <a href="/how-it-works">How we work this out</a></p>
       </div>
     </div>
   </div>
@@ -271,36 +210,36 @@
 <section class="section section-tools" id="tools">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">More for your trip</span>
-      <h2 class="section-title">From Your Door to Your Destination</h2>
+      <h2 class="section-title">The rest of your trip</h2>
+      <p class="section-subtitle">Tools for the airport, your luggage and the moment something goes wrong.</p>
     </div>
     <div class="tools-grid">
       <a class="tool-card" href="#journey">
-        <span class="tool-icon">🗺️</span>
-        <h3>Journey Plan</h3>
+        <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16"/></svg></span>
+        <h3>Journey plan</h3>
         <p>When to leave home, how long security takes, and a step-by-step plan to the gate.</p>
         <span class="tool-link">Plan my journey →</span>
       </a>
       <a class="tool-card" href="#wayfinding">
-        <span class="tool-icon">☕</span>
-        <h3>Near My Gate</h3>
+        <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
+        <h3>Near my gate</h3>
         <p>Coffee, food, toilets, prayer rooms and lounges, sorted by walking distance.</p>
         <span class="tool-link">Find nearby →</span>
       </a>
       <a class="tool-card" href="#baggage">
-        <span class="tool-icon">🧳</span>
-        <h3>Bag Check</h3>
+        <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M9 11v5M15 11v5"/></svg></span>
+        <h3>Bag check</h3>
         <p>How likely your checked bag is to go missing on your route, and what to do if it does.</p>
         <span class="tool-link">Check my bag →</span>
       </a>
       <a class="tool-card" href="#rights">
-        <span class="tool-icon">⚖️</span>
-        <h3>My Rights</h3>
+        <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M7 20h10M5 8h14M5 8l-3 6a3 3 0 0 0 6 0L5 8zM19 8l-3 6a3 3 0 0 0 6 0l-3-6z"/></svg></span>
+        <h3>My rights</h3>
         <p>Delayed or cancelled? See what the airline owes you: cash, meals, a hotel or a refund.</p>
         <span class="tool-link">Check my rights →</span>
       </a>
       <a class="tool-card" href="#analytics">
-        <span class="tool-icon">📊</span>
+        <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
         <h3>Analytics</h3>
         <p>Which airlines and airports run on time, and how accurate our predictions are.</p>
         <span class="tool-link">View analytics →</span>
@@ -315,22 +254,21 @@
 <section class="section" id="journey">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">AI Concierge</span>
-      <h2 class="section-title">Plan Your Airport Journey</h2>
+      <h2 class="section-title">Plan your airport journey</h2>
       <p class="section-subtitle">Tell us your flight and how you travel. We combine live flight data, airport weather and delay risk into a step-by-step plan from your door to the gate.</p>
     </div>
 
     <div class="predict-layout">
       <div class="card predict-card">
         <div class="card-header">
-          <h3>Your Trip</h3>
-          <span class="card-badge" id="jpSourcesBadge">Door to Gate</span>
+          <h3>Your trip</h3>
+          <span class="card-badge" id="jpSourcesBadge">Door to gate</span>
         </div>
 
         <form class="flight-form" id="journeyForm" novalidate>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="jpFlight">Flight Number</label>
+              <label class="form-label" for="jpFlight">Flight number</label>
               <input type="text" id="jpFlight" class="form-input plain" placeholder="e.g. TK1" maxlength="8" autocomplete="off" />
             </div>
             <div class="form-group">
@@ -357,11 +295,11 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="jpStart">Starting From</label>
+              <label class="form-label" for="jpStart">Starting from</label>
               <input type="text" id="jpStart" class="form-input plain" placeholder="e.g. Taksim, Istanbul" maxlength="120" />
             </div>
             <div class="form-group">
-              <label class="form-label" for="jpTransport">Getting There By</label>
+              <label class="form-label" for="jpTransport">Getting there by</label>
               <select id="jpTransport" class="form-input form-select plain">
                 <option value="car">Car</option>
                 <option value="taxi">Taxi</option>
@@ -383,7 +321,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="jpBags">Checked Bags</label>
+              <label class="form-label" for="jpBags">Checked bags</label>
               <select id="jpBags" class="form-input form-select plain">
                 <option value="0">None</option>
                 <option value="1" selected>1</option>
@@ -395,7 +333,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="jpTier">Frequent Flyer Status</label>
+              <label class="form-label" for="jpTier">Frequent flyer status</label>
               <select id="jpTier" class="form-input form-select plain">
                 <option value="none">None</option>
                 <option value="silver">Silver</option>
@@ -404,7 +342,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="jpLang">Plan Language</label>
+              <label class="form-label" for="jpLang">Plan language</label>
               <select id="jpLang" class="form-input form-select plain">
                 <option value="en">English</option>
                 <option value="tr">Türkçe</option>
@@ -441,15 +379,21 @@
           <div class="form-error" id="jpError" hidden></div>
 
           <button type="submit" class="btn btn-primary btn-full" id="jpBtn">
-            <span id="jpBtnText">Build My Journey Plan</span>
+            <span id="jpBtnText">Build my journey plan</span>
             <div class="btn-loader" id="jpLoader" hidden><div class="spinner"></div></div>
           </button>
         </form>
       </div>
 
+      <div class="card empty-state" aria-hidden="true">
+        <span class="empty-icon"><svg class="icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16"/></svg></span>
+        <h3>Your plan appears here</h3>
+        <p>When to leave, how long security takes, and each step to the gate, timed to your flight.</p>
+      </div>
+
       <div class="card result-card" id="jpResult" hidden>
         <div class="card-header">
-          <h3 id="jpTitle">Your Journey</h3>
+          <h3 id="jpTitle">Your journey</h3>
           <span class="card-badge" id="jpAiBadge"></span>
         </div>
         <div class="jp-body">
@@ -481,8 +425,7 @@
 <section class="section" id="wayfinding">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">AI Concierge</span>
-      <h2 class="section-title">Find What You Need Near Your Gate</h2>
+      <h2 class="section-title">Find what you need near your gate</h2>
       <p class="section-subtitle">Coffee, food, toilets, cash machines, prayer rooms and lounges, sorted by walking distance from your gate.</p>
     </div>
 
@@ -497,7 +440,7 @@
           <input type="text" id="wfGate" class="form-input plain" placeholder="e.g. B4" maxlength="8" autocomplete="off" />
         </div>
         <button type="submit" class="btn btn-primary" id="wfBtn">
-          <span id="wfBtnText">Show Nearby</span>
+          <span id="wfBtnText">Show nearby</span>
           <div class="btn-loader" id="wfLoader" hidden><div class="spinner"></div></div>
         </button>
       </form>
@@ -534,16 +477,14 @@
 <section class="section" id="baggage">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">AI Concierge</span>
-      <h2 class="section-title">Will My Bag Make It?</h2>
+      <h2 class="section-title">Will my bag make it?</h2>
       <p class="section-subtitle">See how likely your checked bag is to be delayed on your route, what raises the risk, and exactly what to do if it doesn't arrive.</p>
     </div>
 
     <div class="predict-layout">
       <div class="card predict-card">
         <div class="card-header">
-          <h3>Your Route</h3>
-          <span class="card-badge">Bag Check</span>
+          <h3>Your route</h3>
         </div>
         <form class="flight-form" id="bagForm" novalidate>
           <div class="form-group">
@@ -554,24 +495,30 @@
           <div id="bagConnections"></div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label" for="bagCount">Checked Bags</label>
+              <label class="form-label" for="bagCount">Checked bags</label>
               <select id="bagCount" class="form-input form-select plain">
                 <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4+</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="bagDate">Travel Date</label>
+              <label class="form-label" for="bagDate">Travel date</label>
               <input type="date" id="bagDate" class="form-input plain" />
             </div>
           </div>
           <div class="form-error" id="bagError" hidden></div>
-          <button type="submit" class="btn btn-primary btn-full" id="bagBtn">Check My Bag Risk</button>
+          <button type="submit" class="btn btn-primary btn-full" id="bagBtn">Check my bag risk</button>
         </form>
+      </div>
+
+      <div class="card empty-state" aria-hidden="true">
+        <span class="empty-icon"><svg class="icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M9 11v5M15 11v5"/></svg></span>
+        <h3>Your bag check appears here</h3>
+        <p>The chance your bag is delayed on this route, what raises it, and what to do if it doesn't arrive.</p>
       </div>
 
       <div class="card result-card" id="bagResult" hidden>
         <div class="card-header">
-          <h3 id="bagTitle">Your Bag</h3>
+          <h3 id="bagTitle">Your bag</h3>
           <span class="card-badge" id="bagLevel"></span>
         </div>
         <div class="jp-body">
@@ -603,16 +550,14 @@
 <section class="section" id="rights">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">AI Concierge</span>
-      <h2 class="section-title">Flight Delayed or Cancelled?</h2>
+      <h2 class="section-title">Flight delayed or cancelled?</h2>
       <p class="section-subtitle">Find out what the airline owes you: cash compensation, meals, a hotel, rebooking or a refund. Plus exactly what to say at the desk.</p>
     </div>
 
     <div class="predict-layout">
       <div class="card predict-card">
         <div class="card-header">
-          <h3>What Happened</h3>
-          <span class="card-badge">Your Rights</span>
+          <h3>What happened</h3>
         </div>
         <form class="flight-form" id="rightsForm" novalidate>
           <div class="form-row form-row-3">
@@ -621,11 +566,11 @@
               <input type="text" id="rtFrom" class="form-input plain" placeholder="IST" maxlength="3" autocomplete="off" />
             </div>
             <div class="form-group">
-              <label class="form-label" for="rtTo">Final Destination</label>
+              <label class="form-label" for="rtTo">Final destination</label>
               <input type="text" id="rtTo" class="form-input plain" placeholder="LHR" maxlength="3" autocomplete="off" />
             </div>
             <div class="form-group">
-              <label class="form-label" for="rtAirline">Airline Code</label>
+              <label class="form-label" for="rtAirline">Airline code</label>
               <input type="text" id="rtAirline" class="form-input plain" placeholder="TK" maxlength="2" autocomplete="off" />
             </div>
           </div>
@@ -639,7 +584,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="rtCause">Reason Given</label>
+              <label class="form-label" for="rtCause">Reason given</label>
               <select id="rtCause" class="form-input form-select plain">
                 <option value="unknown">Not told / not sure</option>
                 <option value="airline">Technical problem, crew or airline operations</option>
@@ -651,22 +596,28 @@
           </div>
           <div class="form-row">
             <div class="form-group" id="rtDelayGroup">
-              <label class="form-label" for="rtDelay">Arrival Delay (hours)</label>
+              <label class="form-label" for="rtDelay">Arrival delay (hours)</label>
               <input type="number" id="rtDelay" class="form-input plain" min="0" max="72" step="0.5" value="3" />
             </div>
             <div class="form-group" id="rtNoticeGroup" hidden>
-              <label class="form-label" for="rtNotice">Days' Notice of Cancellation</label>
+              <label class="form-label" for="rtNotice">Days' notice of cancellation</label>
               <input type="number" id="rtNotice" class="form-input plain" min="0" max="365" value="0" />
             </div>
           </div>
           <div class="form-error" id="rtError" hidden></div>
-          <button type="submit" class="btn btn-primary btn-full" id="rtBtn">Check My Rights</button>
+          <button type="submit" class="btn btn-primary btn-full" id="rtBtn">Check my rights</button>
         </form>
+      </div>
+
+      <div class="card empty-state" aria-hidden="true">
+        <span class="empty-icon"><svg class="icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M7 20h10M5 8h14M5 8l-3 6a3 3 0 0 0 6 0L5 8zM19 8l-3 6a3 3 0 0 0 6 0l-3-6z"/></svg></span>
+        <h3>What you're owed appears here</h3>
+        <p>Compensation, meals, a hotel, rebooking or a refund, plus what to say at the desk.</p>
       </div>
 
       <div class="card result-card" id="rtResult" hidden>
         <div class="card-header">
-          <h3 id="rtTitle">Your Rights</h3>
+          <h3 id="rtTitle">Your rights</h3>
           <span class="card-badge" id="rtBadge"></span>
         </div>
         <div class="jp-body">
@@ -698,30 +649,25 @@
 <section class="section section-dark" id="analytics">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">Data Intelligence</span>
-      <h2 class="section-title">Aviation Analytics Dashboard</h2>
-      <p class="section-subtitle">A year of real US flights: which airlines arrive on time, which busy airports see the most disruption, and how delays change through the year.</p>
+      <h2 class="section-title">How airlines and airports perform</h2>
+      <p class="section-subtitle">Two years of US flights: which airlines arrive on time, which busy airports see the most disruption, and how delays change through the year.</p>
     </div>
 
     <!-- KPI Cards -->
     <div class="kpi-grid" id="kpiGrid">
       <div class="kpi-card">
-        <div class="kpi-icon">🌍</div>
         <div class="kpi-value" id="kpiFlights">–</div>
-        <div class="kpi-label">Flights Analyzed</div>
+        <div class="kpi-label">Flights studied</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-icon">⏱</div>
         <div class="kpi-value" id="kpiOTP">–</div>
-        <div class="kpi-label">Avg. On-Time Rate</div>
+        <div class="kpi-label">Arrived on time</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-icon">⚠️</div>
         <div class="kpi-value" id="kpiDelay">–</div>
-        <div class="kpi-label">Avg. Delay Rate</div>
+        <div class="kpi-label">Delayed 15+ min</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-icon">❌</div>
         <div class="kpi-value" id="kpiAccuracy">–</div>
         <div class="kpi-label">Cancelled</div>
       </div>
@@ -732,14 +678,14 @@
     <div class="charts-grid">
       <div class="card chart-card">
         <div class="chart-card-header">
-          <h3>Carrier On-Time Performance</h3>
+          <h3>Airline on-time performance</h3>
           <span class="chart-subtitle">Share of flights arriving within 15 min (BTS, last 2 years)</span>
         </div>
         <canvas id="carrierChart" height="300"></canvas>
       </div>
       <div class="card chart-card">
         <div class="chart-card-header">
-          <h3>Most Disrupted Busy Airports</h3>
+          <h3>Most disrupted busy airports</h3>
           <span class="chart-subtitle">Departures delayed 15+ min or cancelled, 25 busiest US airports</span>
         </div>
         <canvas id="airportChart" height="300"></canvas>
@@ -749,7 +695,7 @@
     <!-- Delay Distribution Chart -->
     <div class="card chart-card-wide">
       <div class="chart-card-header">
-        <h3>Delays Through the Year</h3>
+        <h3>Delays through the year</h3>
         <span class="chart-subtitle">Share of US flights delayed or cancelled each month</span>
       </div>
       <canvas id="seasonChart" height="180"></canvas>

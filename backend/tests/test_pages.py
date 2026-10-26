@@ -14,9 +14,9 @@ def client():
 
 
 @pytest.mark.parametrize("path,text", [
-    ("/", "Will Your Flight"), ("/how-it-works", "How AeroPredict Works"), ("/faq", "Frequently Asked Questions"),
-    ("/privacy", "Privacy Policy"), ("/terms", "Terms of Use"), ("/contact", "Get in Touch"),
-    ("/faq.html", "Frequently Asked Questions"),
+    ("/", "Will your flight be on time?"), ("/how-it-works", "How AeroPredict works"), ("/faq", "Frequently asked questions"),
+    ("/privacy", "Privacy policy"), ("/terms", "Terms of use"), ("/contact", "Get in touch"),
+    ("/faq.html", "Frequently asked questions"),
 ])
 def test_pages_are_served(client, path, text):
     r = client.get(path)

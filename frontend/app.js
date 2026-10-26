@@ -1,13 +1,26 @@
 /* AeroPredict — Frontend Application Logic */
 // Use the current host for the API (handles both local and cloud deployment)
 const API = window.location.origin + "/api";
-let resultChart = null;
 
-/* ── Navbar scroll effect ── */
-window.addEventListener("scroll", () => {
-  document.getElementById("navbar").style.background =
-    window.scrollY > 50 ? "rgba(5,11,24,0.97)" : "rgba(5,11,24,0.85)";
-});
+/* ── Load a library only when it's first needed (keeps the first page load small) ── */
+const loaded = {};
+function loadScript(src) {
+  return loaded[src] ??= new Promise((resolve, reject) => {
+    const tag = Object.assign(document.createElement("script"), { src, async: true, onload: resolve, onerror: reject });
+    document.head.appendChild(tag);
+  });
+}
+function loadStyle(href) {
+  if (!document.querySelector(`link[href="${href}"]`)) {
+    document.head.appendChild(Object.assign(document.createElement("link"), { rel: "stylesheet", href }));
+  }
+}
+const CHART_JS = "https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js";
+const LEAFLET = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min";
+
+/* ── Brand colours for charts (match style.css) ── */
+const C = { text: "#C3CCD6", muted: "#8B97A6", grid: "rgba(139,151,166,0.12)",
+            good: "#3DB07A", warn: "#E8893A", bad: "#E25555", accent: "#F2C230", info: "#6FA8DC" };
 
 /* ── Smooth scroll for nav links ── */
 document.querySelectorAll(".nav-link").forEach(link => {
@@ -29,7 +42,7 @@ const observer = new IntersectionObserver(entries => {
       document.querySelector(`.nav-link[data-section="${e.target.id}"]`)?.classList.add("active");
     }
   });
-}, { threshold: 0.4 });
+}, { rootMargin: "-45% 0px -50% 0px" });  // the section crossing the middle of the screen
 sections.forEach(s => observer.observe(s));
 
 /* ── Headline numbers, live from the data ── */
@@ -45,44 +58,6 @@ async function loadCoverage() {
   } catch { /* keep the defaults written in the page */ }
 }
 loadCoverage();
-
-/* ── Particle Canvas ── */
-(function initParticles() {
-  const canvas = document.getElementById("particleCanvas");
-  const ctx = canvas.getContext("2d");
-  let W, H, particles = [];
-
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener("resize", resize);
-
-  for (let i = 0; i < 80; i++) {
-    particles.push({
-      x: Math.random() * 2000, y: Math.random() * 1000,
-      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-      r: Math.random() * 2 + 0.5,
-      alpha: Math.random() * 0.5 + 0.1,
-    });
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => {
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(14,165,233,${p.alpha})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
 
 /* ── Search fields: codes are always upper case ── */
 ["flightNumber", "depAirport", "arrAirport"].forEach(id => {
@@ -167,62 +142,40 @@ document.getElementById("flightForm").addEventListener("submit", async function 
 
 /* ── Render Result ── */
 function renderResult(data) {
-  const { flight_number, dep_airport, arr_airport, departure, probabilities, risk_tier, risk_color, factors } = data;
+  const { flight_number, dep_airport, arr_airport, departure, probabilities, risk_tier, factors } = data;
   const p = probabilities;
+  const $ = id => document.getElementById(id);
 
-  document.getElementById("rFlightNum").textContent = flight_number;
-  document.getElementById("rRoute").textContent = `${dep_airport} → ${arr_airport}`;
-  document.getElementById("rTime").textContent = departure;
+  $("rFlightNum").textContent = flight_number;
+  $("rRoute").textContent = `${dep_airport} → ${arr_airport}`;
+  const when = new Date(departure.replace(" ", "T"));
+  $("rTime").textContent = isNaN(when) ? departure
+    : `Departs ${when.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}, ` +
+      `${departure.slice(11, 16)} local time`;
 
-  const badge = document.getElementById("riskBadge");
   // Without data for this flight, its route or its airports, don't present a confident risk level
   const generic = data.data_basis && data.data_basis.confidence === "general";
-  badge.textContent = generic ? "ESTIMATE ONLY" : `${risk_tier} RISK`;
-  const badgeColor = generic ? "#7A8FA6" : risk_color;
-  badge.style.background = badgeColor + "22";
-  badge.style.color = badgeColor;
-  badge.style.border = `1px solid ${badgeColor}44`;
+  const badge = $("riskBadge");
+  badge.textContent = generic ? "Estimate only" : `${risk_tier.charAt(0)}${risk_tier.slice(1).toLowerCase()} risk`;
+  badge.dataset.tier = generic ? "ESTIMATE" : risk_tier;
 
-  document.getElementById("pOnTime").textContent = `${p.on_time}%`;
-  document.getElementById("pDelayed").textContent = `${p.delayed}%`;
-  document.getElementById("pCancelled").textContent = `${p.cancelled}%`;
-
-  setTimeout(() => {
-    document.getElementById("barOnTime").style.width = `${p.on_time}%`;
-    document.getElementById("barDelayed").style.width = `${p.delayed}%`;
-    document.getElementById("barCancelled").style.width = `${p.cancelled}%`;
-  }, 100);
-
-  // Doughnut chart
-  if (resultChart) resultChart.destroy();
-  resultChart = new Chart(document.getElementById("resultChart"), {
-    type: "doughnut",
-    data: {
-      labels: ["On-Time", "Delayed", "Cancelled"],
-      datasets: [{
-        data: [p.on_time, p.delayed, p.cancelled],
-        backgroundColor: ["#22C55E", "#F59E0B", "#EF4444"],
-        borderWidth: 0,
-        hoverOffset: 6,
-      }],
-    },
-    options: {
-      cutout: "72%",
-      plugins: {
-        legend: { labels: { color: "#7A8FA6", font: { family: "Inter", size: 12 } } },
-        tooltip: {
-          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}%` },
-        },
-      },
-    },
-  });
+  $("pOnTime").textContent = `${Math.round(p.on_time)}%`;
+  $("lOnTime").textContent = `${p.on_time}%`;
+  $("pDelayed").textContent = `${p.delayed}%`;
+  $("pCancelled").textContent = `${p.cancelled}%`;
+  $("outcomeBar").setAttribute("aria-label",
+    `On time ${p.on_time}%, delayed ${p.delayed}%, cancelled ${p.cancelled}%`);
+  for (const [id, v] of [["barOnTime", p.on_time], ["barDelayed", p.delayed], ["barCancelled", p.cancelled]]) {
+    $(id).style.width = "0";
+    requestAnimationFrame(() => { $(id).style.width = `${v}%`; });
+  }
 
   // Risk factors
   const list = document.getElementById("factorsList");
   list.replaceChildren(...factors.map(f => {
     const item = document.createElement("div");
     item.className = `factor-item ${["high", "medium", "low"].includes(f.level) ? f.level : "medium"}`;
-    for (const [cls, text] of [["factor-icon", f.icon], ["factor-label", f.label], ["factor-value", f.value]]) {
+    for (const [cls, text] of [["factor-label", f.label], ["factor-value", f.value]]) {
       const span = document.createElement("span");
       span.className = cls;
       span.textContent = text;
@@ -233,7 +186,7 @@ function renderResult(data) {
 
   const typical = document.getElementById("rTypicalDelay");
   if (typical && data.expected_delay_minutes != null) {
-    typical.textContent = `If delayed: usually about ${data.expected_delay_minutes} min late (${data.delay_severity}).`;
+    typical.textContent = `If it's delayed, it's usually about ${data.expected_delay_minutes} minutes late.`;
   }
   const basis = document.getElementById("rBasis");
   if (basis && data.data_basis) {
@@ -250,26 +203,12 @@ function renderResult(data) {
   rc.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/* ── API Status Check ── */
-async function checkApiStatus() {
-  const dot = document.getElementById("apiStatus");
-  const txt = document.getElementById("apiStatusText");
-  try {
-    const res = await fetch(`${API}/model/status`, { signal: AbortSignal.timeout(3000) });
-    if (res.ok) {
-      dot.className = "status-dot online";
-      txt.textContent = "AI Engine Online";
-    } else { throw new Error(); }
-  } catch {
-    dot.className = "status-dot offline";
-    txt.textContent = "Backend Offline";
-  }
-}
-checkApiStatus();
-
 /* ── Load Analytics ── */
 async function loadAnalytics() {
   try {
+    await loadScript(CHART_JS);
+    Chart.defaults.font.family = '"IBM Plex Sans", system-ui, sans-serif';
+    Chart.defaults.color = C.muted;
     const [statsRes, carrierRes, airportRes] = await Promise.all([
       fetch(`${API}/analytics/global-stats`),
       fetch(`${API}/analytics/carriers`),
@@ -317,16 +256,16 @@ async function loadAnalytics() {
       data: {
         labels: top10.map(c => c.carrier),
         datasets: [
-          { label: "On-Time %", data: top10.map(c => c.otp), backgroundColor: "#0EA5E9", borderRadius: 6 },
-          { label: "Delay %",   data: top10.map(c => c.delay), backgroundColor: "#F59E0B", borderRadius: 6 },
+          { label: "On time %", data: top10.map(c => c.otp), backgroundColor: C.good, borderRadius: 3 },
+          { label: "Delayed %", data: top10.map(c => c.delay), backgroundColor: C.warn, borderRadius: 3 },
         ],
       },
       options: {
         responsive: true,
-        plugins: { legend: { labels: { color: "#7A8FA6" } } },
+        plugins: { legend: { labels: { color: C.muted } } },
         scales: {
-          x: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" } },
-          y: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" }, min: 0, max: 100 },
+          x: { ticks: { color: C.muted }, grid: { color: C.grid } },
+          y: { ticks: { color: C.muted }, grid: { color: C.grid }, min: 0, max: 100 },
         },
       },
     });
@@ -340,17 +279,17 @@ async function loadAnalytics() {
         datasets: [{
           label: "Departures delayed or cancelled %",
           data: top12.map(a => a.delay_pct),
-          backgroundColor: top12.map(a => a.delay_pct > 25 ? "#EF4444" : a.delay_pct > 20 ? "#F59E0B" : "#22C55E"),
-          borderRadius: 6,
+          backgroundColor: C.warn,
+          borderRadius: 3,
         }],
       },
       options: {
         indexAxis: "y",
         responsive: true,
-        plugins: { legend: { labels: { color: "#7A8FA6" } } },
+        plugins: { legend: { labels: { color: C.muted } } },
         scales: {
-          x: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" }, min: 0 },
-          y: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" } },
+          x: { ticks: { color: C.muted }, grid: { color: C.grid }, min: 0 },
+          y: { ticks: { color: C.muted }, grid: { color: C.grid } },
         },
       },
     });
@@ -366,20 +305,20 @@ async function loadAnalytics() {
         datasets: [{
           label: "Flights delayed or cancelled %",
           data: seasonal,
-          borderColor: "#6366F1",
-          backgroundColor: "rgba(99,102,241,0.1)",
+          borderColor: C.accent,
+          backgroundColor: "rgba(242,194,48,0.08)",
           fill: true,
-          tension: 0.4,
-          pointBackgroundColor: "#6366F1",
-          pointRadius: 5,
+          tension: 0.3,
+          pointBackgroundColor: C.accent,
+          pointRadius: 3,
         }],
       },
       options: {
         responsive: true,
-        plugins: { legend: { labels: { color: "#7A8FA6" } } },
+        plugins: { legend: { labels: { color: C.muted } } },
         scales: {
-          x: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" } },
-          y: { ticks: { color: "#7A8FA6" }, grid: { color: "rgba(255,255,255,0.04)" }, min: 0 },
+          x: { ticks: { color: C.muted }, grid: { color: C.grid } },
+          y: { ticks: { color: C.muted }, grid: { color: C.grid }, min: 0 },
         },
       },
     });
@@ -402,12 +341,23 @@ const analyticsObserver = new IntersectionObserver(entries => {
 analyticsObserver.observe(document.getElementById("analytics"));
 
 /* ── Mobile menu ── */
-document.getElementById("mobileToggle")?.addEventListener("click", () => {
-  document.querySelector(".nav-links").classList.toggle("open");
+const menuButton = document.getElementById("mobileToggle");
+const menu = document.getElementById("navLinks");
+menuButton?.addEventListener("click", () => {
+  const open = menu.classList.toggle("open");
+  menuButton.setAttribute("aria-expanded", String(open));
 });
-document.querySelectorAll(".nav-link").forEach(link =>
-  link.addEventListener("click", () => document.querySelector(".nav-links").classList.remove("open"))
-);
+document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => {
+  menu.classList.remove("open");
+  menuButton?.setAttribute("aria-expanded", "false");
+}));
+
+/* "Check a flight" goes to the search and puts the cursor in it */
+document.querySelector(".nav-cta")?.addEventListener("click", e => {
+  e.preventDefault();
+  document.getElementById("hero").scrollIntoView({ behavior: "smooth" });
+  setTimeout(() => document.getElementById("flightNumber").focus({ preventScroll: true }), 400);
+});
 
 /* ═══════════════════════════════════════════
    Journey Planner (AI Concierge)
@@ -471,7 +421,7 @@ document.querySelectorAll(".nav-link").forEach(link =>
       err.textContent = ex.message;
       err.hidden = false;
     } finally {
-      $("jpBtnText").textContent = "Build My Journey Plan";
+      $("jpBtnText").textContent = "Build my journey plan";
       $("jpLoader").hidden = true;
       $("jpBtn").disabled = false;
     }
@@ -482,7 +432,7 @@ document.querySelectorAll(".nav-link").forEach(link =>
     const dep = flight.departure;
 
     $("jpTitle").textContent = `${flight.number} · ${dep.airport}${flight.arrival.airport ? " → " + flight.arrival.airport : ""}`;
-    $("jpAiBadge").textContent = data.ai_generated ? "AI Personalized" : "Standard Plan";
+    $("jpAiBadge").textContent = data.ai_generated ? "Personalised plan" : "Standard plan";
     $("jpSummary").textContent = plan.summary;
     $("jpLeave").textContent = plan.leave_by;
     $("jpArrive").textContent = plan.arrive_airport_by;
@@ -595,8 +545,10 @@ window.Wayfinding = (() => {
     return box;
   }
 
-  function ensureMap() {
-    if (map || typeof L === "undefined") return map;
+  async function ensureMap() {
+    if (map) return map;
+    loadStyle(`${LEAFLET}.css`);
+    await loadScript(`${LEAFLET}.js`);
     map = L.map($("wfMap"), { scrollWheelZoom: false });
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -641,7 +593,7 @@ window.Wayfinding = (() => {
         }
         if (res.status === 202) throw new Error("The airport map is taking longer than usual. Please try again in a minute.");
         if (!res.ok || !json.success) throw new Error(json.error || `Server error (${res.status})`);
-        render(json.data);
+        await render(json.data);
         break;
       }
     } catch (ex) {
@@ -649,13 +601,13 @@ window.Wayfinding = (() => {
       err.hidden = false;
     } finally {
       $("wfStatus").hidden = true;
-      $("wfBtnText").textContent = "Show Nearby";
+      $("wfBtnText").textContent = "Show nearby";
       $("wfLoader").hidden = true;
       $("wfBtn").disabled = false;
     }
   }
 
-  function render(data) {
+  async function render(data) {
     const name = data.airport.name || data.airport.iata;
     let note;
     if (data.gate_found) note = `Nearest places to Gate ${data.gate.ref} at ${name}.`;
@@ -669,7 +621,7 @@ window.Wayfinding = (() => {
 
     const markers = {};
     const bounds = [];
-    ensureMap();
+    await ensureMap();
     if (map) {
       layer.clearLayers();
       if (data.gate_found) {
@@ -1031,6 +983,7 @@ const flightRights = (() => {
       });
       const h = d.headline;
       $("rbAmount").textContent = h.eligible ? `${h.currency}${h.amount}` : "No fixed payout";
+      $("rbAmount").dataset.eligible = h.eligible ? "yes" : "no";
       $("rbAmountLabel").textContent = h.eligible
         ? "you're likely owed in compensation, per passenger"
         : h.explanation;
