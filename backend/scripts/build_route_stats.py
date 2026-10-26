@@ -20,6 +20,8 @@ for flights the US data doesn't cover:
   the feed's 90 days comes from the same collector
 - Israel: Israel Airports Authority flight board for Ben Gurion, saved daily
   by scripts/collect_flights.py (data.gov.il)
+- Taiwan: Taoyuan International Airport open flight data, saved nightly by
+  scripts/collect_flights.py
 - Japan: MLIT on-time performance of the 10 main Japanese airlines on
   domestic routes, latest fiscal year (airline level only)
   https://www.mlit.go.jp/koku/15_bf_000727.html
@@ -682,12 +684,24 @@ def build_israel(ref: Ref, stats: Stats, months: int) -> dict:
             "flights": n}
 
 
+def build_taiwan(ref: Ref, stats: Stats, months: int) -> dict:
+    """Every flight at Taipei Taoyuan, saved nightly from the airport's open flight data."""
+    records = collect_flights.load("taoyuan", months)
+    if not records:
+        raise RuntimeError("no collected Taoyuan data yet")
+    n = add_collected(ref, stats, records, skip_countries=("GB", "BR", "KR", "HK", "NO", "IL"))
+    dates = sorted(r[0] for r in records)
+    print(f"  Taiwan: {n:,} flights", flush=True)
+    return {"name": "Taoyuan International Airport open flight data", "period": f"{dates[0]} to {dates[-1]}",
+            "flights": n}
+
+
 def build_netherlands(ref: Ref, stats: Stats, months: int) -> dict:
     """Every passenger flight at Amsterdam Schiphol (pushback / on-block times), saved daily."""
     records = collect_flights.load("schiphol", months)
     if not records:
         raise RuntimeError("no collected Schiphol data yet (needs the free Schiphol API key)")
-    n = add_collected(ref, stats, records, skip_countries=("GB", "BR", "KR", "HK", "NO", "IL"))
+    n = add_collected(ref, stats, records, skip_countries=("GB", "BR", "KR", "HK", "NO", "IL", "TW"))
     dates = sorted(r[0] for r in records)
     print(f"  Netherlands: {n:,} flights", flush=True)
     return {"name": "Schiphol Public Flight API", "period": f"{dates[0]} to {dates[-1]}", "flights": n}
@@ -777,7 +791,8 @@ def main():
     for key, builder in (("uk", build_uk), ("brazil", build_brazil), ("australia", build_australia),
                          ("korea", build_korea), ("hongkong", build_hongkong),
                          ("japan", build_japan), ("norway", build_norway),
-                         ("israel", build_israel), ("netherlands", build_netherlands)):
+                         ("israel", build_israel), ("taiwan", build_taiwan),
+                         ("netherlands", build_netherlands)):
         try:
             stats.source = key
             sources[key] = builder(ref, stats, args.months)

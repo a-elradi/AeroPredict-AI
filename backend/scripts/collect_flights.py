@@ -7,9 +7,9 @@ history, so the route statistics can cover a full year:
   https://partner.avinor.no/en/services/flight-data/
 - Hong Kong: Airport Authority Hong Kong flight records (keeps 91 days)
 - Taiwan: Taoyuan International Airport open flight data (today and the next
-  two days only, so it runs just before midnight Taiwan time). Its actual times
-  look like take-off/landing times, so it's collected raw and not used in the
-  route statistics until it has been calibrated.
+  two days only, so it runs just before midnight Taiwan time). On a normal day
+  on-time departures are recorded ~4 minutes after schedule and arrivals ~2
+  minutes before, i.e. gate times, so they are used as they are.
 - Israel: Israel Airports Authority flight board for Ben Gurion (TLV) on
   data.gov.il, which keeps about a day back (run twice a day). Its times are
   take-off and landing times, so departures have the typical taxi-out time
