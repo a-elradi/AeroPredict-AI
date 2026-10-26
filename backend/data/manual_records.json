@@ -1,0 +1,12 @@
+{
+ "_about": "Official punctuality figures that are only published as reports or press statements, entered by hand. Each entry: [flights, delayed_over_15_min, cancelled, typical_delay_min]. Update when a newer report appears.",
+ "sources": {
+  "NG": {"name": "Nigerian Civil Aviation Authority, Summary of Domestic Airline Flight Disruption Operations (as reported; some airlines dispute it)",
+         "period": "August 2026",
+         "url": "https://allafrica.com/stories/202609150060.html"}
+ },
+ "airline_country": {
+  "P4|NG": [1864, 1330, 0, null],
+  "*|NG": [7961, 4765, 36, null]
+ }
+}

@@ -55,7 +55,7 @@ def test_unknown_routes_differ_by_airport_punctuality(client):
 
 @needs_model
 def test_route_without_any_data_is_labelled_estimate_only(client):
-    d = predict_route(client, "ULN", "KTM")
+    d = predict_route(client, "ULN", "PBH")
     assert d["data_basis"]["confidence"] == "general"
 
 
@@ -165,8 +165,8 @@ def test_airline_record_used_where_no_route_or_airport_data(client):
     from app.services import route_history
     if not route_history.airline_record("EK"):
         pytest.skip("route statistics not built")
-    ek = predict_route(client, "ULN", "KTM", flight_number="EK384", airline="EK")
-    sq = predict_route(client, "ULN", "KTM", flight_number="SQ1", airline="SQ")
+    ek = predict_route(client, "ULN", "PBH", flight_number="EK384", airline="EK")
+    sq = predict_route(client, "ULN", "PBH", flight_number="SQ1", airline="SQ")
     assert ek["data_basis"]["confidence"] == "low"
     assert "EK flights" in ek["data_basis"]["note"]
     assert ek["probabilities"] != sq["probabilities"]
@@ -256,3 +256,22 @@ def test_south_africa_uses_acsa_airline_figures(client):
     cemair = predict_route(client, "JNB", "CPT", flight_number="5Z1", airline="5Z")
     assert any(f["label"] == "FA at JNB (ACSA)" for f in fa["factors"])
     assert fa["probabilities"]["on_time"] > cemair["probabilities"]["on_time"]
+
+
+def test_nigeria_manual_ncaa_records():
+    from app.services import route_history
+    own = route_history.lookup("P4", "9999", "LOS", "ABV")
+    other = route_history.lookup("W3", "9999", "LOS", "PHC")
+    assert own and own["level"] == "airline_country" and "NCAA" not in own["source"]["period"]
+    assert "Nigerian Civil Aviation Authority" in own["source"]["name"]
+    assert other and other["level"] == "country"
+    assert route_history.lookup("W3", "9999", "LOS", "LHR") is None or \
+        route_history.lookup("W3", "9999", "LOS", "LHR")["level"] != "country"
+
+
+def test_small_airports_are_smoothed():
+    from app.services import route_history
+    rec = route_history.airport_record("EBB", "dep")
+    if not rec:
+        pytest.skip("route statistics not built")
+    assert 0.15 < rec["late_share"] < 0.45

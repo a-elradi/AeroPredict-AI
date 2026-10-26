@@ -138,6 +138,7 @@ def _route_history_label(rh: dict, carrier: str, number: str, dep: str, arr: str
             "route_airline": f"{carrier} on {dep} → {arr}",
             "route": f"All airlines on {dep} → {arr}",
             "airline_country": f"{carrier} domestic flights ({rh.get('country')})",
+            "country": f"All domestic flights ({rh.get('country')})",
             "airline": f"{carrier} on all reported routes"}[rh["level"]]
 
 
@@ -194,6 +195,7 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
                 "route_airline": f"{rh['flights']:,} {carrier} flights from {dep} to {arr}",
                 "route": f"{rh['flights']:,} flights by all airlines from {dep} to {arr}",
                 "airline_country": f"{rh['flights']:,} {carrier} domestic flights across the country",
+                "country": f"{rh['flights']:,} domestic flights by all airlines in the country",
                 "airline": f"{rh['flights']:,} {carrier} flights on the routes we have data for"}[rh["level"]]
         src = rh["source"]
         level = "high" if rh["level"] == "flight" else "medium"
@@ -204,6 +206,9 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
         elif rh["level"] == "airline_country":
             level = "airport"
             note += " This route isn't reported on its own, so this uses the airline's national record."
+        elif rh["level"] == "country":
+            level = "low"
+            note += " Neither this route nor this airline is reported on its own, so this is the national average."
         elif rh["level"] == "airline":
             level = "low"
             note += (" There's no data for this route or these airports, so this is the airline's "

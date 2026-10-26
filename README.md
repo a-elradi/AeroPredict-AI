@@ -133,12 +133,14 @@ the model's time-of-day, season, holiday and weather effects:
 | Taoyuan International Airport (Taiwan) | every flight at Taipei Taoyuan, saved nightly (`collect-flights.yml`) | monthly (`route-stats.yml`) |
 | MLIT Japan | national on-time record of the 10 main Japanese airlines (domestic) | monthly check, published yearly |
 | BITRE Australia on-time performance | every major airline on every Australian domestic route, plus each airline's national record | monthly (`route-stats.yml`) |
+| Nigerian Civil Aviation Authority | domestic delays by airline (Air Peace) and nationally, entered by hand from the monthly report (`backend/data/manual_records.json`) | by hand |
 | ACSA (Airports Company South Africa) | each airline's on-time performance at South Africa's 9 main airports | weekly (`reference-data.yml`) |
 | EUROCONTROL airport punctuality | ~110 European and Turkish airports, plus country averages | weekly (`reference-data.yml`) |
 | Airport weather forecasts (TAF) | any airport worldwide, flights in the next ~30 hours | live |
 
 Airports without EUROCONTROL figures (Dubai, Doha, Riyadh, Delhi, Bangkok and ~1,500 others) get an airport
-record from every flight to or from them in the data above. Where there is no data for the route, the airline's overall record across all of the above (156 airlines,
+record from every flight to or from them in the data above (from 100 flights, smoothed toward the average
+airport when there are few). Where there is no data for the route, the airline's overall record across all of the above (156 airlines,
 plus US airlines' BTS records) is used, and it also adjusts the airport-punctuality estimates. Routes with
 none of these are labelled "Estimate only".
 

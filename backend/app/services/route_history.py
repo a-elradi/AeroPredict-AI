@@ -12,8 +12,11 @@ from pathlib import Path
 from . import airports
 
 STATS_FILE = Path(__file__).resolve().parents[2] / "data" / "route_stats.json.gz"
-MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200, "airline": 1000,
-               "airport": 500}
+# Official figures published only as reports (e.g. Nigeria's NCAA), entered by hand
+MANUAL_FILE = Path(__file__).resolve().parents[2] / "data" / "manual_records.json"
+MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200, "country": 1000,
+               "airline": 1000,
+               "airport": 100}
 SOURCE_COUNTRY = {"uk": "the UK", "brazil": "Brazil", "australia": "Australia", "korea": "South Korea",
                   "hongkong": "Hong Kong", "japan": "Japan", "norway": "Norway",
                   "netherlands": "the Netherlands", "israel": "Israel",
@@ -23,10 +26,16 @@ SOURCE_BY_COUNTRY = {"BR": "brazil", "GB": "uk", "JE": "uk", "GG": "uk", "IM": "
 
 @lru_cache(maxsize=1)
 def _load() -> dict:
-    if not STATS_FILE.exists():
-        return {}
-    with gzip.open(STATS_FILE, "rt", encoding="utf-8") as f:
-        return json.load(f)
+    data = {}
+    if STATS_FILE.exists():
+        with gzip.open(STATS_FILE, "rt", encoding="utf-8") as f:
+            data = json.load(f)
+    if MANUAL_FILE.exists():
+        manual = json.loads(MANUAL_FILE.read_text(encoding="utf-8"))
+        for key, entry in manual.get("airline_country", {}).items():
+            data.setdefault("airline_country", {}).setdefault(key, entry)
+        data["manual_sources"] = manual.get("sources", {})
+    return data
 
 
 def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
@@ -39,10 +48,11 @@ def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
     for level, key in (("flight", f"{carrier}{flight_no}|{origin}"),
                        ("route_airline", f"{carrier}|{origin}|{dest}"),
                        ("route", f"{origin}|{dest}"),
-                       ("airline_country", f"{carrier}|{domestic}" if domestic else None)):
+                       ("airline_country", f"{carrier}|{domestic}" if domestic else None),
+                       ("country", f"*|{domestic}" if domestic else None)):
         if key is None:
             continue
-        e = data.get(level, {}).get(key)
+        e = data.get("airline_country" if level == "country" else level, {}).get(key)
         if not e or e[0] + e[2] < MIN_FLIGHTS[level]:
             continue
         if level == "flight" and not _same_route(data, carrier, origin, dest):
@@ -52,17 +62,34 @@ def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
         return {"level": level, "flights": total, "late": late, "cancelled": cancelled, "country": domestic,
                 "disrupted_share": (late + cancelled) / total, "cancel_share_of_disrupted":
                 cancelled / (late + cancelled) if late + cancelled else 0.0,
-                "typical_delay": typical, "source": _source(data, origin, dest)}
+                "typical_delay": typical,
+                "source": data.get("manual_sources", {}).get(domestic) if level in ("airline_country", "country")
+                and domestic in data.get("manual_sources", {}) else _source(data, origin, dest)}
     return None
 
 
+AIRPORT_SMOOTHING = 200  # flights of "average airport" blended in, so small samples stay moderate
+
+
+@lru_cache(maxsize=2)
+def _airport_average(side: str) -> float:
+    rows = [v for k, v in _load().get("airport", {}).items() if k.endswith("|" + side)]
+    total = sum(v[0] + v[2] for v in rows)
+    return sum(v[1] + v[2] for v in rows) / total if total else 0.25
+
+
 def airport_record(iata: str, side: str) -> dict | None:
-    """An airport's record over every route to or from it in the national data (side: dep/arr)."""
+    """
+    An airport's record over every route to or from it in the national data (side: dep/arr),
+    smoothed toward the average airport when there are few flights.
+    """
     e = _load().get("airport", {}).get(f"{iata}|{side}")
     if not e or e[0] + e[2] < MIN_FLIGHTS["airport"]:
         return None
     flights, late, cancelled, _ = e
-    return {"flights": flights + cancelled, "late_share": (late + cancelled) / (flights + cancelled)}
+    total = flights + cancelled
+    share = (late + cancelled + AIRPORT_SMOOTHING * _airport_average(side)) / (total + AIRPORT_SMOOTHING)
+    return {"flights": total, "late_share": share}
 
 
 def airline_record(carrier: str) -> dict | None:
