@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact – AeroPredict</title>
+  <meta name="description" content="Contact AeroPredict to report a problem, suggest an airport or ask about partnerships." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<nav id="siteNav"></nav>
+<main class="page">
+  <div class="container">
+    <header class="page-header">
+      <span class="section-tag">Contact</span>
+      <h1 class="section-title">Get in Touch</h1>
+      <p>Found a mistake, missing your airport, or want to work with us? We'd like to hear from you.</p>
+    </header>
+    <div class="prose">
+      <div class="callout" id="contactEmailBox" hidden>
+        <strong>Email:</strong> <a id="contactEmail" href="#"></a>
+      </div>
+
+      <h2>Report a problem or wrong data</h2>
+      <p>Tell us the flight number, the date, the airports and what looks wrong. Screenshots help.
+      You can also open a public report on
+      <a href="https://github.com/a-elradi/AeroPredict-AI/issues" target="_blank" rel="noopener">GitHub</a>.</p>
+
+      <h2>Missing an airport or country?</h2>
+      <p>We add new data regularly. If you know of an official source of flight punctuality data for your country or airport,
+      we'd love to hear about it.</p>
+
+      <h2>Partnerships and press</h2>
+      <p>For data partnerships, travel and compensation partners, or press questions, please email us.</p>
+
+      <h2>Before you write</h2>
+      <p>We can't change bookings, contact airlines for you or confirm a flight's live status: for those, please contact
+      your airline. Many questions are answered in the <a href="/faq">FAQ</a>.</p>
+    </div>
+  </div>
+</main>
+<footer class="footer" id="siteFooter"></footer>
+<script src="/layout.js"></script>
+<script>
+fetch("/api/site-config").then(r => r.json()).then(c => {
+  if (!c.contact_email) return;
+  const a = document.getElementById("contactEmail");
+  a.textContent = c.contact_email;
+  a.href = `mailto:${c.contact_email}`;
+  document.getElementById("contactEmailBox").hidden = false;
+}).catch(() => {});
+</script>
+</body>
+</html>

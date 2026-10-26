@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How It Works – AeroPredict</title>
+  <meta name="description" content="How AeroPredict estimates flight delays: real on-time records from official sources, airport weather forecasts, and honest accuracy figures." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<nav id="siteNav"></nav>
+<main class="page">
+  <div class="container">
+    <header class="page-header">
+      <span class="section-tag">How it works</span>
+      <h1 class="section-title">How AeroPredict Works</h1>
+      <p>Plain answers about where our numbers come from, how good they are, and what they can't tell you.</p>
+    </header>
+    <div class="prose">
+      <div class="steps">
+        <div class="step"><span class="step-num">STEP 1</span><h3>Real records</h3>
+          <p>We collect official on-time records of millions of past flights from governments, airports and air-traffic agencies.</p></div>
+        <div class="step"><span class="step-num">STEP 2</span><h3>Your flight's history</h3>
+          <p>We look up how your flight number, route, airline and airports have actually performed over the past year.</p></div>
+        <div class="step"><span class="step-num">STEP 3</span><h3>Your day and time</h3>
+          <p>We adjust for the time of day, the season, holidays and, for flights in the next day or so, the airport weather forecast.</p></div>
+      </div>
+
+      <h2>What the numbers mean</h2>
+      <p>For every flight we show three chances that add up to 100%: arriving <strong>on time</strong>
+      (within 15 minutes of schedule, the standard airlines and regulators use), being <strong>delayed</strong> by more than
+      15 minutes, or being <strong>cancelled</strong>.</p>
+      <p>These are odds, not promises. A flight with a 20% chance of delay will still be late about one time in five.
+      Things nobody can see in advance, such as a sudden technical fault or a strike, can always change the outcome.</p>
+
+      <h2>How much we know about your flight</h2>
+      <p>Every result says what it is based on, from most to least specific:</p>
+      <table>
+        <tr><th>Label</th><th>Based on</th></tr>
+        <tr><td><strong>High confidence</strong></td><td>This exact flight number's own record over many past departures.</td></tr>
+        <tr><td><strong>Medium confidence</strong></td><td>All flights on your route, or your airline's flights on that route.</td></tr>
+        <tr><td><strong>Airport-level estimate</strong></td><td>The on-time record of your departure and arrival airports, adjusted for your airline.</td></tr>
+        <tr><td><strong>Low confidence</strong></td><td>Your airline's overall record or a national average.</td></tr>
+        <tr><td><strong>Estimate only</strong></td><td>No specific data: a general figure from time of day and season. Treat it as a rough guide.</td></tr>
+      </table>
+
+      <h2>Where we have data</h2>
+      <p>Real records cover <strong id="hiwCountries">138</strong> countries, <strong id="hiwAirports">900+</strong> airports
+      and <strong id="hiwAirlines">150+</strong> airlines. The detail varies by country:</p>
+      <table>
+        <tr><th>Coverage</th><th>Countries</th><th>Source</th></tr>
+        <tr><td>Every flight</td><td>United States</td><td>US Bureau of Transportation Statistics</td></tr>
+        <tr><td>Every flight</td><td>Brazil</td><td>ANAC (National Civil Aviation Agency)</td></tr>
+        <tr><td>Every flight</td><td>South Korea</td><td>Airportal, Ministry of Land, Infrastructure and Transport</td></tr>
+        <tr><td>Every flight, collected daily</td><td>Hong Kong, Norway, Israel, Taiwan (Taoyuan)</td><td>Airport Authority Hong Kong, Avinor, Israel Airports Authority, Taoyuan International Airport</td></tr>
+        <tr><td>Every airline on every route</td><td>United Kingdom, Australia</td><td>UK Civil Aviation Authority, BITRE</td></tr>
+        <tr><td>Each airline at each airport</td><td>South Africa</td><td>Airports Company South Africa</td></tr>
+        <tr><td>Each airline nationally</td><td>Japan, Nigeria</td><td>MLIT Japan, Nigerian Civil Aviation Authority</td></tr>
+        <tr><td>Each airport</td><td>Europe and Türkiye (about 110 airports)</td><td>EUROCONTROL</td></tr>
+        <tr><td>Each airport</td><td>Middle East, Asia, Africa, the Americas</td><td>Measured from flights to and from them in the sources above</td></tr>
+      </table>
+      <p>Airport weather forecasts come from aviationweather.gov and cover airports worldwide.</p>
+
+      <h2>How accurate it is</h2>
+      <p>We test predictions the honest way: on later months of real flights that were kept out of the data the
+      predictions were built from, then compare with what actually happened.</p>
+      <ul>
+        <li><strong>US flights:</strong> tested on 300,000 flights. A flight that was disrupted gets a higher risk score than
+        one that ran on time about 70% of the time (50% would be guessing), rising to 72% for flights in the next day when
+        the weather forecast is known.</li>
+        <li><strong>Flights elsewhere (tested on Brazil):</strong> 30,000 flights, about 67% (up from 54% before route
+        history was added). Of the flights we rated riskiest, predicted at about 40%, 41% were actually delayed or cancelled.</li>
+      </ul>
+      <p>The latest figures are always on the <a href="/#analytics">Analytics</a> page.</p>
+
+      <h2>What we can't do</h2>
+      <ul>
+        <li>We don't track your plane live. For today's real status, always check your airline or airport.</li>
+        <li>We can't foresee one-off events such as strikes, technical faults or security incidents.</li>
+        <li>Passenger-rights information is a general guide, not legal advice.</li>
+      </ul>
+
+      <h2>Who we are</h2>
+      <p>AeroPredict is an independent service. We are not affiliated with any airline, airport or government agency, and the
+      organisations whose data we use do not endorse us. If you think something is wrong, please <a href="/contact">tell us</a>.</p>
+    </div>
+  </div>
+</main>
+<footer class="footer" id="siteFooter"></footer>
+<script src="/layout.js"></script>
+<script>
+fetch("/api/analytics/global-stats").then(r => r.json()).then(s => {
+  const c = s.coverage || {};
+  if (c.countries) document.getElementById("hiwCountries").textContent = c.countries;
+  if (c.airports) document.getElementById("hiwAirports").textContent = `${Math.floor(c.airports / 100) * 100}+`;
+  if (c.airlines) document.getElementById("hiwAirlines").textContent = `${Math.floor(c.airlines / 10) * 10}+`;
+}).catch(() => {});
+</script>
+</body>
+</html>

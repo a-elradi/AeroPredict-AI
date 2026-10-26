@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AeroPredict – AI Flight Delay Prediction Platform</title>
+  <title>AeroPredict – Will Your Flight Be On Time?</title>
   <meta name="description" content="Check your flight's delay risk from a year of real flight records, plan your airport journey, find amenities near your gate, check your bag risk and learn your compensation rights." />
-  <meta name="keywords" content="flight delay prediction, AI aviation, flight cancellation risk, IATA flight tracker, machine learning aviation" />
+  <meta name="keywords" content="flight delay prediction, is my flight on time, flight cancellation risk, airline on-time performance, flight delay compensation" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -37,14 +37,13 @@
     <span class="nav-title">AeroPredict<span class="nav-badge">AI</span></span>
   </div>
   <ul class="nav-links">
-    <li><a href="#hero" class="nav-link active" data-section="hero">Home</a></li>
-    <li><a href="#predict" class="nav-link" data-section="predict">Predict</a></li>
+    <li><a href="#hero" class="nav-link active" data-section="hero">Check a Flight</a></li>
     <li><a href="#journey" class="nav-link" data-section="journey">Journey Plan</a></li>
     <li><a href="#wayfinding" class="nav-link" data-section="wayfinding">Near My Gate</a></li>
     <li><a href="#baggage" class="nav-link" data-section="baggage">Bag Check</a></li>
     <li><a href="#rights" class="nav-link" data-section="rights">My Rights</a></li>
     <li><a href="#analytics" class="nav-link" data-section="analytics">Analytics</a></li>
-    <li><a href="#technology" class="nav-link" data-section="technology">Technology</a></li>
+    <li><a href="/how-it-works" class="nav-link">How It Works</a></li>
   </ul>
   <div class="nav-status">
     <span class="status-dot" id="apiStatus"></span>
@@ -64,189 +63,87 @@
 
   <div class="hero-content">
     <div class="hero-eyebrow">
-      <span class="chip">✦ Trained on 14 million real flights · Free to use</span>
+      <span class="chip">✦ Real flight records · Live airport weather · Free</span>
     </div>
     <h1 class="hero-title">
-      Predict Your Flight's Fate<br />
-      <span class="gradient-text">Before You Board</span>
+      Will Your Flight<br />
+      <span class="gradient-text">Be On Time?</span>
     </h1>
     <p class="hero-subtitle">
-      AeroPredict learns from two years of real flight records and live airport weather to show how likely your
-      flight is to be delayed or cancelled, then helps you through the whole trip:
-      airport timing, amenities near your gate, bag risk and your rights if things go wrong.
+      Check the odds of a delay or cancellation, based on how your flight, route, airline and airports
+      have actually performed.
     </p>
-    <div class="hero-cta">
-      <a href="#predict" class="btn btn-primary" id="heroCTA">
-        <span>Predict My Flight</span>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </a>
-      <a href="#analytics" class="btn btn-ghost">View Analytics</a>
-    </div>
+
+    <form class="search-card" id="flightForm" novalidate>
+      <div class="search-fields">
+        <label class="search-field search-field-wide">
+          <span class="search-label">Flight number</span>
+          <input type="text" id="flightNumber" class="search-input" placeholder="e.g. EK384" maxlength="8"
+                 autocomplete="off" autocapitalize="characters" required />
+        </label>
+        <label class="search-field">
+          <span class="search-label">From</span>
+          <input type="text" id="depAirport" class="search-input" placeholder="DXB" maxlength="3"
+                 autocomplete="off" autocapitalize="characters" required />
+        </label>
+        <label class="search-field">
+          <span class="search-label">To</span>
+          <input type="text" id="arrAirport" class="search-input" placeholder="BKK" maxlength="3"
+                 autocomplete="off" autocapitalize="characters" required />
+        </label>
+        <label class="search-field">
+          <span class="search-label">Date</span>
+          <input type="date" id="flightDate" class="search-input" required />
+        </label>
+        <label class="search-field">
+          <span class="search-label">Departs</span>
+          <input type="time" id="depTime" class="search-input" required />
+        </label>
+        <button type="submit" class="btn btn-primary search-btn" id="predictBtn">
+          <span id="predictBtnText">Check my flight</span>
+          <div class="btn-loader" id="btnLoader" hidden><div class="spinner"></div></div>
+        </button>
+      </div>
+      <div class="form-error" id="formError" hidden></div>
+      <div class="search-examples">
+        <span>Try:</span>
+        <button type="button" class="demo-chip" onclick="fillDemo('EK384','DXB','BKK','09:30')">Emirates DXB → BKK</button>
+        <button type="button" class="demo-chip" onclick="fillDemo('BA117','LHR','JFK','11:40')">British Airways LHR → JFK</button>
+        <button type="button" class="demo-chip" onclick="fillDemo('KE1201','GMP','CJU','08:00')">Korean Air Seoul → Jeju</button>
+      </div>
+    </form>
+
     <div class="hero-stats">
       <div class="hero-stat">
-        <span class="stat-value" data-target="14">0</span><span class="stat-unit">M</span>
-        <span class="stat-label">Real Flights Analyzed</span>
+        <span class="stat-value" id="statCountries">138</span>
+        <span class="stat-label">Countries with real data</span>
       </div>
       <div class="hero-stat-divider"></div>
       <div class="hero-stat">
-        <span class="stat-value" data-target="54">0</span><span class="stat-unit"></span>
-        <span class="stat-label">Airport Maps</span>
+        <span class="stat-value" id="statAirports">900+</span>
+        <span class="stat-label">Airports</span>
       </div>
       <div class="hero-stat-divider"></div>
       <div class="hero-stat">
-        <span class="stat-value" data-target="5">0</span><span class="stat-unit"></span>
-        <span class="stat-label">Passenger-Rights Laws Covered</span>
+        <span class="stat-value" id="statAirlines">150+</span>
+        <span class="stat-label">Airlines</span>
       </div>
       <div class="hero-stat-divider"></div>
       <div class="hero-stat">
-        <span class="stat-value" data-target="19">0</span><span class="stat-unit">+</span>
-        <span class="stat-label">Airlines Tracked</span>
+        <span class="stat-value" id="statFlights">14M+</span>
+        <span class="stat-label">Flights studied</span>
       </div>
     </div>
-  </div>
-
-  <div class="hero-plane">
-    <div class="plane-trail"></div>
-    <svg class="plane-svg" viewBox="0 0 100 100" fill="none">
-      <path d="M85 50L15 25L30 50L15 75L85 50Z" fill="url(#planeGrad)" />
-      <path d="M30 50L40 35L60 40L30 50Z" fill="white" opacity="0.3"/>
-      <defs>
-        <linearGradient id="planeGrad" x1="15" y1="25" x2="85" y2="75" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="#38BDF8"/>
-          <stop offset="100%" stop-color="#818CF8"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  </div>
-
-  <div class="scroll-indicator">
-    <span>Scroll to explore</span>
-    <div class="scroll-arrow"></div>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
      PREDICTION SECTION
 ═══════════════════════════════════════════════════════ -->
-<section class="section" id="predict">
+<section class="section section-result" id="predict" hidden>
   <div class="container">
-    <div class="section-header">
-      <span class="section-tag">AI Prediction Engine</span>
-      <h2 class="section-title">Flight Risk Analysis</h2>
-      <p class="section-subtitle">Enter your flight details below. Our model learned from two years of real flight records from the US Bureau of Transportation Statistics, plus airport weather and estimates your chances of an on-time arrival, a delay or a cancellation. Flights to, from and within the US get the most accurate probabilities.</p>
-    </div>
 
-    <div class="predict-layout">
-      <!-- INPUT FORM -->
-      <div class="card predict-card" id="predictForm">
-        <div class="card-header">
-          <h3>Flight Information</h3>
-          <span class="card-badge">Real-Time Analysis</span>
-        </div>
-
-        <form class="flight-form" id="flightForm" novalidate>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="flightNumber">Flight Number</label>
-              <div class="input-wrapper">
-                <span class="input-icon">✈</span>
-                <input type="text" id="flightNumber" class="form-input" placeholder="e.g. AA1234" maxlength="8" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="airline">Airline (IATA Code)</label>
-              <div class="input-wrapper">
-                <span class="input-icon">🏢</span>
-                <select id="airline" class="form-input form-select">
-                  <option value="">Select Airline</option>
-                  <optgroup label="US Carriers">
-                    <option value="AA">AA – American Airlines</option>
-                    <option value="DL">DL – Delta Air Lines</option>
-                    <option value="UA">UA – United Airlines</option>
-                    <option value="WN">WN – Southwest Airlines</option>
-                    <option value="B6">B6 – JetBlue Airways</option>
-                    <option value="AS">AS – Alaska Airlines</option>
-                    <option value="NK">NK – Spirit Airlines</option>
-                    <option value="F9">F9 – Frontier Airlines</option>
-                    <option value="HA">HA – Hawaiian Airlines</option>
-                    <option value="G4">G4 – Allegiant Air</option>
-                  </optgroup>
-                  <optgroup label="Middle East Carriers">
-                    <option value="EK">EK – Emirates</option>
-                    <option value="QR">QR – Qatar Airways</option>
-                    <option value="EY">EY – Etihad Airways</option>
-                    <option value="GF">GF – Gulf Air</option>
-                    <option value="SV">SV – Saudi Arabian Airlines</option>
-                  </optgroup>
-                  <optgroup label="European Carriers">
-                    <option value="LH">LH – Lufthansa</option>
-                    <option value="BA">BA – British Airways</option>
-                    <option value="AF">AF – Air France</option>
-                    <option value="TK">TK – Turkish Airlines</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row airport-row">
-            <div class="form-group">
-              <label class="form-label" for="depAirport">Departure Airport (IATA)</label>
-              <div class="input-wrapper">
-                <span class="input-icon">🛫</span>
-                <input type="text" id="depAirport" class="form-input" placeholder="e.g. JFK" maxlength="4" />
-                <span class="airport-name" id="depAirportName"></span>
-              </div>
-            </div>
-            <div class="route-arrow">→</div>
-            <div class="form-group">
-              <label class="form-label" for="arrAirport">Arrival Airport (IATA)</label>
-              <div class="input-wrapper">
-                <span class="input-icon">🛬</span>
-                <input type="text" id="arrAirport" class="form-input" placeholder="e.g. LHR" maxlength="4" />
-                <span class="airport-name" id="arrAirportName"></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="flightDate">Flight Date</label>
-              <div class="input-wrapper">
-                <span class="input-icon">📅</span>
-                <input type="date" id="flightDate" class="form-input" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="depTime">Departure Time</label>
-              <div class="input-wrapper">
-                <span class="input-icon">⏰</span>
-                <input type="time" id="depTime" class="form-input" />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-error" id="formError" hidden></div>
-
-          <button type="submit" class="btn btn-primary btn-full" id="predictBtn">
-            <span id="predictBtnText">Analyze Flight Risk</span>
-            <div class="btn-loader" id="btnLoader" hidden>
-              <div class="spinner"></div>
-            </div>
-          </button>
-        </form>
-
-        <!-- Quick-fill demo examples -->
-        <div class="demo-examples">
-          <span class="demo-label">Quick demo:</span>
-          <button class="demo-chip" onclick="fillDemo('AA','ORD','JFK','2026-01-15','08:30')">AA · ORD→JFK Winter</button>
-          <button class="demo-chip" onclick="fillDemo('EK','DXB','LHR','2026-07-04','14:00')">EK · DXB→LHR Summer</button>
-          <button class="demo-chip" onclick="fillDemo('WN','ATL','LAX','2026-12-24','18:00')">WN · ATL→LAX Xmas Eve</button>
-        </div>
-      </div>
-
+    <div class="result-layout">
       <!-- RESULT PANEL (initially hidden) -->
       <div class="card result-card" id="resultCard" hidden>
         <div class="result-header" id="resultHeader">
@@ -303,9 +200,53 @@
         <!-- Model confidence note -->
         <div class="model-note">
           <span class="note-icon">🤖</span>
-          <span>XGBoost model trained on 14 million real flights (US Bureau of Transportation Statistics, Sep 2024 – Aug 2026) and airport weather. Predictions are odds, not certainties.</span>
+          <span>Based on real flight records from official sources and airport weather forecasts. These are odds, not certainties: always check with your airline. <a href="/how-it-works">How it works</a></span>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     TOOLS OVERVIEW
+═══════════════════════════════════════════════════════ -->
+<section class="section section-tools" id="tools">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">More for your trip</span>
+      <h2 class="section-title">From Your Door to Your Destination</h2>
+    </div>
+    <div class="tools-grid">
+      <a class="tool-card" href="#journey">
+        <span class="tool-icon">🗺️</span>
+        <h3>Journey Plan</h3>
+        <p>When to leave home, how long security takes, and a step-by-step plan to the gate.</p>
+        <span class="tool-link">Plan my journey →</span>
+      </a>
+      <a class="tool-card" href="#wayfinding">
+        <span class="tool-icon">☕</span>
+        <h3>Near My Gate</h3>
+        <p>Coffee, food, toilets, prayer rooms and lounges, sorted by walking distance.</p>
+        <span class="tool-link">Find nearby →</span>
+      </a>
+      <a class="tool-card" href="#baggage">
+        <span class="tool-icon">🧳</span>
+        <h3>Bag Check</h3>
+        <p>How likely your checked bag is to go missing on your route, and what to do if it does.</p>
+        <span class="tool-link">Check my bag →</span>
+      </a>
+      <a class="tool-card" href="#rights">
+        <span class="tool-icon">⚖️</span>
+        <h3>My Rights</h3>
+        <p>Delayed or cancelled? See what the airline owes you: cash, meals, a hotel or a refund.</p>
+        <span class="tool-link">Check my rights →</span>
+      </a>
+      <a class="tool-card" href="#analytics">
+        <span class="tool-icon">📊</span>
+        <h3>Analytics</h3>
+        <p>Which airlines and airports run on time, and how accurate our predictions are.</p>
+        <span class="tool-link">View analytics →</span>
+      </a>
     </div>
   </div>
 </section>
@@ -759,151 +700,11 @@
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
-     TECHNOLOGY SECTION
-═══════════════════════════════════════════════════════ -->
-<section class="section" id="technology">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">Architecture</span>
-      <h2 class="section-title">The Technology Behind AeroPredict</h2>
-      <p class="section-subtitle">How the predictions are made, and what they can and can't tell you.</p>
-    </div>
-
-    <div class="tech-pipeline">
-      <div class="pipeline-step">
-        <div class="pipeline-icon">📡</div>
-        <h4>Data Layer</h4>
-        <p>US flight records (BTS), UK, Brazil, Australia, South Korea, Hong Kong, Japan, Norway, Israel and South Africa punctuality (CAA, ANAC, BITRE, Airportal, HKIA, MLIT, Avinor, IAA, ACSA), European airport punctuality (EUROCONTROL), airport weather and forecasts</p>
-        <div class="pipeline-tags">
-          <span>BTS</span><span>CAA</span><span>ANAC</span><span>BITRE</span><span>Airportal</span><span>HKIA</span><span>MLIT</span><span>Avinor</span><span>IAA</span><span>ACSA</span><span>Taoyuan</span><span>EUROCONTROL</span>
-        </div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step">
-        <div class="pipeline-icon">⚙️</div>
-        <h4>Feature Engineering</h4>
-        <p>Past on-time record of each flight number, route, airline and airport, time of day, holidays, and the weather forecast for flights in the next day</p>
-        <div class="pipeline-tags">
-          <span>Pandas</span><span>NumPy</span><span>Scikit-learn</span>
-        </div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step">
-        <div class="pipeline-icon">🧠</div>
-        <h4>AI Model</h4>
-        <p>Gradient-boosted trees (XGBoost) predicting on time, delayed 15+ min, or cancelled, tested on later months it never saw</p>
-        <div class="pipeline-tags">
-          <span>XGBoost</span><span>3 outcomes</span><span>Out-of-time test</span>
-        </div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step">
-        <div class="pipeline-icon">🔌</div>
-        <h4>API Layer</h4>
-        <p>Flask REST API with input validation and per-visitor rate limits</p>
-        <div class="pipeline-tags">
-          <span>Flask</span><span>Python</span><span>REST</span>
-        </div>
-      </div>
-      <div class="pipeline-arrow">→</div>
-      <div class="pipeline-step">
-        <div class="pipeline-icon">💻</div>
-        <h4>Dashboard UI</h4>
-        <p>Responsive aviation-grade UI with real-time Chart.js visualizations</p>
-        <div class="pipeline-tags">
-          <span>HTML5</span><span>Chart.js</span><span>CSS3</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Feature Cards -->
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🎯</div>
-        <h4>Real Flight History</h4>
-        <p>Every prediction starts from what actually happened to that flight number, route and airport over the past year.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌦</div>
-        <h4>Live Airport Weather</h4>
-        <p>For flights in the next day, predictions use the official airport forecast (TAF) for thunderstorms, snow, fog, low cloud and strong winds.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h4>Honest Odds</h4>
-        <p>We tested the model on flights from later months it never saw, and say how much history each prediction is based on.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
-        <h4>Free to Use</h4>
-        <p>Delay odds, journey plans, gate maps, bag checks and passenger-rights guidance at no cost.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h4>Know Your Rights</h4>
-        <p>EU261, UK261, Türkiye SHY-YOLCU, US and Canadian rules explained for your exact flight.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📈</div>
-        <h4>Explainable AI</h4>
-        <p>See the track record behind every prediction: the flight's own history, its route, airline and departure hour.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════
      FOOTER
 ═══════════════════════════════════════════════════════ -->
-<footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <span class="nav-title">AeroPredict<span class="nav-badge">AI</span></span>
-        <p>Flight delay odds and airport help for passengers, built on real flight data.</p>
-        <div class="footer-tech-badges">
-          <span>Python</span><span>Flask</span><span>XGBoost</span><span>Chart.js</span>
-        </div>
-      </div>
-      <div class="footer-col">
-        <h5>Data Sources</h5>
-        <ul>
-          <li>US BTS On-Time Performance</li>
-          <li>UK CAA punctuality statistics</li>
-          <li>ANAC Brazil (VRA)</li>
-          <li>BITRE Australia on-time performance</li>
-          <li>Airportal Korea, Hong Kong Airport, MLIT Japan, Israel Airports Authority, Airports Company South Africa, Taoyuan Airport, Nigeria NCAA</li>
-          <li>Flight data from <a href="https://www.avinor.no" target="_blank" rel="noopener">Avinor</a></li>
-          <li>© EUROCONTROL airport punctuality</li>
-          <li>aviationweather.gov, OpenStreetMap</li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h5>Passenger Rights</h5>
-        <ul>
-          <li>EU261 and UK261</li>
-          <li>Türkiye SHY-YOLCU</li>
-          <li>US DOT refund rules</li>
-          <li>Montreal Convention</li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h5>Features</h5>
-        <ul>
-          <li><a href="#predict">Delay prediction</a></li>
-          <li><a href="#journey">Journey planner</a></li>
-          <li><a href="#wayfinding">Near my gate</a></li>
-          <li><a href="#rights">Delay &amp; cancellation rights</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2026 AeroPredict · Flight delay odds and airport help for passengers</p>
-      <p class="footer-disclaimer">Predictions are probabilistic estimates for informational purposes. Always verify with your airline.</p>
-    </div>
-  </div>
-</footer>
+<footer class="footer" id="siteFooter"></footer>
 
+<script src="layout.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

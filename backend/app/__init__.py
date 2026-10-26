@@ -1,4 +1,6 @@
-from flask import Flask, send_from_directory
+import os
+
+from flask import Flask, abort, jsonify, send_from_directory
 from flask_cors import CORS
 from pathlib import Path
 from dotenv import load_dotenv
@@ -7,7 +9,7 @@ FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 def create_app():
     load_dotenv()  # reads a local .env file if present (Render uses its own env vars)
-    app = Flask(__name__, static_folder=str(FRONTEND_DIR), static_url_path="")
+    app = Flask(__name__, static_folder=None)  # the frontend is served by static_files() below
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     from .routes.predict import predict_bp
@@ -28,8 +30,18 @@ def create_app():
     def index():
         return send_from_directory(str(FRONTEND_DIR), "index.html")
 
+    @app.route("/api/site-config")
+    def site_config():
+        # Contact address is set in the host's environment (CONTACT_EMAIL), never in the code
+        return jsonify({"contact_email": os.environ.get("CONTACT_EMAIL", "").strip() or None})
+
     @app.route("/<path:path>")
     def static_files(path):
+        # Clean page URLs: /faq serves faq.html
+        if "." not in path.rsplit("/", 1)[-1] and (FRONTEND_DIR / f"{path}.html").is_file():
+            path = f"{path}.html"
+        if not (FRONTEND_DIR / path).is_file():
+            abort(404)
         return send_from_directory(str(FRONTEND_DIR), path)
 
     return app

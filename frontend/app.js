@@ -3,19 +3,6 @@
 const API = window.location.origin + "/api";
 let resultChart = null;
 
-/* ── Airport name lookup ── */
-const AIRPORTS = {
-  ORD:"Chicago O'Hare",ATL:"Atlanta Hartsfield",LAX:"Los Angeles Intl",
-  DFW:"Dallas/Fort Worth",JFK:"New York JFK",EWR:"Newark Liberty",
-  SFO:"San Francisco Intl",BOS:"Boston Logan",LGA:"New York LaGuardia",
-  MIA:"Miami Intl",SEA:"Seattle-Tacoma",DEN:"Denver Intl",
-  MCO:"Orlando Intl",LAS:"Las Vegas Harry Reid",PHX:"Phoenix Sky Harbor",
-  BAH:"Bahrain Intl",DXB:"Dubai Intl",DOH:"Hamad Intl Doha",
-  AUH:"Abu Dhabi Intl",RUH:"King Khalid Riyadh",
-  CDG:"Paris Charles de Gaulle",LHR:"London Heathrow",
-  FRA:"Frankfurt Intl",AMS:"Amsterdam Schiphol",IST:"Istanbul Intl",
-};
-
 /* ── Navbar scroll effect ── */
 window.addEventListener("scroll", () => {
   document.getElementById("navbar").style.background =
@@ -23,7 +10,7 @@ window.addEventListener("scroll", () => {
 });
 
 /* ── Smooth scroll for nav links ── */
-document.querySelectorAll(".nav-link, #heroCTA").forEach(link => {
+document.querySelectorAll(".nav-link").forEach(link => {
   link.addEventListener("click", e => {
     const href = link.getAttribute("href");
     if (href && href.startsWith("#")) {
@@ -45,29 +32,19 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.4 });
 sections.forEach(s => observer.observe(s));
 
-/* ── Counter animation ── */
-function animateCounter(el) {
-  const target = parseFloat(el.dataset.target);
-  const duration = 2000;
-  const start = performance.now();
-  const step = (now) => {
-    const progress = Math.min((now - start) / duration, 1);
-    const ease = 1 - Math.pow(1 - progress, 3);
-    el.textContent = target % 1 === 0 ? Math.floor(ease * target) : (ease * target).toFixed(1);
-    if (progress < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
+/* ── Headline numbers, live from the data ── */
+async function loadCoverage() {
+  try {
+    const stats = await (await fetch(`${API}/analytics/global-stats`)).json();
+    const c = stats.coverage || {};
+    const set = (id, text) => { if (text) document.getElementById(id).textContent = text; };
+    set("statCountries", c.countries && String(c.countries));
+    set("statAirports", c.airports && `${Math.floor(c.airports / 100) * 100}+`);
+    set("statAirlines", c.airlines && `${Math.floor(c.airlines / 10) * 10}+`);
+    set("statFlights", stats.total_flights_analyzed && `${Math.floor(stats.total_flights_analyzed / 1e6)}M+`);
+  } catch { /* keep the defaults written in the page */ }
 }
-
-const statsObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.querySelectorAll(".stat-value").forEach(animateCounter);
-      statsObserver.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.5 });
-statsObserver.observe(document.querySelector(".hero-stats"));
+loadCoverage();
 
 /* ── Particle Canvas ── */
 (function initParticles() {
@@ -107,15 +84,14 @@ statsObserver.observe(document.querySelector(".hero-stats"));
   draw();
 })();
 
-/* ── Airport name hints ── */
-function setupAirportHint(inputId, hintId) {
-  document.getElementById(inputId).addEventListener("input", function () {
-    const code = this.value.toUpperCase();
-    document.getElementById(hintId).textContent = AIRPORTS[code] || "";
+/* ── Search fields: codes are always upper case ── */
+["flightNumber", "depAirport", "arrAirport"].forEach(id => {
+  document.getElementById(id).addEventListener("input", function () {
+    const pos = this.selectionStart;
+    this.value = this.value.toUpperCase();
+    this.setSelectionRange(pos, pos);
   });
-}
-setupAirportHint("depAirport", "depAirportName");
-setupAirportHint("arrAirport", "arrAirportName");
+});
 
 /* ── Default date/time ── */
 (function setDefaults() {
@@ -125,18 +101,13 @@ setupAirportHint("arrAirport", "arrAirportName");
   document.getElementById("depTime").value = "09:00";
 })();
 
-/* ── Demo fill ── */
-window.fillDemo = function (airline, dep, arr, date, time) {
-  document.getElementById("airline").value = airline;
+/* ── Example flights ── */
+window.fillDemo = function (flight, dep, arr, time) {
+  document.getElementById("flightNumber").value = flight;
   document.getElementById("depAirport").value = dep;
   document.getElementById("arrAirport").value = arr;
-  document.getElementById("flightDate").value = date;
   document.getElementById("depTime").value = time;
-  document.getElementById("depAirportName").textContent = AIRPORTS[dep] || "";
-  document.getElementById("arrAirportName").textContent = AIRPORTS[arr] || "";
-  const flightNum = airline + Math.floor(1000 + Math.random() * 8999);
-  document.getElementById("flightNumber").value = flightNum;
-  document.getElementById("predict").scrollIntoView({ behavior: "smooth" });
+  document.getElementById("flightForm").requestSubmit();
 };
 
 /* ── PREDICTION FORM SUBMIT ── */
@@ -148,23 +119,28 @@ document.getElementById("flightForm").addEventListener("submit", async function 
   const errBox = document.getElementById("formError");
   errBox.hidden = true;
 
+  const flightNumber = document.getElementById("flightNumber").value.replace(/\s+/g, "").toUpperCase();
   const payload = {
-    flight_number: document.getElementById("flightNumber").value.trim(),
-    airline:       document.getElementById("airline").value.trim(),
+    flight_number: flightNumber,
+    airline:       flightNumber.slice(0, 2),  // the airline code starts every flight number
     dep_airport:   document.getElementById("depAirport").value.trim().toUpperCase(),
     arr_airport:   document.getElementById("arrAirport").value.trim().toUpperCase(),
     date:          document.getElementById("flightDate").value,
     dep_time:      document.getElementById("depTime").value,
   };
 
-  if (!payload.flight_number || !payload.airline || !payload.dep_airport ||
-      !payload.arr_airport || !payload.date || !payload.dep_time) {
-    errBox.textContent = "Please fill in all fields before running analysis.";
+  if (!payload.flight_number || !payload.dep_airport || !payload.arr_airport || !payload.date || !payload.dep_time) {
+    errBox.textContent = "Please fill in the flight number, both airports, the date and the departure time.";
+    errBox.hidden = false;
+    return;
+  }
+  if (!/^[A-Z0-9]{2}\d{1,4}[A-Z]?$/.test(payload.flight_number)) {
+    errBox.textContent = "Flight numbers look like EK384 or BA117: the airline's 2-character code, then the number.";
     errBox.hidden = false;
     return;
   }
 
-  btnText.textContent = "Analyzing…";
+  btnText.textContent = "Checking…";
   loader.hidden = false;
   btn.disabled = true;
 
@@ -178,10 +154,12 @@ document.getElementById("flightForm").addEventListener("submit", async function 
     if (!res.ok || !json.success) throw new Error(json.error || "Server error");
     renderResult(json.data);
   } catch (err) {
-    errBox.textContent = `Prediction failed: ${err.message}. Make sure the Python backend is running on port 5000.`;
+    errBox.textContent = err.message && err.message !== "Failed to fetch"
+      ? err.message
+      : "We couldn't reach the server. Please try again in a moment.";
     errBox.hidden = false;
   } finally {
-    btnText.textContent = "Analyze Flight Risk";
+    btnText.textContent = "Check my flight";
     loader.hidden = true;
     btn.disabled = false;
   }
@@ -266,8 +244,9 @@ function renderResult(data) {
   }
 
   const rc = document.getElementById("resultCard");
+  document.getElementById("predict").hidden = false;
   rc.hidden = false;
-  rc.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  rc.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 /* ── API Status Check ── */

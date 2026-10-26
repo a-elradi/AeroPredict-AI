@@ -3,7 +3,8 @@ from functools import lru_cache
 
 from flask import Blueprint, jsonify
 
-from ..services import delay_model
+from ..services import airports as airport_data
+from ..services import delay_model, route_history
 from ..services.ml_engine import US_CARRIER_NAMES
 
 analytics_bp = Blueprint("analytics", __name__)
@@ -53,6 +54,40 @@ def airport_stats():
 
 
 @lru_cache(maxsize=1)
+def _coverage() -> dict:
+    """How much of the world has real data: countries, airports and airlines."""
+    world = airport_data._world()
+    country = lambda iata: (world.get(iata) or [None, None, None])[2]
+    data = route_history._load()
+    countries, airports = {"US"}, set()
+    for key, e in data.get("airport", {}).items():
+        iata = key.split("|")[0]
+        if e[0] + e[2] >= route_history.MIN_FLIGHTS["airport"] and country(iata):
+            airports.add(iata)
+            countries.add(country(iata))
+    for key, e in data.get("route", {}).items():
+        if e[0] + e[2] >= route_history.MIN_FLIGHTS["route"]:
+            countries.update(c for c in map(country, key.split("|")) if c)
+    for key in data.get("airline_country", {}):
+        countries.add(key.split("|")[1])
+    euro = airport_data._eurocontrol()
+    icao_country = {v[0]: v[2] for v in world.values()}
+    countries.update(euro.get("countries", {}))
+    countries.update(icao_country[i] for i in euro.get("airports", {}) if i in icao_country)
+    airports.update(i for i, v in world.items() if v[0] in euro.get("airports", {}))
+    airports.update(airport_data._acsa().get("airports", {}))
+    if delay_model.is_available():
+        airports.update(k for k, v in delay_model._load()["tables"]["origin"].items() if v[0] >= 1000)
+        airlines = {k for k, v in delay_model._load()["tables"]["carrier"].items() if v[0] >= 1000}
+    else:
+        airlines = set()
+    airlines.update(k for k, v in data.get("airline", {}).items()
+                    if v[0] + v[2] >= route_history.MIN_FLIGHTS["airline"])
+    airlines.update(k.split("|")[0] for k in data.get("airline_country", {}) if not k.startswith("*"))
+    return {"countries": len(countries), "airports": len(airports), "airlines": len(airlines)}
+
+
+@lru_cache(maxsize=1)
 def _international_test() -> dict | None:
     """Held-out test of route-history predictions (scripts/backtest_route_history.py)."""
     path = delay_model.MODEL_DIR / "route_history_backtest.json"
@@ -86,6 +121,7 @@ def global_stats():
         "model_auc_with_forecast": (meta.get("with_weather") or {}).get("auc_delay_or_cancel"),
         "test_flights": meta.get("test_flights"),
         "international_test": _international_test(),
+        "coverage": _coverage(),
         "test_months": meta.get("test_months", []),
         "calibration": meta.get("calibration", []),
         "monthly": meta.get("monthly", []),
