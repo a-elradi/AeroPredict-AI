@@ -31,6 +31,7 @@ OpenFlights (airlines). Output: data/route_stats.json.gz with four tables:
   flight         "AIRLINE+NUMBER|ORIGIN"   (Brazil, Korea, Hong Kong: flight-level data)
   route_airline  "AIRLINE|ORIGIN|DEST"
   route          "ORIGIN|DEST"
+  airport        "AIRPORT|dep" / "AIRPORT|arr" (every route to or from the airport)
 each entry [flights, late_15min, cancelled, typical_delay_when_late_min].
 
     python scripts/build_route_stats.py [--months 12]
@@ -252,8 +253,15 @@ class Stats:
         self.add("route", f"{origin}|{dest}", flights, late, cancelled, late_minutes)
 
     def export(self) -> dict:
+        # Each airport's record over every route to or from it, in all countries' data
+        # ("DXB|dep": flights leaving Dubai, as measured on those routes)
+        airports = defaultdict(lambda: [0, 0.0, 0, 0.0])
+        for key, e in self.t["route"].items():
+            origin, dest = key.split("|")
+            for side in (f"{origin}|dep", f"{dest}|arr"):
+                airports[side] = [a + b for a, b in zip(airports[side], e)]
         out = {}
-        for name, table in self.t.items():
+        for name, table in {**self.t, "airport": airports}.items():
             out[name] = {k: [n, round(late), c, round(lm / late) if late >= 1 and lm > 0 else None]
                          for k, (n, late, c, lm) in table.items() if n + c >= MIN_FLIGHTS}
         return out

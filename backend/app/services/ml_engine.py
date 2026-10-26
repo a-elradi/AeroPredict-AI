@@ -155,9 +155,15 @@ def _airport_factors(shares: list[dict]) -> list[dict]:
     """Official airport punctuality used for routes without their own history."""
     out = []
     for a in shares:
+        what = "departures" if a["side"] == "origin" else "arrivals"
+        if a["source"] == "flight records":
+            late = 100 - a["on_time_pct"]
+            out.append({"icon": "🛫", "label": f"{a['airport']} {what} (flight records)",
+                        "value": f"{a['on_time_pct']:.0f}% on time ({a['flights']:,} flights)",
+                        "level": "high" if late > 30 else "low" if late < 18 else "medium"})
+            continue
         if a["source"] != "EUROCONTROL":
             continue
-        what = "departures" if a["side"] == "origin" else "arrivals"
         where = a["airport"] if a.get("level") == "airport" else f"{a['airport']} (country average)"
         value = f"{a['on_time_pct']:.0f}% on time this year"
         if a.get("on_time_pct_7d") is not None:
@@ -199,6 +205,9 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
         used = ", ".join(f"{a['airport']} ({a['on_time_pct']:.0f}% on time)" for a in shares or [])
         level, note = "airport", (f"No history for this exact flight or route. Based on official airport "
                                   f"punctuality: {used}, adjusted for time of day, season and holidays. "
+                                  + ("Airport figures marked as flight records come from flights to and from "
+                                     "that airport in other countries' official data. "
+                                     if any(a["source"] == "flight records" for a in shares or []) else "")
                                   + (f"Adjusted for {carrier}'s own punctuality ({airline_rec['flights']:,} flights, "
                                      f"{airline_rec['source']['name']})." if airline_rec else
                                      "Airline-specific performance isn't included."))

@@ -141,7 +141,17 @@ def _airport_late_shares(tables: dict, origin: str, dest: str) -> list[dict]:
                            "source": "US flight records", "on_time_pct": round((e[0] - e[1] - e[2]) / e[0] * 100, 1)})
             continue
         p = airports.punctuality(airport)
-        if p and p.get(field) is not None:
+        if p and p.get(field) is not None and p["level"] == "airport":
+            shares.append({"side": side, "airport": airport, "late": 1 - p[field] / 100, "weight": weight,
+                           "source": "EUROCONTROL", "level": p["level"], "period": p["period"],
+                           "on_time_pct": p[field], "on_time_pct_7d": p.get(field.replace("_pct", "_pct_7d"))})
+            continue
+        rec = route_history.airport_record(airport, "dep" if side == "origin" else "arr")
+        if rec:  # flights to/from this airport in other countries' official data
+            shares.append({"side": side, "airport": airport, "late": rec["late_share"], "weight": weight,
+                           "source": "flight records", "level": "airport", "flights": rec["flights"],
+                           "on_time_pct": round(100 - rec["late_share"] * 100, 1)})
+        elif p and p.get(field) is not None:  # EUROCONTROL country average
             shares.append({"side": side, "airport": airport, "late": 1 - p[field] / 100, "weight": weight,
                            "source": "EUROCONTROL", "level": p["level"], "period": p["period"],
                            "on_time_pct": p[field], "on_time_pct_7d": p.get(field.replace("_pct", "_pct_7d"))})
@@ -201,9 +211,14 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
         if route_hist:
             base, cancel_share = route_hist["disrupted_share"], route_hist["cancel_share_of_disrupted"]
             method = "route_history"
-        elif any(a["source"] == "EUROCONTROL" for a in airport_shares):
+        elif any(a["source"] != "US flight records" for a in airport_shares):
             base = sum(a["late"] * a["weight"] for a in airport_shares) / sum(a["weight"] for a in airport_shares)
-            if airline_rec:  # how much better or worse this airline does than airlines on average
+            if airline_rec and any(a["source"] == "flight records" for a in airport_shares):
+                # Airport and airline records come from the same flights (a hub's record is largely its
+                # home airline's), so average them rather than counting the overlap twice
+                odds = math.sqrt(_odds(base) * _odds(airline_rec["disrupted_share"]))
+                base = odds / (1 + odds)
+            elif airline_rec:  # how much better or worse this airline does than airlines on average
                 odds = _odds(base) * _odds(airline_rec["disrupted_share"]) / _odds(airline_rec["average_share"])
                 base = odds / (1 + odds)
             method = "airport_punctuality"

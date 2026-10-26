@@ -55,7 +55,7 @@ def test_unknown_routes_differ_by_airport_punctuality(client):
 
 @needs_model
 def test_route_without_any_data_is_labelled_estimate_only(client):
-    d = predict_route(client, "DXB", "SIN")
+    d = predict_route(client, "ULN", "KTM")
     assert d["data_basis"]["confidence"] == "general"
 
 
@@ -165,8 +165,8 @@ def test_airline_record_used_where_no_route_or_airport_data(client):
     from app.services import route_history
     if not route_history.airline_record("EK"):
         pytest.skip("route statistics not built")
-    ek = predict_route(client, "DXB", "BKK", flight_number="EK384", airline="EK")
-    sq = predict_route(client, "DXB", "BKK", flight_number="SQ1", airline="SQ")
+    ek = predict_route(client, "ULN", "KTM", flight_number="EK384", airline="EK")
+    sq = predict_route(client, "ULN", "KTM", flight_number="SQ1", airline="SQ")
     assert ek["data_basis"]["confidence"] == "low"
     assert "EK flights" in ek["data_basis"]["note"]
     assert ek["probabilities"] != sq["probabilities"]
@@ -233,3 +233,15 @@ def test_collected_flights_round_trip(tmp_path, monkeypatch):
     assert collect_flights.save("avinor", rec) == 1
     assert collect_flights.save("avinor", {"1|D": ["2026-10-24", "DY", "1302", "OSL", "BGO", 9, 0]}) == 0
     assert collect_flights.load("avinor", 12) == [["2026-10-24", "DY", "1302", "OSL", "BGO", 9, 0]]
+
+
+@needs_model
+def test_middle_east_airports_use_flight_records(client):
+    from app.services import route_history
+    if not route_history.airport_record("DXB", "dep"):
+        pytest.skip("route statistics not built")
+    dxb = predict_route(client, "DXB", "KWI", flight_number="FZ1", airline="FZ")
+    doh = predict_route(client, "DOH", "MCT", flight_number="XX1", airline="XX")
+    assert dxb["data_basis"]["confidence"] == "airport"
+    assert any("DXB departures (flight records)" in f["label"] for f in dxb["factors"])
+    assert dxb["probabilities"] != doh["probabilities"]

@@ -135,7 +135,8 @@ the model's time-of-day, season, holiday and weather effects:
 | EUROCONTROL airport punctuality | ~110 European and Turkish airports, plus country averages | weekly (`reference-data.yml`) |
 | Airport weather forecasts (TAF) | any airport worldwide, flights in the next ~30 hours | live |
 
-Where there is no data for the route, the airline's overall record across all of the above (156 airlines,
+Airports without EUROCONTROL figures (Dubai, Doha, Riyadh, Delhi, Bangkok and ~1,500 others) get an airport
+record from every flight to or from them in the data above. Where there is no data for the route, the airline's overall record across all of the above (156 airlines,
 plus US airlines' BTS records) is used, and it also adjusts the airport-punctuality estimates. Routes with
 none of these are labelled "Estimate only".
 

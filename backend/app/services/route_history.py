@@ -12,7 +12,8 @@ from pathlib import Path
 from . import airports
 
 STATS_FILE = Path(__file__).resolve().parents[2] / "data" / "route_stats.json.gz"
-MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200, "airline": 1000}
+MIN_FLIGHTS = {"flight": 20, "route_airline": 20, "route": 30, "airline_country": 200, "airline": 1000,
+               "airport": 500}
 SOURCE_COUNTRY = {"uk": "the UK", "brazil": "Brazil", "australia": "Australia", "korea": "South Korea",
                   "hongkong": "Hong Kong", "japan": "Japan", "norway": "Norway",
                   "netherlands": "the Netherlands", "israel": "Israel"}
@@ -52,6 +53,15 @@ def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
                 cancelled / (late + cancelled) if late + cancelled else 0.0,
                 "typical_delay": typical, "source": _source(data, origin, dest)}
     return None
+
+
+def airport_record(iata: str, side: str) -> dict | None:
+    """An airport's record over every route to or from it in the national data (side: dep/arr)."""
+    e = _load().get("airport", {}).get(f"{iata}|{side}")
+    if not e or e[0] + e[2] < MIN_FLIGHTS["airport"]:
+        return None
+    flights, late, cancelled, _ = e
+    return {"flights": flights + cancelled, "late_share": (late + cancelled) / (flights + cancelled)}
 
 
 def airline_record(carrier: str) -> dict | None:
