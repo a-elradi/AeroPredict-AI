@@ -2,1015 +2,1015 @@
 "source": "EUROCONTROL Network Manager via ansperformance.eu",
 "copyright": "© EUROCONTROL. Reproduced with the source acknowledged.",
 "period": "2026 year to date",
-"last_data_day": "2026-10-24",
+"last_data_day": "2026-10-25",
 "airports": {
 "BIKF": {
 "name": "Keflavik",
 "dep_on_time_pct": 69.0,
 "arr_on_time_pct": 77.8,
-"dep_on_time_pct_7d": 73.4,
-"arr_on_time_pct_7d": 82.3,
+"dep_on_time_pct_7d": 75.3,
+"arr_on_time_pct_7d": 84.0,
 "operated_pct": 88.6,
-"departures": 22846
+"departures": 22917
 },
 "BIRK": {
 "name": "Reykjavik",
 "dep_on_time_pct": 86.7,
 "arr_on_time_pct": 82.9,
 "dep_on_time_pct_7d": 89.1,
-"arr_on_time_pct_7d": 78.7,
-"operated_pct": 69.3,
-"departures": 2960
+"arr_on_time_pct_7d": 81.4,
+"operated_pct": 69.4,
+"departures": 2970
 },
 "EBBR": {
 "name": "Brussels",
 "dep_on_time_pct": 71.0,
 "arr_on_time_pct": 76.8,
-"dep_on_time_pct_7d": 69.2,
-"arr_on_time_pct_7d": 73.1,
+"dep_on_time_pct_7d": 70.0,
+"arr_on_time_pct_7d": 72.8,
 "operated_pct": 93.9,
-"departures": 82248
+"departures": 82496
 },
 "EBCI": {
 "name": "Charleroi",
 "dep_on_time_pct": 79.2,
-"arr_on_time_pct": 81.4,
-"dep_on_time_pct_7d": 72.8,
-"arr_on_time_pct_7d": 76.5,
+"arr_on_time_pct": 81.3,
+"dep_on_time_pct_7d": 70.7,
+"arr_on_time_pct_7d": 74.5,
 "operated_pct": 97.0,
-"departures": 29163
+"departures": 29252
 },
 "EBLG": {
 "name": "Liege",
 "dep_on_time_pct": 59.1,
-"arr_on_time_pct": 67.1,
-"dep_on_time_pct_7d": 63.6,
-"arr_on_time_pct_7d": 62.3,
+"arr_on_time_pct": 67.2,
+"dep_on_time_pct_7d": 64.1,
+"arr_on_time_pct_7d": 67.4,
 "operated_pct": 68.7,
-"departures": 6109
+"departures": 6120
 },
 "EDDB": {
 "name": "Berlin Brandenburg",
-"dep_on_time_pct": 71.4,
+"dep_on_time_pct": 71.3,
 "arr_on_time_pct": 77.3,
 "dep_on_time_pct_7d": 66.7,
-"arr_on_time_pct_7d": 74.1,
+"arr_on_time_pct_7d": 73.8,
 "operated_pct": 93.9,
-"departures": 75888
+"departures": 76161
 },
 "EDDF": {
 "name": "Frankfurt",
 "dep_on_time_pct": 70.7,
 "arr_on_time_pct": 78.3,
-"dep_on_time_pct_7d": 72.0,
-"arr_on_time_pct_7d": 77.2,
+"dep_on_time_pct_7d": 70.1,
+"arr_on_time_pct_7d": 76.1,
 "operated_pct": 94.9,
-"departures": 181623
+"departures": 182208
 },
 "EDDH": {
 "name": "Hamburg",
 "dep_on_time_pct": 72.6,
 "arr_on_time_pct": 76.2,
-"dep_on_time_pct_7d": 70.3,
-"arr_on_time_pct_7d": 72.3,
+"dep_on_time_pct_7d": 70.7,
+"arr_on_time_pct_7d": 72.2,
 "operated_pct": 95.4,
-"departures": 48303
+"departures": 48475
 },
 "EDDK": {
 "name": "Cologne/Bonn",
 "dep_on_time_pct": 78.5,
 "arr_on_time_pct": 70.7,
-"dep_on_time_pct_7d": 69.1,
-"arr_on_time_pct_7d": 58.9,
+"dep_on_time_pct_7d": 69.5,
+"arr_on_time_pct_7d": 60.6,
 "operated_pct": 93.9,
-"departures": 45720
+"departures": 45876
 },
 "EDDL": {
 "name": "Dusseldorf",
 "dep_on_time_pct": 72.1,
-"arr_on_time_pct": 74.0,
-"dep_on_time_pct_7d": 69.5,
-"arr_on_time_pct_7d": 72.6,
+"arr_on_time_pct": 73.9,
+"dep_on_time_pct_7d": 69.8,
+"arr_on_time_pct_7d": 73.0,
 "operated_pct": 96.1,
-"departures": 65240
+"departures": 65483
 },
 "EDDM": {
 "name": "Munich",
 "dep_on_time_pct": 71.0,
 "arr_on_time_pct": 80.0,
-"dep_on_time_pct_7d": 72.4,
-"arr_on_time_pct_7d": 80.0,
+"dep_on_time_pct_7d": 73.5,
+"arr_on_time_pct_7d": 80.9,
 "operated_pct": 95.7,
-"departures": 129143
+"departures": 129543
 },
 "EDDN": {
 "name": "Nuremberg",
 "dep_on_time_pct": 74.4,
 "arr_on_time_pct": 75.3,
-"dep_on_time_pct_7d": 76.0,
-"arr_on_time_pct_7d": 73.4,
-"operated_pct": 90.8,
-"departures": 16294
+"dep_on_time_pct_7d": 76.1,
+"arr_on_time_pct_7d": 74.1,
+"operated_pct": 90.7,
+"departures": 16339
 },
 "EDDP": {
 "name": "Leipzig/Halle",
-"dep_on_time_pct": 76.7,
+"dep_on_time_pct": 76.8,
 "arr_on_time_pct": 79.8,
-"dep_on_time_pct_7d": 75.1,
-"arr_on_time_pct_7d": 79.3,
+"dep_on_time_pct_7d": 77.0,
+"arr_on_time_pct_7d": 80.1,
 "operated_pct": 92.2,
-"departures": 27208
+"departures": 27315
 },
 "EDDS": {
 "name": "Stuttgart",
 "dep_on_time_pct": 75.1,
 "arr_on_time_pct": 75.5,
-"dep_on_time_pct_7d": 75.7,
-"arr_on_time_pct_7d": 71.5,
+"dep_on_time_pct_7d": 76.4,
+"arr_on_time_pct_7d": 71.1,
 "operated_pct": 94.9,
-"departures": 32922
+"departures": 33033
 },
 "EDDV": {
 "name": "Hanover",
 "dep_on_time_pct": 74.4,
 "arr_on_time_pct": 75.6,
-"dep_on_time_pct_7d": 67.4,
-"arr_on_time_pct_7d": 72.7,
-"operated_pct": 94.1,
-"departures": 20546
+"dep_on_time_pct_7d": 69.5,
+"arr_on_time_pct_7d": 75.2,
+"operated_pct": 94.0,
+"departures": 20630
 },
 "EETN": {
 "name": "Tallinn",
 "dep_on_time_pct": 84.3,
-"arr_on_time_pct": 81.1,
-"dep_on_time_pct_7d": 84.3,
-"arr_on_time_pct_7d": 83.5,
+"arr_on_time_pct": 81.2,
+"dep_on_time_pct_7d": 85.9,
+"arr_on_time_pct_7d": 85.0,
 "operated_pct": 97.1,
-"departures": 16005
+"departures": 16058
 },
 "EFHK": {
 "name": "Helsinki",
 "dep_on_time_pct": 77.6,
 "arr_on_time_pct": 77.5,
-"dep_on_time_pct_7d": 75.5,
-"arr_on_time_pct_7d": 75.9,
+"dep_on_time_pct_7d": 78.3,
+"arr_on_time_pct_7d": 78.6,
 "operated_pct": 97.3,
-"departures": 64397
+"departures": 64608
 },
 "EGAA": {
 "name": "Belfast Aldergrove",
-"dep_on_time_pct": 78.1,
-"arr_on_time_pct": 77.4,
-"dep_on_time_pct_7d": 72.1,
-"arr_on_time_pct_7d": 68.2,
-"operated_pct": 98.3,
-"departures": 20807
+"dep_on_time_pct": 78.0,
+"arr_on_time_pct": 77.3,
+"dep_on_time_pct_7d": 69.4,
+"arr_on_time_pct_7d": 64.8,
+"operated_pct": 98.2,
+"departures": 20857
 },
 "EGBB": {
 "name": "Birmingham",
-"dep_on_time_pct": 67.9,
-"arr_on_time_pct": 70.9,
-"dep_on_time_pct_7d": 67.7,
-"arr_on_time_pct_7d": 69.2,
+"dep_on_time_pct": 67.8,
+"arr_on_time_pct": 70.8,
+"dep_on_time_pct_7d": 64.2,
+"arr_on_time_pct_7d": 66.3,
 "operated_pct": 94.3,
-"departures": 41848
+"departures": 41991
 },
 "EGCC": {
 "name": "Manchester",
-"dep_on_time_pct": 63.6,
-"arr_on_time_pct": 65.6,
-"dep_on_time_pct_7d": 59.6,
-"arr_on_time_pct_7d": 62.6,
+"dep_on_time_pct": 63.5,
+"arr_on_time_pct": 65.4,
+"dep_on_time_pct_7d": 55.7,
+"arr_on_time_pct_7d": 56.5,
 "operated_pct": 96.2,
-"departures": 85200
+"departures": 85482
 },
 "EGGD": {
 "name": "Bristol",
 "dep_on_time_pct": 72.7,
 "arr_on_time_pct": 69.4,
-"dep_on_time_pct_7d": 67.9,
-"arr_on_time_pct_7d": 63.2,
+"dep_on_time_pct_7d": 69.7,
+"arr_on_time_pct_7d": 64.7,
 "operated_pct": 96.4,
-"departures": 32592
+"departures": 32694
 },
 "EGGW": {
 "name": "London Luton",
 "dep_on_time_pct": 74.1,
-"arr_on_time_pct": 72.6,
-"dep_on_time_pct_7d": 63.3,
+"arr_on_time_pct": 72.5,
+"dep_on_time_pct_7d": 65.4,
 "arr_on_time_pct_7d": 62.7,
 "operated_pct": 92.0,
-"departures": 56677
+"departures": 56861
 },
 "EGKK": {
 "name": "London Gatwick",
 "dep_on_time_pct": 69.0,
 "arr_on_time_pct": 71.8,
-"dep_on_time_pct_7d": 58.2,
-"arr_on_time_pct_7d": 62.9,
+"dep_on_time_pct_7d": 57.9,
+"arr_on_time_pct_7d": 62.1,
 "operated_pct": 96.5,
-"departures": 108709
+"departures": 109090
 },
 "EGLC": {
 "name": "London City",
-"dep_on_time_pct": 69.0,
-"arr_on_time_pct": 78.1,
-"dep_on_time_pct_7d": 69.5,
-"arr_on_time_pct_7d": 80.5,
+"dep_on_time_pct": 68.9,
+"arr_on_time_pct": 78.0,
+"dep_on_time_pct_7d": 67.8,
+"arr_on_time_pct_7d": 79.4,
 "operated_pct": 94.4,
-"departures": 19733
+"departures": 19778
 },
 "EGLL": {
 "name": "London Heathrow",
-"dep_on_time_pct": 80.2,
+"dep_on_time_pct": 80.1,
 "arr_on_time_pct": 80.4,
-"dep_on_time_pct_7d": 75.0,
-"arr_on_time_pct_7d": 78.2,
+"dep_on_time_pct_7d": 73.5,
+"arr_on_time_pct_7d": 77.4,
 "operated_pct": 96.7,
-"departures": 191433
+"departures": 192041
 },
 "EGNX": {
 "name": "East Midlands",
 "dep_on_time_pct": 76.5,
 "arr_on_time_pct": 76.2,
-"dep_on_time_pct_7d": 75.8,
-"arr_on_time_pct_7d": 77.0,
+"dep_on_time_pct_7d": 75.1,
+"arr_on_time_pct_7d": 77.1,
 "operated_pct": 93.2,
-"departures": 20959
+"departures": 21022
 },
 "EGPD": {
 "name": "Aberdeen",
-"dep_on_time_pct": 80.5,
+"dep_on_time_pct": 80.4,
 "arr_on_time_pct": 80.3,
-"dep_on_time_pct_7d": 79.3,
-"arr_on_time_pct_7d": 74.2,
-"operated_pct": 96.4,
-"departures": 12307
+"dep_on_time_pct_7d": 77.0,
+"arr_on_time_pct_7d": 71.5,
+"operated_pct": 96.2,
+"departures": 12314
 },
 "EGPF": {
 "name": "Glasgow",
-"dep_on_time_pct": 75.9,
-"arr_on_time_pct": 76.5,
-"dep_on_time_pct_7d": 70.0,
-"arr_on_time_pct_7d": 72.0,
-"operated_pct": 94.3,
-"departures": 30823
+"dep_on_time_pct": 75.7,
+"arr_on_time_pct": 76.4,
+"dep_on_time_pct_7d": 66.0,
+"arr_on_time_pct_7d": 66.5,
+"operated_pct": 94.2,
+"departures": 30889
 },
 "EGPH": {
 "name": "Edinburgh",
-"dep_on_time_pct": 71.3,
-"arr_on_time_pct": 73.9,
-"dep_on_time_pct_7d": 69.6,
-"arr_on_time_pct_7d": 71.8,
-"operated_pct": 97.0,
-"departures": 52306
+"dep_on_time_pct": 71.2,
+"arr_on_time_pct": 73.8,
+"dep_on_time_pct_7d": 66.6,
+"arr_on_time_pct_7d": 67.5,
+"operated_pct": 96.9,
+"departures": 52448
 },
 "EGSS": {
 "name": "London Stansted",
-"dep_on_time_pct": 72.4,
-"arr_on_time_pct": 72.1,
-"dep_on_time_pct_7d": 65.5,
-"arr_on_time_pct_7d": 64.1,
-"operated_pct": 95.2,
-"departures": 85510
+"dep_on_time_pct": 72.3,
+"arr_on_time_pct": 72.0,
+"dep_on_time_pct_7d": 61.9,
+"arr_on_time_pct_7d": 59.7,
+"operated_pct": 95.1,
+"departures": 85827
 },
 "EHAM": {
 "name": "Amsterdam",
-"dep_on_time_pct": 73.0,
+"dep_on_time_pct": 72.9,
 "arr_on_time_pct": 78.1,
-"dep_on_time_pct_7d": 67.9,
-"arr_on_time_pct_7d": 72.3,
-"operated_pct": 94.6,
-"departures": 195052
+"dep_on_time_pct_7d": 66.2,
+"arr_on_time_pct_7d": 69.1,
+"operated_pct": 94.5,
+"departures": 195619
 },
 "EIDW": {
 "name": "Dublin",
-"dep_on_time_pct": 75.6,
-"arr_on_time_pct": 73.6,
-"dep_on_time_pct_7d": 70.4,
-"arr_on_time_pct_7d": 69.2,
+"dep_on_time_pct": 75.5,
+"arr_on_time_pct": 73.5,
+"dep_on_time_pct_7d": 68.6,
+"arr_on_time_pct_7d": 66.9,
 "operated_pct": 97.5,
-"departures": 107627
+"departures": 107960
 },
 "EKCH": {
 "name": "Copenhagen",
 "dep_on_time_pct": 82.2,
 "arr_on_time_pct": 80.0,
-"dep_on_time_pct_7d": 83.2,
-"arr_on_time_pct_7d": 81.1,
+"dep_on_time_pct_7d": 81.9,
+"arr_on_time_pct_7d": 80.3,
 "operated_pct": 97.0,
-"departures": 111249
+"departures": 111598
 },
 "ELLX": {
 "name": "Luxembourg",
 "dep_on_time_pct": 67.6,
 "arr_on_time_pct": 67.3,
-"dep_on_time_pct_7d": 68.8,
-"arr_on_time_pct_7d": 64.4,
+"dep_on_time_pct_7d": 68.0,
+"arr_on_time_pct_7d": 64.1,
 "operated_pct": 91.6,
-"departures": 27703
+"departures": 27802
 },
 "ENBR": {
 "name": "Bergen",
 "dep_on_time_pct": 87.7,
 "arr_on_time_pct": 88.7,
-"dep_on_time_pct_7d": 91.0,
-"arr_on_time_pct_7d": 91.8,
+"dep_on_time_pct_7d": 90.2,
+"arr_on_time_pct_7d": 91.1,
 "operated_pct": 97.6,
-"departures": 31341
+"departures": 31426
 },
 "ENGM": {
 "name": "Oslo",
 "dep_on_time_pct": 82.7,
 "arr_on_time_pct": 82.5,
-"dep_on_time_pct_7d": 83.0,
-"arr_on_time_pct_7d": 82.6,
+"dep_on_time_pct_7d": 82.5,
+"arr_on_time_pct_7d": 82.7,
 "operated_pct": 96.0,
-"departures": 89686
+"departures": 89969
 },
 "ENVA": {
 "name": "Trondheim",
 "dep_on_time_pct": 89.1,
-"arr_on_time_pct": 87.2,
-"dep_on_time_pct_7d": 90.7,
-"arr_on_time_pct_7d": 88.6,
-"operated_pct": 97.9,
-"departures": 19514
+"arr_on_time_pct": 87.1,
+"dep_on_time_pct_7d": 89.6,
+"arr_on_time_pct_7d": 87.4,
+"operated_pct": 97.8,
+"departures": 19570
 },
 "ENZV": {
 "name": "Stavanger",
 "dep_on_time_pct": 86.5,
 "arr_on_time_pct": 84.7,
-"dep_on_time_pct_7d": 87.9,
-"arr_on_time_pct_7d": 86.7,
+"dep_on_time_pct_7d": 87.1,
+"arr_on_time_pct_7d": 86.2,
 "operated_pct": 98.0,
-"departures": 15478
+"departures": 15522
 },
 "EPKK": {
 "name": "Krakow",
 "dep_on_time_pct": 76.9,
 "arr_on_time_pct": 78.6,
-"dep_on_time_pct_7d": 78.1,
-"arr_on_time_pct_7d": 77.0,
+"dep_on_time_pct_7d": 78.6,
+"arr_on_time_pct_7d": 78.6,
 "operated_pct": 96.3,
-"departures": 38867
+"departures": 39010
 },
 "EPWA": {
 "name": "Warsaw Chopin",
 "dep_on_time_pct": 72.9,
 "arr_on_time_pct": 78.0,
-"dep_on_time_pct_7d": 70.0,
-"arr_on_time_pct_7d": 70.4,
+"dep_on_time_pct_7d": 71.5,
+"arr_on_time_pct_7d": 74.1,
 "operated_pct": 96.2,
-"departures": 83723
+"departures": 83974
 },
 "ESGG": {
 "name": "Gothenburg",
 "dep_on_time_pct": 80.4,
 "arr_on_time_pct": 82.2,
-"dep_on_time_pct_7d": 81.2,
-"arr_on_time_pct_7d": 82.9,
+"dep_on_time_pct_7d": 81.1,
+"arr_on_time_pct_7d": 82.7,
 "operated_pct": 94.5,
-"departures": 19589
+"departures": 19649
 },
 "ESSA": {
 "name": "Stockholm Arlanda",
 "dep_on_time_pct": 84.0,
 "arr_on_time_pct": 83.9,
-"dep_on_time_pct_7d": 84.6,
-"arr_on_time_pct_7d": 82.7,
+"dep_on_time_pct_7d": 84.5,
+"arr_on_time_pct_7d": 82.5,
 "operated_pct": 97.1,
-"departures": 81654
+"departures": 81910
 },
 "ESSB": {
 "name": "Stockholm Bromma",
-"dep_on_time_pct": 86.9,
+"dep_on_time_pct": 86.8,
 "arr_on_time_pct": 81.1,
-"dep_on_time_pct_7d": 89.7,
-"arr_on_time_pct_7d": 80.8,
+"dep_on_time_pct_7d": 88.3,
+"arr_on_time_pct_7d": 81.5,
 "operated_pct": 77.9,
-"departures": 4062
+"departures": 4075
 },
 "EVRA": {
 "name": "Riga",
-"dep_on_time_pct": 80.4,
+"dep_on_time_pct": 80.5,
 "arr_on_time_pct": 76.9,
-"dep_on_time_pct_7d": 84.0,
-"arr_on_time_pct_7d": 77.9,
-"operated_pct": 98.6,
-"departures": 24703
+"dep_on_time_pct_7d": 84.7,
+"arr_on_time_pct_7d": 79.7,
+"operated_pct": 98.5,
+"departures": 24787
 },
 "EYVI": {
 "name": "Vilnius",
 "dep_on_time_pct": 83.3,
 "arr_on_time_pct": 80.3,
-"dep_on_time_pct_7d": 81.9,
-"arr_on_time_pct_7d": 80.2,
+"dep_on_time_pct_7d": 82.1,
+"arr_on_time_pct_7d": 80.3,
 "operated_pct": 96.1,
-"departures": 17438
+"departures": 17500
 },
 "GCLP": {
 "name": "Gran Canaria",
 "dep_on_time_pct": 73.5,
-"arr_on_time_pct": 77.5,
-"dep_on_time_pct_7d": 74.7,
-"arr_on_time_pct_7d": 78.1,
+"arr_on_time_pct": 77.4,
+"dep_on_time_pct_7d": 73.4,
+"arr_on_time_pct_7d": 77.9,
 "operated_pct": 93.3,
-"departures": 56253
+"departures": 56425
 },
 "GCRR": {
 "name": "Lanzarote",
-"dep_on_time_pct": 70.4,
-"arr_on_time_pct": 79.1,
-"dep_on_time_pct_7d": 73.1,
-"arr_on_time_pct_7d": 82.6,
-"operated_pct": 92.5,
-"departures": 28167
+"dep_on_time_pct": 70.3,
+"arr_on_time_pct": 79.0,
+"dep_on_time_pct_7d": 70.7,
+"arr_on_time_pct_7d": 81.5,
+"operated_pct": 92.4,
+"departures": 28266
 },
 "GCTS": {
 "name": "Tenerife Sur",
 "dep_on_time_pct": 69.4,
 "arr_on_time_pct": 79.8,
-"dep_on_time_pct_7d": 68.1,
-"arr_on_time_pct_7d": 81.4,
-"operated_pct": 89.8,
-"departures": 32517
+"dep_on_time_pct_7d": 65.7,
+"arr_on_time_pct_7d": 79.2,
+"operated_pct": 89.7,
+"departures": 32653
 },
 "GCXO": {
 "name": "Tenerife Norte",
 "dep_on_time_pct": 79.1,
 "arr_on_time_pct": 77.9,
-"dep_on_time_pct_7d": 77.1,
-"arr_on_time_pct_7d": 77.5,
+"dep_on_time_pct_7d": 78.0,
+"arr_on_time_pct_7d": 77.7,
 "operated_pct": 93.0,
-"departures": 33993
+"departures": 34098
 },
 "GMMN": {
 "name": "Casablanca",
 "dep_on_time_pct": 75.2,
 "arr_on_time_pct": 72.8,
-"dep_on_time_pct_7d": 73.9,
-"arr_on_time_pct_7d": 70.0,
+"dep_on_time_pct_7d": 73.4,
+"arr_on_time_pct_7d": 70.3,
 "operated_pct": 97.3,
-"departures": 38514
+"departures": 38655
 },
 "GMMX": {
 "name": "Marrakech",
-"dep_on_time_pct": 72.4,
+"dep_on_time_pct": 72.3,
 "arr_on_time_pct": 75.6,
-"dep_on_time_pct_7d": 61.4,
-"arr_on_time_pct_7d": 68.0,
+"dep_on_time_pct_7d": 60.4,
+"arr_on_time_pct_7d": 68.2,
 "operated_pct": 95.6,
-"departures": 29222
+"departures": 29345
 },
 "LATI": {
 "name": "Tirana",
 "dep_on_time_pct": 66.9,
 "arr_on_time_pct": 72.6,
-"dep_on_time_pct_7d": 71.1,
-"arr_on_time_pct_7d": 73.9,
+"dep_on_time_pct_7d": 71.4,
+"arr_on_time_pct_7d": 73.7,
 "operated_pct": 94.9,
-"departures": 33454
+"departures": 33567
 },
 "LBSF": {
 "name": "Sofia",
 "dep_on_time_pct": 78.4,
 "arr_on_time_pct": 79.1,
-"dep_on_time_pct_7d": 75.5,
-"arr_on_time_pct_7d": 76.7,
+"dep_on_time_pct_7d": 75.3,
+"arr_on_time_pct_7d": 77.3,
 "operated_pct": 91.2,
-"departures": 27417
+"departures": 27513
 },
 "LCLK": {
 "name": "Larnaca",
 "dep_on_time_pct": 63.6,
 "arr_on_time_pct": 71.5,
-"dep_on_time_pct_7d": 65.3,
-"arr_on_time_pct_7d": 78.2,
+"dep_on_time_pct_7d": 65.1,
+"arr_on_time_pct_7d": 79.1,
 "operated_pct": 82.4,
-"departures": 29180
+"departures": 29283
 },
 "LDZA": {
 "name": "Zagreb",
-"dep_on_time_pct": 79.8,
+"dep_on_time_pct": 79.7,
 "arr_on_time_pct": 72.7,
-"dep_on_time_pct_7d": 76.3,
-"arr_on_time_pct_7d": 70.5,
+"dep_on_time_pct_7d": 76.2,
+"arr_on_time_pct_7d": 70.3,
 "operated_pct": 97.6,
-"departures": 18728
+"departures": 18785
 },
 "LEAL": {
 "name": "Alicante",
-"dep_on_time_pct": 65.9,
-"arr_on_time_pct": 77.0,
-"dep_on_time_pct_7d": 54.2,
-"arr_on_time_pct_7d": 67.6,
+"dep_on_time_pct": 65.8,
+"arr_on_time_pct": 76.9,
+"dep_on_time_pct_7d": 55.4,
+"arr_on_time_pct_7d": 68.4,
 "operated_pct": 96.5,
-"departures": 56786
+"departures": 56977
 },
 "LEBB": {
 "name": "Bilbao",
 "dep_on_time_pct": 78.8,
 "arr_on_time_pct": 84.2,
-"dep_on_time_pct_7d": 70.4,
-"arr_on_time_pct_7d": 74.9,
+"dep_on_time_pct_7d": 72.7,
+"arr_on_time_pct_7d": 77.7,
 "operated_pct": 95.8,
-"departures": 21745
+"departures": 21820
 },
 "LEBL": {
 "name": "Barcelona",
 "dep_on_time_pct": 66.0,
 "arr_on_time_pct": 76.6,
-"dep_on_time_pct_7d": 52.0,
-"arr_on_time_pct_7d": 64.8,
+"dep_on_time_pct_7d": 57.1,
+"arr_on_time_pct_7d": 70.0,
 "operated_pct": 95.6,
-"departures": 150683
+"departures": 151203
 },
 "LEIB": {
 "name": "Ibiza",
 "dep_on_time_pct": 64.4,
 "arr_on_time_pct": 76.6,
-"dep_on_time_pct_7d": 59.3,
-"arr_on_time_pct_7d": 68.9,
+"dep_on_time_pct_7d": 63.7,
+"arr_on_time_pct_7d": 75.6,
 "operated_pct": 86.0,
-"departures": 36427
+"departures": 36505
 },
 "LEMD": {
 "name": "Madrid Barajas",
 "dep_on_time_pct": 67.5,
 "arr_on_time_pct": 77.9,
-"dep_on_time_pct_7d": 60.9,
-"arr_on_time_pct_7d": 73.1,
+"dep_on_time_pct_7d": 61.3,
+"arr_on_time_pct_7d": 73.4,
 "operated_pct": 93.1,
-"departures": 180228
+"departures": 180840
 },
 "LEMG": {
 "name": "Malaga",
 "dep_on_time_pct": 66.9,
-"arr_on_time_pct": 77.5,
-"dep_on_time_pct_7d": 58.7,
-"arr_on_time_pct_7d": 70.5,
+"arr_on_time_pct": 77.4,
+"dep_on_time_pct_7d": 60.4,
+"arr_on_time_pct_7d": 73.7,
 "operated_pct": 92.0,
-"departures": 77477
+"departures": 77755
 },
 "LEPA": {
 "name": "Palma de Mallorca",
 "dep_on_time_pct": 62.9,
 "arr_on_time_pct": 74.9,
-"dep_on_time_pct_7d": 53.2,
-"arr_on_time_pct_7d": 64.5,
+"dep_on_time_pct_7d": 58.9,
+"arr_on_time_pct_7d": 70.2,
 "operated_pct": 93.6,
-"departures": 107860
+"departures": 108205
 },
 "LEVC": {
 "name": "Valencia",
 "dep_on_time_pct": 68.7,
 "arr_on_time_pct": 77.3,
-"dep_on_time_pct_7d": 55.1,
-"arr_on_time_pct_7d": 67.3,
+"dep_on_time_pct_7d": 57.1,
+"arr_on_time_pct_7d": 69.2,
 "operated_pct": 94.5,
-"departures": 36709
+"departures": 36847
 },
 "LEZL": {
 "name": "Seville",
-"dep_on_time_pct": 75.7,
+"dep_on_time_pct": 75.6,
 "arr_on_time_pct": 83.8,
-"dep_on_time_pct_7d": 65.9,
-"arr_on_time_pct_7d": 78.1,
+"dep_on_time_pct_7d": 66.4,
+"arr_on_time_pct_7d": 79.5,
 "operated_pct": 97.6,
-"departures": 28114
+"departures": 28224
 },
 "LFBD": {
 "name": "Bordeaux",
 "dep_on_time_pct": 72.0,
 "arr_on_time_pct": 76.4,
-"dep_on_time_pct_7d": 62.9,
-"arr_on_time_pct_7d": 66.3,
+"dep_on_time_pct_7d": 66.0,
+"arr_on_time_pct_7d": 70.7,
 "operated_pct": 97.3,
-"departures": 19075
+"departures": 19134
 },
 "LFBO": {
 "name": "Toulouse Blagnac",
-"dep_on_time_pct": 70.1,
+"dep_on_time_pct": 70.0,
 "arr_on_time_pct": 78.7,
-"dep_on_time_pct_7d": 60.4,
-"arr_on_time_pct_7d": 70.5,
+"dep_on_time_pct_7d": 59.7,
+"arr_on_time_pct_7d": 71.0,
 "operated_pct": 97.0,
-"departures": 25543
+"departures": 25620
 },
 "LFLL": {
 "name": "Lyon",
 "dep_on_time_pct": 70.7,
 "arr_on_time_pct": 79.0,
-"dep_on_time_pct_7d": 63.4,
-"arr_on_time_pct_7d": 70.9,
+"dep_on_time_pct_7d": 63.6,
+"arr_on_time_pct_7d": 71.5,
 "operated_pct": 96.2,
-"departures": 36931
+"departures": 37041
 },
 "LFML": {
 "name": "Marseille",
 "dep_on_time_pct": 67.7,
 "arr_on_time_pct": 75.7,
-"dep_on_time_pct_7d": 52.5,
-"arr_on_time_pct_7d": 63.5,
-"operated_pct": 96.2,
-"departures": 38459
+"dep_on_time_pct_7d": 51.1,
+"arr_on_time_pct_7d": 62.9,
+"operated_pct": 96.1,
+"departures": 38570
 },
 "LFMN": {
 "name": "Nice",
 "dep_on_time_pct": 61.6,
 "arr_on_time_pct": 71.4,
-"dep_on_time_pct_7d": 58.9,
-"arr_on_time_pct_7d": 67.7,
-"operated_pct": 84.7,
-"departures": 65018
+"dep_on_time_pct_7d": 59.7,
+"arr_on_time_pct_7d": 67.3,
+"operated_pct": 84.6,
+"departures": 65194
 },
 "LFPB": {
 "name": "Paris Le Bourget",
-"dep_on_time_pct": 72.7,
+"dep_on_time_pct": 72.8,
 "arr_on_time_pct": 57.6,
-"dep_on_time_pct_7d": 67.6,
-"arr_on_time_pct_7d": 52.8,
+"dep_on_time_pct_7d": 69.4,
+"arr_on_time_pct_7d": 51.5,
 "operated_pct": 86.6,
-"departures": 7846
+"departures": 7864
 },
 "LFPG": {
 "name": "Paris Charles de Gaulle",
 "dep_on_time_pct": 65.6,
 "arr_on_time_pct": 78.1,
 "dep_on_time_pct_7d": 62.1,
-"arr_on_time_pct_7d": 73.2,
+"arr_on_time_pct_7d": 73.5,
 "operated_pct": 95.4,
-"departures": 195694
+"departures": 196330
 },
 "LFPO": {
 "name": "Paris Orly",
 "dep_on_time_pct": 70.2,
 "arr_on_time_pct": 77.1,
-"dep_on_time_pct_7d": 55.4,
-"arr_on_time_pct_7d": 54.1,
-"operated_pct": 95.1,
-"departures": 88774
+"dep_on_time_pct_7d": 53.4,
+"arr_on_time_pct_7d": 52.2,
+"operated_pct": 95.0,
+"departures": 89047
 },
 "LFRS": {
 "name": "Nantes",
 "dep_on_time_pct": 75.9,
 "arr_on_time_pct": 77.8,
-"dep_on_time_pct_7d": 73.6,
-"arr_on_time_pct_7d": 71.5,
+"dep_on_time_pct_7d": 74.7,
+"arr_on_time_pct_7d": 73.4,
 "operated_pct": 96.7,
-"departures": 22114
+"departures": 22188
 },
 "LFSB": {
 "name": "Basel/Mulhouse",
-"dep_on_time_pct": 73.0,
+"dep_on_time_pct": 72.9,
 "arr_on_time_pct": 77.4,
 "dep_on_time_pct_7d": 69.7,
-"arr_on_time_pct_7d": 70.5,
+"arr_on_time_pct_7d": 71.0,
 "operated_pct": 94.4,
-"departures": 26720
+"departures": 26817
 },
 "LGAV": {
 "name": "Athens",
-"dep_on_time_pct": 63.9,
+"dep_on_time_pct": 64.0,
 "arr_on_time_pct": 66.5,
-"dep_on_time_pct_7d": 69.8,
-"arr_on_time_pct_7d": 71.9,
+"dep_on_time_pct_7d": 70.6,
+"arr_on_time_pct_7d": 72.2,
 "operated_pct": 94.5,
-"departures": 115877
+"departures": 116198
 },
 "LGIR": {
 "name": "Heraklion",
 "dep_on_time_pct": 59.8,
 "arr_on_time_pct": 68.1,
-"dep_on_time_pct_7d": 69.9,
-"arr_on_time_pct_7d": 72.4,
+"dep_on_time_pct_7d": 71.6,
+"arr_on_time_pct_7d": 73.5,
 "operated_pct": 92.7,
-"departures": 30915
+"departures": 31022
 },
 "LGTS": {
 "name": "Thessaloniki",
 "dep_on_time_pct": 70.9,
 "arr_on_time_pct": 73.7,
-"dep_on_time_pct_7d": 72.1,
-"arr_on_time_pct_7d": 77.6,
+"dep_on_time_pct_7d": 72.5,
+"arr_on_time_pct_7d": 77.1,
 "operated_pct": 93.7,
-"departures": 26089
+"departures": 26162
 },
 "LHBP": {
 "name": "Budapest",
 "dep_on_time_pct": 74.8,
 "arr_on_time_pct": 77.7,
-"dep_on_time_pct_7d": 73.0,
-"arr_on_time_pct_7d": 75.7,
+"dep_on_time_pct_7d": 73.2,
+"arr_on_time_pct_7d": 76.7,
 "operated_pct": 92.5,
-"departures": 55801
+"departures": 56001
 },
 "LICC": {
 "name": "Catania",
-"dep_on_time_pct": 70.8,
+"dep_on_time_pct": 70.7,
 "arr_on_time_pct": 75.6,
-"dep_on_time_pct_7d": 65.9,
-"arr_on_time_pct_7d": 70.7,
+"dep_on_time_pct_7d": 64.3,
+"arr_on_time_pct_7d": 70.3,
 "operated_pct": 92.0,
-"departures": 32292
+"departures": 32428
 },
 "LICJ": {
 "name": "Palermo",
 "dep_on_time_pct": 69.3,
 "arr_on_time_pct": 76.8,
-"dep_on_time_pct_7d": 74.4,
-"arr_on_time_pct_7d": 74.9,
+"dep_on_time_pct_7d": 74.3,
+"arr_on_time_pct_7d": 74.8,
 "operated_pct": 96.2,
-"departures": 29096
+"departures": 29208
 },
 "LIMC": {
 "name": "Milan Malpensa",
 "dep_on_time_pct": 66.2,
 "arr_on_time_pct": 74.1,
-"dep_on_time_pct_7d": 61.2,
-"arr_on_time_pct_7d": 70.0,
+"dep_on_time_pct_7d": 62.6,
+"arr_on_time_pct_7d": 71.5,
 "operated_pct": 94.3,
-"departures": 89295
+"departures": 89625
 },
 "LIME": {
 "name": "Bergamo",
-"dep_on_time_pct": 62.8,
+"dep_on_time_pct": 62.7,
 "arr_on_time_pct": 73.7,
-"dep_on_time_pct_7d": 55.7,
-"arr_on_time_pct_7d": 66.6,
+"dep_on_time_pct_7d": 53.6,
+"arr_on_time_pct_7d": 64.7,
 "operated_pct": 94.6,
-"departures": 44931
+"departures": 45088
 },
 "LIML": {
 "name": "Milan Linate",
 "dep_on_time_pct": 77.3,
 "arr_on_time_pct": 79.6,
-"dep_on_time_pct_7d": 75.3,
-"arr_on_time_pct_7d": 77.6,
+"dep_on_time_pct_7d": 74.7,
+"arr_on_time_pct_7d": 77.0,
 "operated_pct": 95.8,
-"departures": 42611
+"departures": 42738
 },
 "LIPE": {
 "name": "Bologna",
 "dep_on_time_pct": 76.4,
 "arr_on_time_pct": 79.8,
-"dep_on_time_pct_7d": 77.3,
-"arr_on_time_pct_7d": 78.8,
+"dep_on_time_pct_7d": 77.5,
+"arr_on_time_pct_7d": 79.0,
 "operated_pct": 94.1,
-"departures": 33992
+"departures": 34090
 },
 "LIPZ": {
 "name": "Venice",
 "dep_on_time_pct": 69.2,
 "arr_on_time_pct": 77.5,
 "dep_on_time_pct_7d": 67.2,
-"arr_on_time_pct_7d": 75.8,
+"arr_on_time_pct_7d": 75.3,
 "operated_pct": 92.3,
-"departures": 38934
+"departures": 39072
 },
 "LIRA": {
 "name": "Rome Ciampino",
 "dep_on_time_pct": 79.9,
-"arr_on_time_pct": 83.1,
-"dep_on_time_pct_7d": 76.5,
-"arr_on_time_pct_7d": 79.3,
+"arr_on_time_pct": 83.0,
+"dep_on_time_pct_7d": 75.4,
+"arr_on_time_pct_7d": 77.4,
 "operated_pct": 97.4,
-"departures": 10904
+"departures": 10940
 },
 "LIRF": {
 "name": "Rome Fiumicino",
 "dep_on_time_pct": 63.8,
-"arr_on_time_pct": 75.9,
-"dep_on_time_pct_7d": 52.4,
-"arr_on_time_pct_7d": 68.0,
+"arr_on_time_pct": 75.8,
+"dep_on_time_pct_7d": 53.3,
+"arr_on_time_pct_7d": 68.3,
 "operated_pct": 96.8,
-"departures": 134535
+"departures": 134979
 },
 "LIRN": {
 "name": "Naples",
 "dep_on_time_pct": 60.2,
 "arr_on_time_pct": 75.6,
-"dep_on_time_pct_7d": 56.3,
-"arr_on_time_pct_7d": 69.8,
-"operated_pct": 96.5,
-"departures": 38616
+"dep_on_time_pct_7d": 57.1,
+"arr_on_time_pct_7d": 69.4,
+"operated_pct": 96.4,
+"departures": 38741
 },
 "LJLJ": {
 "name": "Ljubljana",
 "dep_on_time_pct": 77.6,
 "arr_on_time_pct": 78.8,
 "dep_on_time_pct_7d": 78.8,
-"arr_on_time_pct_7d": 77.3,
+"arr_on_time_pct_7d": 77.0,
 "operated_pct": 96.9,
-"departures": 7677
+"departures": 7696
 },
 "LKPR": {
 "name": "Prague",
 "dep_on_time_pct": 75.5,
 "arr_on_time_pct": 76.4,
-"dep_on_time_pct_7d": 72.3,
-"arr_on_time_pct_7d": 74.0,
+"dep_on_time_pct_7d": 72.5,
+"arr_on_time_pct_7d": 74.7,
 "operated_pct": 94.5,
-"departures": 57910
+"departures": 58116
 },
 "LLBG": {
 "name": "Tel Aviv",
 "dep_on_time_pct": 52.9,
-"arr_on_time_pct": 52.2,
-"dep_on_time_pct_7d": 68.7,
-"arr_on_time_pct_7d": 62.0,
+"arr_on_time_pct": 52.3,
+"dep_on_time_pct_7d": 70.0,
+"arr_on_time_pct_7d": 62.4,
 "operated_pct": 79.5,
-"departures": 52803
+"departures": 53008
 },
 "LMML": {
 "name": "Malta",
 "dep_on_time_pct": 71.8,
 "arr_on_time_pct": 77.3,
-"dep_on_time_pct_7d": 68.5,
-"arr_on_time_pct_7d": 73.1,
+"dep_on_time_pct_7d": 69.4,
+"arr_on_time_pct_7d": 74.0,
 "operated_pct": 96.0,
-"departures": 30829
+"departures": 30938
 },
 "LOWW": {
 "name": "Vienna",
 "dep_on_time_pct": 79.5,
 "arr_on_time_pct": 80.0,
-"dep_on_time_pct_7d": 79.4,
-"arr_on_time_pct_7d": 81.9,
+"dep_on_time_pct_7d": 79.5,
+"arr_on_time_pct_7d": 82.4,
 "operated_pct": 95.0,
-"departures": 97217
+"departures": 97539
 },
 "LPFR": {
 "name": "Faro",
 "dep_on_time_pct": 77.0,
 "arr_on_time_pct": 79.5,
 "dep_on_time_pct_7d": 72.3,
-"arr_on_time_pct_7d": 75.3,
+"arr_on_time_pct_7d": 74.9,
 "operated_pct": 95.8,
-"departures": 31912
+"departures": 32001
 },
 "LPPR": {
 "name": "Porto",
 "dep_on_time_pct": 74.1,
-"arr_on_time_pct": 75.2,
-"dep_on_time_pct_7d": 71.0,
-"arr_on_time_pct_7d": 74.7,
+"arr_on_time_pct": 75.1,
+"dep_on_time_pct_7d": 71.1,
+"arr_on_time_pct_7d": 72.5,
 "operated_pct": 96.9,
-"departures": 48760
+"departures": 48935
 },
 "LPPT": {
 "name": "Lisbon",
 "dep_on_time_pct": 57.5,
 "arr_on_time_pct": 72.3,
-"dep_on_time_pct_7d": 58.5,
-"arr_on_time_pct_7d": 73.6,
+"dep_on_time_pct_7d": 58.7,
+"arr_on_time_pct_7d": 75.0,
 "operated_pct": 96.6,
-"departures": 93949
+"departures": 94259
 },
 "LQSA": {
 "name": "Sarajevo",
 "dep_on_time_pct": 74.6,
 "arr_on_time_pct": 81.3,
-"dep_on_time_pct_7d": 69.8,
-"arr_on_time_pct_7d": 75.8,
+"dep_on_time_pct_7d": 70.5,
+"arr_on_time_pct_7d": 74.8,
 "operated_pct": 96.1,
-"departures": 7017
+"departures": 7030
 },
 "LROP": {
 "name": "Bucharest Henri Coanda",
-"dep_on_time_pct": 68.2,
+"dep_on_time_pct": 68.3,
 "arr_on_time_pct": 74.5,
-"dep_on_time_pct_7d": 63.6,
-"arr_on_time_pct_7d": 68.7,
+"dep_on_time_pct_7d": 66.3,
+"arr_on_time_pct_7d": 71.3,
 "operated_pct": 94.1,
-"departures": 46052
+"departures": 46195
 },
 "LSGG": {
 "name": "Geneva",
-"dep_on_time_pct": 69.5,
+"dep_on_time_pct": 69.6,
 "arr_on_time_pct": 76.3,
-"dep_on_time_pct_7d": 64.1,
-"arr_on_time_pct_7d": 68.5,
+"dep_on_time_pct_7d": 66.6,
+"arr_on_time_pct_7d": 69.6,
 "operated_pct": 92.0,
-"departures": 64782
+"departures": 64995
 },
 "LSZH": {
 "name": "Zurich",
-"dep_on_time_pct": 60.9,
+"dep_on_time_pct": 60.8,
 "arr_on_time_pct": 73.0,
-"dep_on_time_pct_7d": 64.5,
-"arr_on_time_pct_7d": 73.7,
+"dep_on_time_pct_7d": 63.0,
+"arr_on_time_pct_7d": 73.1,
 "operated_pct": 95.5,
-"departures": 112431
+"departures": 112787
 },
 "LTAC": {
 "name": "Ankara",
-"dep_on_time_pct": 78.7,
+"dep_on_time_pct": 78.8,
 "arr_on_time_pct": 77.9,
-"dep_on_time_pct_7d": 82.1,
-"arr_on_time_pct_7d": 80.1,
+"dep_on_time_pct_7d": 84.1,
+"arr_on_time_pct_7d": 82.0,
 "operated_pct": 90.3,
-"departures": 36687
+"departures": 36816
 },
 "LTAI": {
 "name": "Antalya",
 "dep_on_time_pct": 76.8,
 "arr_on_time_pct": 75.9,
-"dep_on_time_pct_7d": 75.4,
-"arr_on_time_pct_7d": 76.7,
+"dep_on_time_pct_7d": 76.8,
+"arr_on_time_pct_7d": 77.2,
 "operated_pct": 90.1,
-"departures": 90926
+"departures": 91336
 },
 "LTBJ": {
 "name": "Izmir",
 "dep_on_time_pct": 76.3,
 "arr_on_time_pct": 74.5,
-"dep_on_time_pct_7d": 77.7,
-"arr_on_time_pct_7d": 74.6,
+"dep_on_time_pct_7d": 76.2,
+"arr_on_time_pct_7d": 73.3,
 "operated_pct": 89.9,
-"departures": 32102
+"departures": 32213
 },
 "LTFJ": {
 "name": "Istanbul Sabiha Gokcen",
 "dep_on_time_pct": 76.8,
 "arr_on_time_pct": 76.9,
-"dep_on_time_pct_7d": 80.9,
-"arr_on_time_pct_7d": 80.2,
+"dep_on_time_pct_7d": 82.6,
+"arr_on_time_pct_7d": 81.8,
 "operated_pct": 90.0,
-"departures": 111334
+"departures": 111719
 },
 "LTFM": {
 "name": "Istanbul",
 "dep_on_time_pct": 80.8,
 "arr_on_time_pct": 77.6,
-"dep_on_time_pct_7d": 77.8,
-"arr_on_time_pct_7d": 73.6,
+"dep_on_time_pct_7d": 80.1,
+"arr_on_time_pct_7d": 76.9,
 "operated_pct": 91.1,
-"departures": 211811
+"departures": 212503
 },
 "LUKK": {
 "name": "Chisinau",
 "dep_on_time_pct": 81.3,
-"arr_on_time_pct": 74.3,
-"dep_on_time_pct_7d": 82.0,
-"arr_on_time_pct_7d": 75.1,
+"arr_on_time_pct": 74.4,
+"dep_on_time_pct_7d": 84.6,
+"arr_on_time_pct_7d": 79.2,
 "operated_pct": 92.2,
-"departures": 17259
+"departures": 17321
 },
 "LWSK": {
 "name": "Skopje",
 "dep_on_time_pct": 79.1,
-"arr_on_time_pct": 74.5,
-"dep_on_time_pct_7d": 81.9,
-"arr_on_time_pct_7d": 75.0,
+"arr_on_time_pct": 74.6,
+"dep_on_time_pct_7d": 81.1,
+"arr_on_time_pct_7d": 74.9,
 "operated_pct": 95.5,
-"departures": 10256
+"departures": 10290
 },
 "LYBE": {
 "name": "Belgrade",
-"dep_on_time_pct": 71.3,
+"dep_on_time_pct": 71.4,
 "arr_on_time_pct": 70.5,
-"dep_on_time_pct_7d": 71.4,
-"arr_on_time_pct_7d": 70.8,
-"operated_pct": 97.8,
-"departures": 34362
+"dep_on_time_pct_7d": 74.6,
+"arr_on_time_pct_7d": 74.3,
+"operated_pct": 97.7,
+"departures": 34479
 },
 "LYPG": {
 "name": "Podgorica",
-"dep_on_time_pct": 76.4,
+"dep_on_time_pct": 76.5,
 "arr_on_time_pct": 77.5,
-"dep_on_time_pct_7d": 81.4,
-"arr_on_time_pct_7d": 76.4,
-"operated_pct": 97.0,
-"departures": 7224
+"dep_on_time_pct_7d": 83.2,
+"arr_on_time_pct_7d": 77.8,
+"operated_pct": 96.9,
+"departures": 7244
 },
 "LZIB": {
 "name": "Bratislava",
 "dep_on_time_pct": 80.4,
 "arr_on_time_pct": 79.7,
-"dep_on_time_pct_7d": 78.7,
-"arr_on_time_pct_7d": 75.3,
-"operated_pct": 95.7,
-"departures": 12510
+"dep_on_time_pct_7d": 77.9,
+"arr_on_time_pct_7d": 74.5,
+"operated_pct": 95.6,
+"departures": 12547
 },
 "UDYZ": {
 "name": "Yerevan",
-"dep_on_time_pct": 63.2,
-"arr_on_time_pct": 59.8,
-"dep_on_time_pct_7d": 63.9,
-"arr_on_time_pct_7d": 60.6,
-"operated_pct": 93.3,
-"departures": 12808
+"dep_on_time_pct": 63.3,
+"arr_on_time_pct": 59.7,
+"dep_on_time_pct_7d": 64.5,
+"arr_on_time_pct_7d": 61.2,
+"operated_pct": 93.2,
+"departures": 12864
 },
 "UGTB": {
 "name": "Tbilisi",
 "dep_on_time_pct": 70.6,
 "arr_on_time_pct": 67.3,
-"dep_on_time_pct_7d": 72.6,
-"arr_on_time_pct_7d": 67.6,
+"dep_on_time_pct_7d": 74.2,
+"arr_on_time_pct_7d": 69.3,
 "operated_pct": 90.9,
-"departures": 18011
+"departures": 18066
 }
 },
 "countries": {
@@ -1021,13 +1021,13 @@
 },
 "AM": {
 "name": "Armenia",
-"dep_on_time_pct": 63.1,
+"dep_on_time_pct": 63.2,
 "arr_on_time_pct": 59.7
 },
 "AT": {
 "name": "Austria",
 "dep_on_time_pct": 79.3,
-"arr_on_time_pct": 79.7
+"arr_on_time_pct": 79.8
 },
 "BA": {
 "name": "Bosnia And Herzegovina",
@@ -1037,7 +1037,7 @@
 "BE": {
 "name": "Belgium",
 "dep_on_time_pct": 72.6,
-"arr_on_time_pct": 77.5
+"arr_on_time_pct": 77.4
 },
 "BG": {
 "name": "Bulgaria",
@@ -1047,12 +1047,12 @@
 "CH": {
 "name": "Switzerland",
 "dep_on_time_pct": 64.3,
-"arr_on_time_pct": 74.0
+"arr_on_time_pct": 73.9
 },
 "CY": {
 "name": "Cyprus",
-"dep_on_time_pct": 64.1,
-"arr_on_time_pct": 70.4
+"dep_on_time_pct": 64.2,
+"arr_on_time_pct": 70.5
 },
 "CZ": {
 "name": "Czech Republic",
@@ -1066,8 +1066,8 @@
 },
 "DK": {
 "name": "Denmark",
-"dep_on_time_pct": 82.5,
-"arr_on_time_pct": 80.6
+"dep_on_time_pct": 82.4,
+"arr_on_time_pct": 80.5
 },
 "EE": {
 "name": "Estonia",
@@ -1077,12 +1077,12 @@
 "ES": {
 "name": "Spain",
 "dep_on_time_pct": 68.7,
-"arr_on_time_pct": 77.9
+"arr_on_time_pct": 77.8
 },
 "FI": {
 "name": "Finland",
 "dep_on_time_pct": 77.9,
-"arr_on_time_pct": 77.7
+"arr_on_time_pct": 77.8
 },
 "FR": {
 "name": "France",
@@ -1092,7 +1092,7 @@
 "GB": {
 "name": "United Kingdom",
 "dep_on_time_pct": 73.6,
-"arr_on_time_pct": 74.3
+"arr_on_time_pct": 74.2
 },
 "GE": {
 "name": "Georgia",
@@ -1101,7 +1101,7 @@
 },
 "GR": {
 "name": "Greece",
-"dep_on_time_pct": 62.0,
+"dep_on_time_pct": 62.1,
 "arr_on_time_pct": 69.9
 },
 "HR": {
@@ -1116,18 +1116,18 @@
 },
 "IE": {
 "name": "Ireland",
-"dep_on_time_pct": 76.2,
-"arr_on_time_pct": 75.1
+"dep_on_time_pct": 76.1,
+"arr_on_time_pct": 75.0
 },
 "IL": {
 "name": "Israel",
-"dep_on_time_pct": 54.7,
+"dep_on_time_pct": 54.8,
 "arr_on_time_pct": 52.8
 },
 "IS": {
 "name": "Iceland",
 "dep_on_time_pct": 73.2,
-"arr_on_time_pct": 79.1
+"arr_on_time_pct": 79.0
 },
 "IT": {
 "name": "Italy",
@@ -1146,18 +1146,18 @@
 },
 "LV": {
 "name": "Latvia",
-"dep_on_time_pct": 80.4,
+"dep_on_time_pct": 80.5,
 "arr_on_time_pct": 76.9
 },
 "MA": {
 "name": "Morocco",
-"dep_on_time_pct": 74.7,
+"dep_on_time_pct": 74.6,
 "arr_on_time_pct": 74.2
 },
 "MD": {
 "name": "Moldova",
 "dep_on_time_pct": 81.3,
-"arr_on_time_pct": 74.3
+"arr_on_time_pct": 74.4
 },
 "ME": {
 "name": "Montenegro",
@@ -1166,7 +1166,7 @@
 },
 "MK": {
 "name": "North Macedonia",
-"dep_on_time_pct": 77.8,
+"dep_on_time_pct": 77.9,
 "arr_on_time_pct": 74.8
 },
 "MT": {
@@ -1177,7 +1177,7 @@
 "NL": {
 "name": "Netherlands",
 "dep_on_time_pct": 73.3,
-"arr_on_time_pct": 78.4
+"arr_on_time_pct": 78.3
 },
 "NO": {
 "name": "Norway",
@@ -1186,7 +1186,7 @@
 },
 "PL": {
 "name": "Poland",
-"dep_on_time_pct": 77.1,
+"dep_on_time_pct": 77.0,
 "arr_on_time_pct": 78.6
 },
 "PT": {
@@ -1196,13 +1196,13 @@
 },
 "RO": {
 "name": "Romania",
-"dep_on_time_pct": 74.0,
+"dep_on_time_pct": 74.1,
 "arr_on_time_pct": 76.2
 },
 "RS": {
 "name": "Serbia",
-"dep_on_time_pct": 71.3,
-"arr_on_time_pct": 70.7
+"dep_on_time_pct": 71.4,
+"arr_on_time_pct": 70.8
 },
 "SE": {
 "name": "Sweden",
@@ -1212,7 +1212,7 @@
 "SI": {
 "name": "Slovenia",
 "dep_on_time_pct": 77.6,
-"arr_on_time_pct": 78.6
+"arr_on_time_pct": 78.7
 },
 "SK": {
 "name": "Slovakia",
