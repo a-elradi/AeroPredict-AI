@@ -162,15 +162,22 @@ def _airport_factors(shares: list[dict]) -> list[dict]:
                         "value": f"{a['on_time_pct']:.0f}% on time ({a['flights']:,} flights)",
                         "level": "high" if late > 30 else "low" if late < 18 else "medium"})
             continue
-        if a["source"] != "EUROCONTROL":
+        if a["source"] not in ("EUROCONTROL", "ACSA"):
             continue
-        where = a["airport"] if a.get("level") == "airport" else f"{a['airport']} (country average)"
-        value = f"{a['on_time_pct']:.0f}% on time this year"
-        if a.get("on_time_pct_7d") is not None:
-            value += f", {a['on_time_pct_7d']:.0f}% last 7 days"
+        where = {"airport": a["airport"], "airport_airline": f"{a.get('airline')} at {a['airport']}"}.get(
+            a.get("level"), f"{a['airport']} (country average)")
+        if a["source"] == "ACSA":  # one figure for departures and arrivals
+            label, value = f"{where} (ACSA)", f"{a['on_time_pct']:.0f}% on time this year"
+            if a.get("month_pct") is not None:
+                value += f", {a['month_pct']:.0f}% in {a.get('month')}"
+        else:
+            label, value = f"{where} {what} (EUROCONTROL)", f"{a['on_time_pct']:.0f}% on time this year"
+            if a.get("on_time_pct_7d") is not None:
+                value += f", {a['on_time_pct_7d']:.0f}% last 7 days"
         late = 100 - a["on_time_pct"]
         level = "high" if late > 30 else "low" if late < 18 else "medium"
-        out.append({"icon": "🇪🇺", "label": f"{where} {what} (EUROCONTROL)", "value": value, "level": level})
+        out.append({"icon": "🇪🇺" if a["source"] == "EUROCONTROL" else "🛫", "label": label, "value": value,
+                    "level": level})
     return out
 
 
@@ -219,8 +226,9 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
         level, note = "low", "Little history for this route. Based mainly on airline and airport records."
     else:
         level, note = "general", ("We don't have punctuality data for this flight, its route or these "
-                                  "airports yet (we cover US, UK, Brazil, Australia, South Korea and Hong Kong "
-                                  "flights, Japanese airlines, and European and Turkish airports). "
+                                  "airports yet (we cover flights in the US, UK, Brazil, Australia, South Korea, "
+                                  "Hong Kong, Norway and Israel, Japanese and South African airlines, and "
+                                  "about 1,500 airports worldwide). "
                                   "This is only a general estimate from time of day and season, so the "
                                   "numbers will look similar for many flights. Treat it as a rough guide.")
     if weather_used:

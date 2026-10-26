@@ -245,3 +245,14 @@ def test_middle_east_airports_use_flight_records(client):
     assert dxb["data_basis"]["confidence"] == "airport"
     assert any("DXB departures (flight records)" in f["label"] for f in dxb["factors"])
     assert dxb["probabilities"] != doh["probabilities"]
+
+
+@needs_model
+def test_south_africa_uses_acsa_airline_figures(client):
+    from app.services import airports
+    if not airports._acsa():
+        pytest.skip("ACSA data not built")
+    fa = predict_route(client, "JNB", "CPT", flight_number="FA101", airline="FA")
+    cemair = predict_route(client, "JNB", "CPT", flight_number="5Z1", airline="5Z")
+    assert any(f["label"] == "FA at JNB (ACSA)" for f in fa["factors"])
+    assert fa["probabilities"]["on_time"] > cemair["probabilities"]["on_time"]

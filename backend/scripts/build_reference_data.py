@@ -4,6 +4,9 @@ Build the reference data files the website loads at startup:
 - data/airports_world.json: every airport with scheduled passenger service
   (IATA -> ICAO, name, country, latitude, longitude, time zone), from OurAirports
   (public domain): https://davidmegginson.github.io/ourairports-data/airports.csv
+- data/acsa_punctuality.json: on-time performance (on/off-block within 15
+  minutes) of each home airline at South Africa's 9 ACSA airports, year to date
+  and latest month: https://www.airports.co.za/business/statistics/on-time-performance
 - data/eurocontrol_punctuality.json: official departure and arrival
   punctuality (share within 15 minutes of schedule) for ~110 European
   airports and their countries, year to date and for the last 7 days, from
@@ -16,8 +19,10 @@ zones); only this script uses them.
 Run weekly by .github/workflows/reference-data.yml.
 """
 import csv
+import html
 import io
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -25,6 +30,12 @@ import requests
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 OURAIRPORTS_URL = "https://davidmegginson.github.io/ourairports-data/airports.csv"
+ACSA_URL = "https://www.airports.co.za/business/statistics/on-time-performance"
+ACSA_AIRPORTS = {"TAMBO": "JNB", "CAPE TOWN": "CPT", "KING SHAKA": "DUR", "BRAM FISCHER": "BFN",
+                 "EAST LONDON": "ELS", "GEORGE": "GRJ", "STUURMAN": "PLZ", "PORT ELIZABETH": "PLZ",
+                 "UPINGTON": "UTN", "KIMBERLEY": "KIM"}
+ACSA_AIRLINES = {"AIRLINK": "4Z", "CEMAIR": "5Z", "FLYSAFAIR": "FA", "GLOBAL AVIATION": "GE", "LIFT": "GE",
+                 "SOUTH AFRICAN AIRWAYS": "SA", "SAFAIR": "FA", "MANGO": "JE"}
 EUROCONTROL_URL = "https://www.eurocontrol.int/Economics/Download/Stakeholder_Punctuality.xlsx"
 HEADERS = {"User-Agent": "AeroPredict reference data (github.com/a-elradi/AeroPredict-AI)"}
 
@@ -59,6 +70,35 @@ def build_airports() -> dict:
         out[iata] = [icao, r["name"], r["iso_country"], round(lat, 4), round(lon, 4),
                      tf.timezone_at(lat=lat, lng=lon)]
     return dict(sorted(out.items()))
+
+
+def build_acsa() -> dict:
+    page = requests.get(ACSA_URL, headers=HEADERS, timeout=120).text
+    text = html.unescape(re.sub(r"<[^>]+>", " | ", re.sub(r"<(script|style).*?</\1>", "", page, flags=re.S)))
+    text = re.sub(r"[\s\u200b]+", " ", text)
+    month = re.search(r"Performance \|[ |]*([A-Z][a-z]+ 20\d\d)", text)
+    year = re.search(r"Year to Date (20\d\d)", text)
+    airports = {}
+    blocks = re.split(r"([A-Z][A-Za-z.' ]+ Airport) \(Target: \d+%\)", text)
+    for name, body in zip(blocks[1::2], blocks[2::2]):
+        iata = next((code for key, code in ACSA_AIRPORTS.items() if key in name.upper()), None)
+        if not iata:
+            continue
+        rows = re.findall(r"([A-Za-z][A-Za-z .]+?) [| ]+(\d{1,3}\.\d+)% [| ]+(\d{1,3}\.\d+)%", body)
+        entry = {"name": name, "airlines": {}}
+        for label, ytd, latest in rows:
+            label = label.strip(" |").upper()
+            if label == "TOTAL":
+                entry["on_time_pct"], entry["on_time_pct_month"] = float(ytd), float(latest)
+                continue
+            code = next((c for key, c in ACSA_AIRLINES.items() if label.startswith(key)), None)
+            if code:
+                entry["airlines"][code] = {"on_time_pct": float(ytd), "on_time_pct_month": float(latest)}
+        if "on_time_pct" in entry:
+            airports[iata] = entry
+    return {"source": "Airports Company South Africa (ACSA)",
+            "period": f"{year.group(1)} year to date" if year else "year to date",
+            "month": month.group(1) if month else None, "airports": airports}
 
 
 def _pct(v):
@@ -107,6 +147,9 @@ def main():
     (DATA_DIR / "airports_world.json").write_text(json.dumps(airports, ensure_ascii=False, separators=(",", ":")),
                                                   encoding="utf-8")
     print(f"airports_world.json: {len(airports):,} airports")
+    acsa = build_acsa()
+    (DATA_DIR / "acsa_punctuality.json").write_text(json.dumps(acsa, indent=0), encoding="utf-8")
+    print(f"acsa_punctuality.json: {len(acsa['airports'])} airports ({acsa['month']})")
     euro = build_eurocontrol()
     (DATA_DIR / "eurocontrol_punctuality.json").write_text(json.dumps(euro, ensure_ascii=False, indent=0),
                                                            encoding="utf-8")

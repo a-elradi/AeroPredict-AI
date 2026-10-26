@@ -1,0 +1,194 @@
+{
+"source": "Airports Company South Africa (ACSA)",
+"period": "2026 year to date",
+"month": "September 2026",
+"airports": {
+"JNB": {
+"name": "O.R. Tambo International Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 86.2,
+"on_time_pct_month": 83.85
+},
+"5Z": {
+"on_time_pct": 72.99,
+"on_time_pct_month": 67.96
+},
+"FA": {
+"on_time_pct": 89.51,
+"on_time_pct_month": 88.21
+},
+"GE": {
+"on_time_pct": 78.8,
+"on_time_pct_month": 78.57
+},
+"SA": {
+"on_time_pct": 89.45,
+"on_time_pct_month": 86.93
+}
+},
+"on_time_pct": 86.66,
+"on_time_pct_month": 84.43
+},
+"CPT": {
+"name": "Cape Town International Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 90.44,
+"on_time_pct_month": 89.18
+},
+"5Z": {
+"on_time_pct": 80.42,
+"on_time_pct_month": 73.45
+},
+"FA": {
+"on_time_pct": 93.28,
+"on_time_pct_month": 93.97
+},
+"GE": {
+"on_time_pct": 79.84,
+"on_time_pct_month": 80.46
+},
+"SA": {
+"on_time_pct": 91.15,
+"on_time_pct_month": 91.44
+}
+},
+"on_time_pct": 90.52,
+"on_time_pct_month": 90.13
+},
+"DUR": {
+"name": "King Shaka International Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 93.4,
+"on_time_pct_month": 92.54
+},
+"5Z": {
+"on_time_pct": 83.28,
+"on_time_pct_month": 78.1
+},
+"FA": {
+"on_time_pct": 91.32,
+"on_time_pct_month": 90.33
+},
+"GE": {
+"on_time_pct": 87.08,
+"on_time_pct_month": 84.46
+},
+"SA": {
+"on_time_pct": 89.87,
+"on_time_pct_month": 86.61
+}
+},
+"on_time_pct": 90.33,
+"on_time_pct_month": 88.56
+},
+"BFN": {
+"name": "Bram Fischer International Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 88.18,
+"on_time_pct_month": 85.04
+},
+"5Z": {
+"on_time_pct": 81.24,
+"on_time_pct_month": 77.57
+},
+"FA": {
+"on_time_pct": 90.59,
+"on_time_pct_month": 90.0
+}
+},
+"on_time_pct": 85.95,
+"on_time_pct_month": 82.95
+},
+"ELS": {
+"name": "East London Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 82.66,
+"on_time_pct_month": 77.88
+},
+"5Z": {
+"on_time_pct": 82.78,
+"on_time_pct_month": 80.56
+},
+"FA": {
+"on_time_pct": 87.41,
+"on_time_pct_month": 86.45
+}
+},
+"on_time_pct": 86.25,
+"on_time_pct_month": 84.32
+},
+"GRJ": {
+"name": "George Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 81.95,
+"on_time_pct_month": 77.68
+},
+"5Z": {
+"on_time_pct": 72.64,
+"on_time_pct_month": 65.45
+},
+"FA": {
+"on_time_pct": 91.1,
+"on_time_pct_month": 91.27
+}
+},
+"on_time_pct": 84.5,
+"on_time_pct_month": 81.45
+},
+"KIM": {
+"name": "Kimberley Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 87.41,
+"on_time_pct_month": 84.7
+},
+"5Z": {
+"on_time_pct": 82.96,
+"on_time_pct_month": 77.36
+}
+},
+"on_time_pct": 86.24,
+"on_time_pct_month": 82.62
+},
+"PLZ": {
+"name": "Chief Dawid Stuurman International Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 90.56,
+"on_time_pct_month": 90.12
+},
+"5Z": {
+"on_time_pct": 85.09,
+"on_time_pct_month": 76.92
+},
+"FA": {
+"on_time_pct": 91.28,
+"on_time_pct_month": 91.34
+},
+"SA": {
+"on_time_pct": 74.58,
+"on_time_pct_month": 60.56
+}
+},
+"on_time_pct": 88.36,
+"on_time_pct_month": 85.66
+},
+"UTN": {
+"name": "Upington International Airport",
+"airlines": {
+"4Z": {
+"on_time_pct": 88.29,
+"on_time_pct_month": 88.21
+}
+},
+"on_time_pct": 88.29,
+"on_time_pct_month": 88.21
+}
+}
+}

@@ -83,6 +83,7 @@ DEST_OVERRIDES = {
     ("IT", "MILAN"): "MXP", ("FR", "PARIS"): "CDG", ("SE", "STOCKHOLM"): "ARN", ("BR", "SAO PAULO"): "GRU",
     ("BR", "RIO DE JANEIRO"): "GIG", ("AR", "BUENOS AIRES"): "EZE", ("CA", "TORONTO"): "YYZ",
     ("CA", "MONTREAL"): "YUL", ("KR", "SEOUL"): "ICN", ("ID", "JAKARTA"): "CGK", ("DE", "BERLIN"): "BER",
+    ("ZA", "JOHANNESBURG"): "JNB", ("IN", "MUMBAI"): "BOM", ("LK", "COLOMBO"): "CMB", ("TW", "TAIPEI"): "TPE",
 }
 DEST_NAME_OVERRIDES = {
     "NEW YORK (JF KENNEDY)": "JFK", "TENERIFE (SURREINA SOFIA)": "TFS", "TENERIFE (NORTE LOS RODEOS)": "TFN",

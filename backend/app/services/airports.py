@@ -133,6 +133,12 @@ def _eurocontrol() -> dict:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
+@lru_cache(maxsize=1)
+def _acsa() -> dict:
+    path = _DATA_DIR / "acsa_punctuality.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
 def lookup(iata: str) -> dict:
     code = (iata or "").upper().strip()
     w = _world().get(code)
@@ -145,21 +151,30 @@ def lookup(iata: str) -> dict:
             "tz": w[5] if w and len(w) > 5 else None}
 
 
-def punctuality(iata: str) -> dict | None:
+def punctuality(iata: str, airline: str | None = None) -> dict | None:
     """
-    Official EUROCONTROL punctuality for a European airport (or, failing that,
-    its country): share of departures/arrivals within 15 minutes of schedule.
+    Official airport punctuality (share of departures/arrivals within 15 minutes of schedule):
+    EUROCONTROL for European airports, ACSA for South African ones (for the airline itself where
+    ACSA lists it), else the EUROCONTROL country average.
     """
-    euro = _eurocontrol()
-    if not euro:
-        return None
+    euro, acsa = _eurocontrol(), _acsa()
     info = lookup(iata)
-    apt = euro["airports"].get(info["icao"] or "")
+    apt = (euro.get("airports") or {}).get(info["icao"] or "")
     if apt and apt.get("dep_on_time_pct") is not None:
-        return {**apt, "level": "airport", "period": euro["period"], "source": euro["source"]}
-    cty = euro["countries"].get(info["country"] or "")
+        return {**apt, "level": "airport", "period": euro["period"], "source": euro["source"],
+                "publisher": "EUROCONTROL"}
+    za = (acsa.get("airports") or {}).get(info["iata"])
+    if za:
+        own = za["airlines"].get((airline or "").upper())
+        pick = own or za
+        return {"name": za["name"], "dep_on_time_pct": pick["on_time_pct"], "arr_on_time_pct": pick["on_time_pct"],
+                "month_pct": pick.get("on_time_pct_month"), "month": acsa.get("month"),
+                "level": "airport_airline" if own else "airport", "airline": airline if own else None,
+                "period": acsa["period"], "source": acsa["source"], "publisher": "ACSA"}
+    cty = (euro.get("countries") or {}).get(info["country"] or "")
     if cty and cty.get("dep_on_time_pct") is not None:
-        return {**cty, "level": "country", "period": euro["period"], "source": euro["source"]}
+        return {**cty, "level": "country", "period": euro["period"], "source": euro["source"],
+                "publisher": "EUROCONTROL"}
     return None
 
 

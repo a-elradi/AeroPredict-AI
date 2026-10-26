@@ -127,7 +127,7 @@ def _odds(p: float) -> float:
     return p / (1 - p)
 
 
-def _airport_late_shares(tables: dict, origin: str, dest: str) -> list[dict]:
+def _airport_late_shares(tables: dict, origin: str, dest: str, carrier: str = "") -> list[dict]:
     """
     Share of flights that run 15+ minutes late at each airport, from US
     records where we have them and official EUROCONTROL punctuality otherwise.
@@ -140,11 +140,13 @@ def _airport_late_shares(tables: dict, origin: str, dest: str) -> list[dict]:
             shares.append({"side": side, "airport": airport, "late": (e[1] + e[2]) / e[0], "weight": weight,
                            "source": "US flight records", "on_time_pct": round((e[0] - e[1] - e[2]) / e[0] * 100, 1)})
             continue
-        p = airports.punctuality(airport)
-        if p and p.get(field) is not None and p["level"] == "airport":
+        p = airports.punctuality(airport, carrier)
+        if p and p.get(field) is not None and p["level"] in ("airport", "airport_airline"):
             shares.append({"side": side, "airport": airport, "late": 1 - p[field] / 100, "weight": weight,
-                           "source": "EUROCONTROL", "level": p["level"], "period": p["period"],
-                           "on_time_pct": p[field], "on_time_pct_7d": p.get(field.replace("_pct", "_pct_7d"))})
+                           "source": p["publisher"], "level": p["level"], "period": p["period"],
+                           "airline": p.get("airline"), "on_time_pct": p[field],
+                           "on_time_pct_7d": p.get(field.replace("_pct", "_pct_7d")),
+                           "month_pct": p.get("month_pct"), "month": p.get("month")})
             continue
         rec = route_history.airport_record(airport, "dep" if side == "origin" else "arr")
         if rec:  # flights to/from this airport in other countries' official data
@@ -204,7 +206,7 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
         # the time-of-day / season / weather effect the model learned, measured against an
         # 'average flight' with no history at all.
         route_hist = route_history.lookup(carrier, flight_no, origin, dest)
-        airport_shares = [] if route_hist else _airport_late_shares(tables, origin, dest)
+        airport_shares = [] if route_hist else _airport_late_shares(tables, origin, dest, carrier)
         airline_rec = None if route_hist else (route_history.airline_record(carrier)
                                                or _us_airline_record(tables, prior, carrier))
         base = cancel_share = None
@@ -213,7 +215,9 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
             method = "route_history"
         elif any(a["source"] != "US flight records" for a in airport_shares):
             base = sum(a["late"] * a["weight"] for a in airport_shares) / sum(a["weight"] for a in airport_shares)
-            if airline_rec and any(a["source"] == "flight records" for a in airport_shares):
+            if any(a["level"] == "airport_airline" for a in airport_shares):
+                airline_rec = None  # the airport figures are already this airline's own
+            elif airline_rec and any(a["source"] == "flight records" for a in airport_shares):
                 # Airport and airline records come from the same flights (a hub's record is largely its
                 # home airline's), so average them rather than counting the overlap twice
                 odds = math.sqrt(_odds(base) * _odds(airline_rec["disrupted_share"]))
