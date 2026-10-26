@@ -246,6 +246,7 @@ function renderResult(data) {
   const rc = document.getElementById("resultCard");
   document.getElementById("predict").hidden = false;
   rc.hidden = false;
+  flightRights.show(data);
   rc.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -953,4 +954,117 @@ window.Wayfinding = (() => {
     card.hidden = false;
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
+})();
+
+/* ═══════════════════════════════════════════
+   Rights for the flight just checked
+═══════════════════════════════════════════ */
+const flightRights = (() => {
+  const $ = id => document.getElementById(id);
+  let flight = null;          // {flight, airline, origin, destination}
+  let type = "delay";
+
+  const rightsFor = async body => {
+    const res = await fetch(`${API}/concierge/rights`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ origin: flight.origin, destination: flight.destination, airline: flight.airline, ...body }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.success) throw new Error(json.error || "We couldn't check your rights just now.");
+    return json.data;
+  };
+
+  // What the passenger could be owed on this route, before anything has happened
+  async function show(data) {
+    flight = { flight: data.flight_number, airline: data.airline, origin: data.dep_airport, destination: data.arr_airport };
+    const box = $("rbBox");
+    $("rbForm").hidden = true;
+    $("rbResult").hidden = true;
+    $("rbOpen").hidden = false;
+    $("rbTitle").textContent = `If ${data.flight_number} is delayed or cancelled`;
+    const p = data.probabilities;
+    box.classList.toggle("rb-alert", p.delayed + p.cancelled >= 30);
+    try {
+      const d = await rightsFor({ disruption: "delay", delay_hours: 3, cause: "airline" });
+      const h = d.headline;
+      const laws = d.regimes.filter(r => r.compensation.eligible).map(r => r.code);
+      $("rbSummary").textContent = h.eligible
+        ? `On this route, ${laws.join(" and ")} rules could give you up to ${h.currency}${h.amount} per passenger ` +
+          `if you arrive 3 or more hours late or your flight is cancelled at short notice, unless it's caused ` +
+          `by something outside the airline's control, such as severe weather.`
+        : `No law sets a fixed cash payout on this route, but the airline still owes you help if things go wrong.`;
+      const main = d.regimes[0];
+      $("rbPoints").replaceChildren(...[main.care[0], main.choices[0], main.choices[main.choices.length - 1]]
+        .filter((t, i, all) => t && all.indexOf(t) === i)
+        .map(t => Object.assign(document.createElement("li"), { textContent: t })));
+      box.hidden = false;
+    } catch {
+      box.hidden = true;  // the prediction itself still shows
+    }
+  }
+
+  $("rbOpen").addEventListener("click", () => {
+    $("rbForm").hidden = false;
+    $("rbOpen").hidden = true;
+    $("rbForm").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+
+  document.querySelectorAll(".rb-chip").forEach(chip => chip.addEventListener("click", () => {
+    document.querySelectorAll(".rb-chip").forEach(c => c.classList.toggle("active", c === chip));
+    type = chip.dataset.type;
+    $("rbDelayField").hidden = type === "denied_boarding";
+    $("rbNoticeField").hidden = type !== "cancellation";
+    $("rbDelayField").querySelector(".search-label").textContent = type === "cancellation"
+      ? "How late did you arrive on the new flight? (hours)" : "How late did you arrive? (hours)";
+  }));
+
+  $("rbForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    $("rbError").hidden = true;
+    try {
+      const d = await rightsFor({
+        disruption: type,
+        cause: $("rbCause").value,
+        delay_hours: type === "denied_boarding" ? 0 : Number($("rbDelay").value || 0),
+        notice_days: type === "cancellation" ? Number($("rbNotice").value) : undefined,
+      });
+      const h = d.headline;
+      $("rbAmount").textContent = h.eligible ? `${h.currency}${h.amount}` : "No fixed payout";
+      $("rbAmountLabel").textContent = h.eligible
+        ? "you're likely owed in compensation, per passenger"
+        : h.explanation;
+      const partner = d.claim_partner;
+      $("rbClaim").hidden = !partner;
+      if (partner) {
+        $("rbClaimBtn").href = partner.url;
+        $("rbClaimBtn").textContent = `Claim it for me with ${partner.name}`;
+        $("rbClaimNote").textContent = partner.disclosure;
+      }
+      $("rbSelf").textContent = h.eligible
+        ? `Or claim directly from the airline in writing, for free. Keep your boarding pass and the reason they gave.`
+        : `Ask the airline for meal and hotel vouchers, rebooking or a refund, and keep receipts for any costs.`;
+      $("rbResult").hidden = false;
+      $("rbResult").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (ex) {
+      $("rbError").textContent = ex.message;
+      $("rbError").hidden = false;
+    }
+  });
+
+  // Full details: fill the My Rights tool with the same answers and run it
+  $("rbMore").addEventListener("click", e => {
+    e.preventDefault();
+    $("rtFrom").value = flight.origin;
+    $("rtTo").value = flight.destination;
+    $("rtAirline").value = flight.airline;
+    $("rtType").value = type;
+    $("rtType").dispatchEvent(new Event("change"));
+    $("rtCause").value = $("rbCause").value;
+    $("rtDelay").value = $("rbDelay").value;
+    $("rtNotice").value = $("rbNotice").value;
+    $("rightsForm").requestSubmit();
+  });
+
+  return { show };
 })();

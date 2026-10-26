@@ -191,6 +191,64 @@
 
         <p class="result-typical" id="rTypicalDelay"></p>
 
+        <!-- Rights for this flight, right after the result -->
+        <div class="rights-box" id="rbBox" hidden>
+          <div class="rb-head">
+            <span class="rb-icon">⚖️</span>
+            <div>
+              <h4 id="rbTitle">If your flight is delayed or cancelled</h4>
+              <p id="rbSummary"></p>
+            </div>
+          </div>
+          <ul class="rb-points" id="rbPoints"></ul>
+          <button type="button" class="btn btn-primary rb-open" id="rbOpen">My flight was delayed or cancelled →</button>
+
+          <form class="rb-form" id="rbForm" novalidate hidden>
+            <div class="rb-choice" role="radiogroup" aria-label="What happened">
+              <button type="button" class="rb-chip active" data-type="delay">Delayed</button>
+              <button type="button" class="rb-chip" data-type="cancellation">Cancelled</button>
+              <button type="button" class="rb-chip" data-type="denied_boarding">Denied boarding</button>
+            </div>
+            <div class="rb-fields">
+              <label class="search-field" id="rbDelayField">
+                <span class="search-label">How late did you arrive? (hours)</span>
+                <input type="number" id="rbDelay" class="search-input" min="0" max="72" step="0.5" value="3" />
+              </label>
+              <label class="search-field" id="rbNoticeField" hidden>
+                <span class="search-label">When were you told?</span>
+                <select id="rbNotice" class="search-input">
+                  <option value="0">Less than 7 days before</option>
+                  <option value="7">7–13 days before</option>
+                  <option value="14">14 days or more before</option>
+                </select>
+              </label>
+              <label class="search-field">
+                <span class="search-label">Reason the airline gave</span>
+                <select id="rbCause" class="search-input">
+                  <option value="unknown">Not told / not sure</option>
+                  <option value="airline">Technical problem, crew or airline operations</option>
+                  <option value="weather">Bad weather</option>
+                  <option value="air_traffic_control">Air traffic control</option>
+                  <option value="strike_external">Airport or air traffic strike</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-error" id="rbError" hidden></div>
+            <button type="submit" class="btn btn-primary btn-full">Check what I'm owed</button>
+          </form>
+
+          <div class="rb-result" id="rbResult" hidden>
+            <div class="rb-amount" id="rbAmount"></div>
+            <p class="rb-amount-label" id="rbAmountLabel"></p>
+            <div class="rt-claim" id="rbClaim" hidden>
+              <a class="btn btn-primary btn-full" id="rbClaimBtn" href="#" target="_blank" rel="sponsored noopener">Claim it for me</a>
+              <p class="rt-claim-note" id="rbClaimNote"></p>
+            </div>
+            <p class="rb-self" id="rbSelf"></p>
+            <a href="#rights" class="rb-more" id="rbMore">See everything you're owed and what to say at the desk →</a>
+          </div>
+        </div>
+
         <!-- Risk Factors -->
         <div class="factors-section">
           <h4>Risk Factor Analysis</h4>
