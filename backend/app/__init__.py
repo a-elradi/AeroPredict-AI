@@ -32,8 +32,10 @@ def create_app():
 
     @app.route("/api/site-config")
     def site_config():
-        # Contact address is set in the host's environment (CONTACT_EMAIL), never in the code
-        return jsonify({"contact_email": os.environ.get("CONTACT_EMAIL", "").strip() or None})
+        # Contact details are set in the host's environment (CONTACT_EMAIL, CONTACT_WHATSAPP), never in the code
+        whatsapp = "".join(c for c in os.environ.get("CONTACT_WHATSAPP", "") if c.isdigit() or c == "+")
+        return jsonify({"contact_email": os.environ.get("CONTACT_EMAIL", "").strip() or None,
+                        "contact_whatsapp": whatsapp if len(whatsapp.lstrip("+")) >= 8 else None})
 
     @app.route("/<path:path>")
     def static_files(path):

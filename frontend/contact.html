@@ -22,8 +22,15 @@
       <p>Found a mistake, missing your airport, or want to work with us? We'd like to hear from you.</p>
     </header>
     <div class="prose">
-      <div class="callout" id="contactEmailBox" hidden>
-        <strong>Email:</strong> <a id="contactEmail" href="#"></a>
+      <div class="contact-list" id="contactBox" hidden>
+        <a class="contact-item" id="contactEmailItem" href="#" hidden>
+          <span class="contact-label">Email</span>
+          <span class="contact-value" id="contactEmail"></span>
+        </a>
+        <a class="contact-item" id="contactWhatsAppItem" href="#" target="_blank" rel="noopener" hidden>
+          <span class="contact-label">WhatsApp</span>
+          <span class="contact-value" id="contactWhatsApp"></span>
+        </a>
       </div>
 
       <h2>Report a problem or wrong data</h2>
@@ -36,7 +43,7 @@
       we'd love to hear about it.</p>
 
       <h2>Partnerships and press</h2>
-      <p>For data partnerships, travel and compensation partners, or press questions, please email us.</p>
+      <p>For data partnerships, travel and compensation partners, or press questions, email us or send a WhatsApp message.</p>
 
       <h2>Before you write</h2>
       <p>We can't change bookings, contact airlines for you or confirm a flight's live status: for those, please contact
@@ -48,11 +55,16 @@
 <script src="/layout.js"></script>
 <script>
 fetch("/api/site-config").then(r => r.json()).then(c => {
-  if (!c.contact_email) return;
-  const a = document.getElementById("contactEmail");
-  a.textContent = c.contact_email;
-  a.href = `mailto:${c.contact_email}`;
-  document.getElementById("contactEmailBox").hidden = false;
+  const show = (item, value, text, href) => {
+    if (!value) return;
+    document.getElementById(value).textContent = text;
+    document.getElementById(item).href = href;
+    document.getElementById(item).hidden = false;
+    document.getElementById("contactBox").hidden = false;
+  };
+  if (c.contact_email) show("contactEmailItem", "contactEmail", c.contact_email, `mailto:${c.contact_email}`);
+  if (c.contact_whatsapp) show("contactWhatsAppItem", "contactWhatsApp", c.contact_whatsapp,
+    `https://wa.me/${c.contact_whatsapp.replace("+", "")}`);
 }).catch(() => {});
 </script>
 </body>

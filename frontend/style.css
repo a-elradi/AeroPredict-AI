@@ -556,3 +556,14 @@ section[id], .result-card { scroll-margin-top: calc(var(--nav-h) + 16px); }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* Contact details */
+.contact-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 0 0 32px; }
+.contact-item {
+  display: flex; flex-direction: column; gap: 2px; padding: 16px 18px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  text-decoration: none !important; transition: border-color 0.15s;
+}
+.contact-item:hover { border-color: var(--accent); }
+.contact-label { font-size: 0.85rem; color: var(--muted); }
+.contact-value { font-family: var(--mono); font-weight: 500; color: var(--text); word-break: break-all; }
