@@ -1,4 +1,4 @@
-name: Collect daily flights (Norway, Hong Kong, Taiwan, Israel, Netherlands, Sweden)
+name: Collect daily flights (Norway, Hong Kong, Taiwan, Israel, Japan, Netherlands, Sweden)
 
 # Daily: save yesterday's flights from open airport feeds that keep only a short
 # history (Avinor ~36 hours, Hong Kong 91 days). The monthly route-stats job
@@ -7,6 +7,7 @@ on:
   schedule:
     - cron: "17 3 * * *"    # 03:17 UTC: Norway and Hong Kong (yesterday)
     - cron: "52 15 * * *"   # 15:52 UTC = 23:52 in Taiwan: Taoyuan (today)
+    - cron: "47 14 * * *"   # 14:47 UTC = 23:47 in Japan: Tokyo Haneda and Narita (today)
   workflow_dispatch:
 
 permissions:
@@ -29,9 +30,12 @@ jobs:
           SCHIPHOL_APP_ID: ${{ secrets.SCHIPHOL_APP_ID }}
           SCHIPHOL_APP_KEY: ${{ secrets.SCHIPHOL_APP_KEY }}
           SWEDAVIA_KEY: ${{ secrets.SWEDAVIA_KEY }}
+          ODPT_KEY: ${{ secrets.ODPT_KEY }}
         run: |
           if [ "${{ github.event.schedule }}" = "52 15 * * *" ]; then
             python -u scripts/collect_flights.py taoyuan israel
+          elif [ "${{ github.event.schedule }}" = "47 14 * * *" ]; then
+            python -u scripts/collect_flights.py odpt
           else
             python -u scripts/collect_flights.py avinor hongkong taoyuan israel schiphol swedavia
           fi

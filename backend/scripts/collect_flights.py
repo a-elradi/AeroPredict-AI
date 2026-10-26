@@ -14,6 +14,10 @@ history, so the route statistics can cover a full year:
   data.gov.il, which keeps about a day back (run twice a day). Its times are
   take-off and landing times, so departures have the typical taxi-out time
   taken off and arrivals the taxi-in time added, to approximate gate times.
+- Japan: ODPT (Public Transportation Open Data Center) flight information for
+  Tokyo Haneda and Narita, today only, so it runs just before midnight Japan
+  time (free key: ODPT_KEY, from https://developer.odpt.org). Collected raw;
+  not used in the route statistics until checked against real data.
 - Netherlands: Schiphol Public Flight API v4 (free: the application's Client ID
   in SCHIPHOL_APP_ID and Client Secret in SCHIPHOL_APP_KEY, from
   https://developer.schiphol.nl; exchanged for an OAuth token on each run)
@@ -52,6 +56,8 @@ TAIWAN_UTC_OFFSET = timedelta(hours=8)
 ISRAEL_BOARD = "https://data.gov.il/api/3/action/datastore_search"
 ISRAEL_RESOURCE = "e83f763b-b7d7-479e-b172-ae981ddc6de5"
 TLV_TAXI_OUT, TLV_TAXI_IN = 15, 5  # minutes between gate and runway
+ODPT_API = "https://api.odpt.org/api/v4/odpt:{kind}"
+JAPAN_UTC_OFFSET = timedelta(hours=9)
 SCHIPHOL_TOKEN = "https://api.auth.schiphol.nl/oauth/token"
 SCHIPHOL_AUDIENCE = "https://api.schiphol.nl/public"
 SCHIPHOL_FLIGHTS = "https://api.schiphol.nl/public/public-flights/v4/flights"
@@ -199,6 +205,43 @@ def collect_israel() -> dict:
     return out
 
 
+def _odpt_code(value) -> str | None:
+    """'odpt.Airport:HND' -> 'HND'."""
+    text = value[0] if isinstance(value, list) and value else value
+    return str(text).split(":")[-1].strip() if text else None
+
+
+def collect_odpt() -> dict:
+    """Today's flights at Tokyo Haneda and Narita (Japan time) that have departed, arrived or been cancelled."""
+    (key,) = _key("ODPT_KEY")
+    today = datetime.now(timezone.utc) + JAPAN_UTC_OFFSET
+    out = {}
+    for kind, dep in (("FlightInformationDeparture", True), ("FlightInformationArrival", False)):
+        flights = get(ODPT_API.format(kind=kind), params={"acl:consumerKey": key}).json()
+        _save_sample("odpt", flights[:200] if isinstance(flights, list) else flights)
+        for f in flights if isinstance(flights, list) else []:
+            here = _odpt_code(f.get("odpt:departureAirport" if dep else "odpt:arrivalAirport"))
+            other = _odpt_code(f.get("odpt:destinationAirport" if dep else "odpt:originAirport"))
+            numbers = f.get("odpt:flightNumber") or []
+            if not here or not other or not numbers:
+                continue
+            airline, number = flight_code(numbers[0])  # the first is the operating flight
+            origin, dest = (here, other) if dep else (other, here)
+            day = today.date().isoformat()
+            key_ = f"{day}|{numbers[0]}|{here}|{'D' if dep else 'A'}"
+            status = str(f.get("odpt:flightStatus") or "").split(":")[-1].lower()
+            if "cancel" in status:
+                out[key_] = [day, airline, number, origin, dest, None, 1]
+                continue
+            sched = f.get("odpt:scheduledDepartureTime" if dep else "odpt:scheduledArrivalTime")
+            actual = f.get("odpt:actualDepartureTime" if dep else "odpt:actualArrivalTime")
+            s, a = (re.fullmatch(r"(\d{1,2}):(\d{2})", t or "") for t in (sched, actual))
+            if s and a:
+                delay = (int(a.group(1)) * 60 + int(a.group(2)) - int(s.group(1)) * 60 - int(s.group(2)) + 720) % 1440 - 720
+                out[key_] = [day, airline, number, origin, dest, delay, 0]
+    return out
+
+
 def _key(*names: str) -> list[str]:
     values = [os.environ.get(n, "").strip() for n in names]
     if not all(values):
@@ -337,6 +380,7 @@ SOURCES = {"avinor": collect_avinor,
            "hongkong": lambda: collect_hongkong(date.today() - timedelta(days=1)),
            "taoyuan": collect_taoyuan,
            "israel": collect_israel,
+           "odpt": collect_odpt,
            "schiphol": lambda: collect_schiphol(date.today() - timedelta(days=1)),
            "swedavia": lambda: collect_swedavia(date.today() - timedelta(days=1))}
 
