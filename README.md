@@ -172,8 +172,9 @@ As a senior engineer, you can deploy this in several ways:
 ### Option A: Cloud PaaS (Recommended for Demo)
 1.  **Render/Railway**: 
     *   Connect your GitHub repository.
+    *   Leave Root Directory empty (the repository root)
     *   Set Build Command: `pip install -r backend/requirements.txt`
-    *   Set Start Command: `gunicorn --bind 0.0.0.0:$PORT backend.run:app`
+    *   Set Start Command: `gunicorn --chdir backend --bind 0.0.0.0:$PORT run:app`
 2.  **Frontend**: If you want to host the frontend separately (e.g., Vercel), simply point the API URL in `app.js` to your deployed backend.
 
 ### Option B: Dockerized Microservices
@@ -184,7 +185,7 @@ WORKDIR /app
 COPY backend/requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "backend.run:app"]
+CMD ["gunicorn", "--chdir", "backend", "--bind", "0.0.0.0:5000", "run:app"]
 ```
 
 ---
