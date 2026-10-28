@@ -8,6 +8,9 @@ late or cancelled). Two comparisons: the old behaviour for these flights (no
 route data: a general estimate) and simply guessing the overall average.
 
     python scripts/backtest_route_history.py [--months 12] [--test 2] [--sample 40000]
+    python scripts/backtest_route_history.py --files TRAINING_DATA/flights --prefix korea
+        (any country's monthly files from scripts/download_training_data.py; reports only,
+         the calibration is fitted on Brazil)
 
 It also fits a calibration (logistic on the log-odds) on a random half of the
 held-out flights and scores it on the other half; the live code applies it to
@@ -96,6 +99,29 @@ def predict_all(flights: list) -> tuple[np.ndarray, list]:
     return np.array(probs), methods
 
 
+def load_files(folder: Path, prefix: str) -> list[tuple[tuple[int, int], list]]:
+    """Monthly training files (US file layout) -> [((y, m), [flight tuples like brazil_month's])]."""
+    import csv
+    import io
+    import zipfile
+    out = []
+    for path in sorted(folder.glob(f"{prefix}_*.zip"), key=lambda p: tuple(int(x) for x in p.stem.split("_")[1:])):
+        y, m = (int(x) for x in path.stem.split("_")[1:])
+        rows = []
+        with zipfile.ZipFile(path) as z:
+            reader = csv.DictReader(io.TextIOWrapper(z.open(z.namelist()[0]), encoding="utf-8"))
+            for r in reader:
+                t = int(r["CRSDepTime"])
+                sched = f"{r['FlightDate']} {t // 100:02d}:{t % 100:02d}:00"
+                delay = None if r["Cancelled"] == "1" else float(r["ArrDelay"] or 0)
+                if r["ArrDel15"] == "1" and delay is not None:
+                    delay = max(delay, 16.0)
+                rows.append((r["Reporting_Airline"], r["Flight_Number_Reporting_Airline"], r["Origin"], r["Dest"],
+                             False, sched, delay))
+        out.append(((y, m), rows))
+    return out
+
+
 def use_history(data: dict) -> None:
     route_history._load = lambda: data
     route_history._airport_average.cache_clear()
@@ -107,26 +133,38 @@ def main():
     ap.add_argument("--months", type=int, default=12)
     ap.add_argument("--test", type=int, default=2)
     ap.add_argument("--sample", type=int, default=40000)
+    ap.add_argument("--files", type=Path, help="training-data folder with <prefix>_YYYY_M.zip files")
+    ap.add_argument("--prefix", default="brazil")
     args = ap.parse_args()
 
-    ref = brs.Ref()
-    periods = brs.month_list(args.months, brs.latest_anac_month())
-    train_periods, test_periods = periods[:-args.test], periods[-args.test:]
     stats, unmatched, test = brs.Stats(), defaultdict(int), []
-    stats.source = "brazil"
-    for y, m in periods:
-        flown, cancelled = brs.brazil_month(ref, y, m, unmatched)
-        if (y, m) in train_periods:
-            brs.add_brazil(stats, flown, cancelled)
-        else:
-            test += [f for f in flown + cancelled if f[0] and f[5]]
-        print(f"  Brazil {y}-{m:02d}: {'train' if (y, m) in train_periods else 'test'}", flush=True)
+    stats.source = args.prefix
+    if args.files:
+        months = load_files(args.files, args.prefix)[-args.months:]
+        periods = [p for p, _ in months]
+        train_periods, test_periods = periods[:-args.test], periods[-args.test:]
+        for (y, m), rows in months:
+            if (y, m) in train_periods:
+                brs.add_brazil(stats, [r for r in rows if r[6] is not None], [r for r in rows if r[6] is None])
+            else:
+                test += [r for r in rows if r[0] and r[5]]
+    else:
+        ref = brs.Ref()
+        periods = brs.month_list(args.months, brs.latest_anac_month())
+        train_periods, test_periods = periods[:-args.test], periods[-args.test:]
+        for y, m in periods:
+            flown, cancelled = brs.brazil_month(ref, y, m, unmatched)
+            if (y, m) in train_periods:
+                brs.add_brazil(stats, flown, cancelled)
+            else:
+                test += [f for f in flown + cancelled if f[0] and f[5]]
+            print(f"  Brazil {y}-{m:02d}: {'train' if (y, m) in train_periods else 'test'}", flush=True)
 
     random.seed(42)
     test = random.sample(test, min(args.sample, len(test)))
     y = np.array([1 if f[6] is None or f[6] > 15 else 0 for f in test])
     fmt = lambda p: f"{p[0][0]}-{p[0][1]:02d} to {p[-1][0]}-{p[-1][1]:02d}"
-    history = {"sources": {"brazil": {"name": "ANAC Brazil, Voo Regular Ativo (VRA)", "period": fmt(train_periods)}},
+    history = {"sources": {args.prefix: {"name": f"{args.prefix} official flight records", "period": fmt(train_periods)}},
                **stats.export(), "airline_sources": {a: sorted(s) for a, s in stats.airline_sources.items()}}
 
     use_history(history)
@@ -139,8 +177,9 @@ def main():
     half = rng.random(len(y)) < 0.5
     a, b = fit_calibration(y[half], p_new[half])
     p_cal = 1 / (1 + np.exp(-(a + b * logit(p_new))))
-    CALIBRATION.write_text(json.dumps({"a": round(a, 4), "b": round(b, 4), "fitted_on": "Brazil " + fmt(test_periods),
-                                       "flights": int(half.sum())}, indent=1))
+    if not args.files:  # the live calibration is fitted on Brazil only
+        CALIBRATION.write_text(json.dumps({"a": round(a, 4), "b": round(b, 4), "fitted_on": "Brazil " + fmt(test_periods),
+                                           "flights": int(half.sum())}, indent=1))
 
     by_level = {}
     for level in sorted(set(methods)):
@@ -149,7 +188,8 @@ def main():
             by_level[level] = {"flights": int(idx.sum()), "actual_late": round(float(y[idx].mean()), 3),
                                **scores(y[idx], p_new[idx])}
     report = {
-        "country": "Brazil", "source": "ANAC VRA, every flight", "history_months": fmt(train_periods),
+        "country": args.prefix.capitalize(), "source": "official flight records, every flight",
+        "history_months": fmt(train_periods),
         "test_months": fmt(test_periods), "test_flights": int(len(y)), "actual_late_share": round(float(y.mean()), 3),
         "with_route_history": scores(y, p_new), "before_route_history": scores(y, p_old),
         "overall_average_guess": scores(y, p_avg), "by_data_level": by_level,
@@ -161,7 +201,8 @@ def main():
         "distinct_predictions_before": int(len(np.unique(np.round(p_old, 3)))),
         "distinct_predictions_with": int(len(np.unique(np.round(p_new, 3)))),
     }
-    OUT.write_text(json.dumps(report, indent=1))
+    (OUT if not args.files else OUT.with_name(f"route_history_backtest_{args.prefix}.json")).write_text(
+        json.dumps(report, indent=1))
     print(json.dumps(report, indent=1))
 
 
