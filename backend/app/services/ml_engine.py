@@ -11,9 +11,9 @@ routes the model has no flight history and gives a general estimate, which
 the response says plainly.
 """
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
-from . import delay_model
+from . import airports, delay_model, live_status
 
 META_PATH = delay_model.META_FILE
 
@@ -48,7 +48,8 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
     flight_no = str(int(flight_no)) if flight_no.isdigit() else flight_no
 
     r = delay_model.predict(carrier, flight_no, dep_ap, arr_ap, dt)
-    p_on, p_delay, p_cancel = r["proba"]
+    live_proba, live_notes, live_delay = live_status.apply(r["proba"], dep_ap, arr_ap, _to_utc(dt, dep_ap))
+    p_on, p_delay, p_cancel = live_proba
     hist, prior = r["history"], r["prior"]
     disrupted = p_delay + p_cancel
 
@@ -63,6 +64,8 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
 
     rh = r.get("route_history")
     expected = rh["typical_delay"] if rh and rh.get("typical_delay") else _expected_delay(hist, prior)
+    if live_delay:
+        expected = max(expected, live_delay)
     severity = "Minor" if expected < 30 else "Moderate" if expected < 60 else "Severe"
 
     return {
@@ -80,15 +83,36 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
         "risk_color": risk_color,
         "expected_delay_minutes": expected,
         "delay_severity": severity,
-        "data_basis": _data_basis(hist, r["meta"], r.get("weather_used", False),
-                                  r.get("method"), r.get("airport_shares", []),
-                                  rh, carrier, number, dep_ap, arr_ap, r.get("airline_record")),
+        "data_basis": _with_live(_data_basis(hist, r["meta"], r.get("weather_used", False),
+                                             r.get("method"), r.get("airport_shares", []),
+                                             rh, carrier, number, dep_ap, arr_ap, r.get("airline_record")),
+                                 live_notes),
         "factors": _combine_factors(
-            _weather_factors(r.get("weather"), dep_ap, arr_ap),
+            [{"icon": "🚦", "label": "FAA live status", "value": n, "level": "high"} for n in live_notes]
+            + _weather_factors(r.get("weather"), dep_ap, arr_ap),
             _route_history_factors(rh or r.get("airline_record"), carrier, number, dep_ap, arr_ap)
             + _airport_factors(r.get("airport_shares", [])),
             _explain_factors(hist, prior, carrier, number, dep_ap, arr_ap, dt)),
     }
+
+
+def _to_utc(dep_local: datetime, airport: str):
+    """Departure time in UTC, from the airport's time zone; None if the zone is unknown."""
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+    tz = airports.lookup(airport).get("tz")
+    if not tz:
+        return None
+    try:
+        return dep_local.replace(tzinfo=ZoneInfo(tz)).astimezone(timezone.utc)
+    except ZoneInfoNotFoundError:
+        return None
+
+
+def _with_live(basis: dict, notes: list) -> dict:
+    if notes:
+        basis["note"] += " Includes live FAA airport status: " + "; ".join(notes) + "."
+        basis["live_status"] = notes
+    return basis
 
 
 def _expected_delay(hist: dict, prior: dict) -> int:
