@@ -6,6 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+CONTACT_EMAIL = "predictaero@gmail.com"  # public contact address; CONTACT_EMAIL in the environment overrides it
 
 def create_app():
     load_dotenv()  # reads a local .env file if present (Render uses its own env vars)
@@ -34,7 +35,7 @@ def create_app():
     def site_config():
         # Contact details are set in the host's environment (CONTACT_EMAIL, CONTACT_WHATSAPP), never in the code
         whatsapp = "".join(c for c in os.environ.get("CONTACT_WHATSAPP", "") if c.isdigit() or c == "+")
-        return jsonify({"contact_email": os.environ.get("CONTACT_EMAIL", "").strip() or None,
+        return jsonify({"contact_email": os.environ.get("CONTACT_EMAIL", "").strip() or CONTACT_EMAIL,
                         "contact_whatsapp": whatsapp if len(whatsapp.lstrip("+")) >= 8 else None,
                         # For checking the host's setup: setting names only, never their values
                         "contact_settings_found": sorted(k for k in os.environ if "CONTACT" in k.upper()),

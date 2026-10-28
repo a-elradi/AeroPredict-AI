@@ -33,7 +33,7 @@ def test_contact_details_come_from_environment(client, monkeypatch):
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)
     monkeypatch.delenv("CONTACT_WHATSAPP", raising=False)
     cfg = client.get("/api/site-config").get_json()
-    assert cfg["contact_email"] is None and cfg["contact_whatsapp"] is None
+    assert cfg["contact_email"] == "predictaero@gmail.com" and cfg["contact_whatsapp"] is None
     monkeypatch.setenv("CONTACT_EMAIL", "hello@example.com")
     monkeypatch.setenv("CONTACT_WHATSAPP", "+90 555 123 45 67")
     cfg = client.get("/api/site-config").get_json()
