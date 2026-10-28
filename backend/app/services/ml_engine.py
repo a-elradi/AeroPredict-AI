@@ -96,6 +96,16 @@ def predict(flight_number: str, dep_airport: str, arr_airport: str,
     }
 
 
+def _record_source(dep: str, arr: str) -> str:
+    """Whose flight records the model's history for this route comes from."""
+    countries = {airports.lookup(dep)["country"], airports.lookup(arr)["country"]}
+    if "BR" in countries:
+        return "Brazil's official flight records, ANAC"
+    if "KR" in countries:
+        return "Korea's official flight records, Airportal"
+    return "US flight records, BTS"
+
+
 def _to_utc(dep_local: datetime, airport: str):
     """Departure time in UTC, from the airport's time zone; None if the zone is unknown."""
     from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -248,9 +258,11 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
                                      f"{airline_rec['source']['name']})." if airline_rec else
                                      "Airline-specific performance isn't included."))
     elif flight and flight[0] >= MIN_HISTORY:
-        level, note = "high", f"Based on this flight's {flight[0]} departures from {period}, plus route, airline and airport history."
+        level, note = "high", (f"Based on this flight's {flight[0]} departures ({_record_source(dep, arr)}, {period}), "
+                               f"plus route, airline and airport history.")
     elif route and route[0] >= MIN_HISTORY:
-        level, note = "medium", f"Based on {route[0]:,} flights on this route from {period}. This flight number has little history."
+        level, note = "medium", (f"Based on {route[0]:,} flights on this route ({_record_source(dep, arr)}, {period}). "
+                                 f"This flight number has little history.")
     elif hist.get("carrier") or hist.get("origin") or hist.get("dest"):
         level, note = "low", "Little history for this route. Based mainly on airline and airport records."
     else:

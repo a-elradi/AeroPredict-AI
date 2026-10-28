@@ -26,6 +26,7 @@ META_FILE = MODEL_DIR / "model_meta.json"
 # Correction for route-history predictions, fitted on held-out flights (scripts/backtest_route_history.py)
 CALIBRATION_FILE = MODEL_DIR / "route_history_calibration.json"
 
+US_COUNTRIES = {"US", "PR", "VI", "GU", "AS", "MP"}  # covered by the US BTS records
 STAT_KEYS = ["flight", "route_carrier", "route", "origin_hour", "dest_hour", "carrier", "origin", "dest"]
 SMOOTHING = 50  # flights of "average" history blended into every rate
 FEATURES = (["month", "day_of_week", "dep_hour", "arr_hour", "distance", "day_of_month", "holiday_days"]
@@ -157,7 +158,9 @@ def _airport_late_shares(tables: dict, origin: str, dest: str, carrier: str = ""
     for side, airport, table, field, weight in (("origin", origin, "origin", "dep_on_time_pct", 0.4),
                                                 ("dest", dest, "dest", "arr_on_time_pct", 0.6)):
         e = tables[table].get(airport)
-        if e and e[0] >= 1000:
+        # The model's tables also hold other countries' flights (e.g. Rome's flights to Brazil), which
+        # say little about the airport as a whole, so only US airports' totals count here
+        if e and e[0] >= 1000 and airports.lookup(airport)["country"] in US_COUNTRIES:
             shares.append({"side": side, "airport": airport, "late": (e[1] + e[2]) / e[0], "weight": weight,
                            "source": "US flight records", "on_time_pct": round((e[0] - e[1] - e[2]) / e[0] * 100, 1)})
             continue
@@ -181,8 +184,30 @@ def _airport_late_shares(tables: dict, origin: str, dest: str, carrier: str = ""
     return shares
 
 
+def _generic_baseline(m: dict) -> float:
+    """The model's average chance of disruption for a flight with no history, over a spread of
+    months, weekdays and departure hours (worked out once per loaded model)."""
+    if "generic_baseline" not in m:
+        import xgboost as xgb
+        names = m["booster"].feature_names or FEATURES
+        rows = []
+        for month in range(1, 13):
+            for day in (3, 10, 17, 24):
+                for hour in (6, 9, 12, 15, 18, 21):
+                    row = build_features({name: {} for name in STAT_KEYS}, m["prior"], carrier="", flight_no="",
+                                         origin="", dest="", flight_date=date(2026, month, day), dep_hour=hour,
+                                         arr_hour=(hour + 2) % 24, distance=700.0)
+                    rows.append([row[f] for f in names])
+        p = m["booster"].predict(xgb.DMatrix(np.array(rows, dtype=np.float32), feature_names=names))
+        m["generic_baseline"] = float((p[:, 1] + p[:, 2]).mean())
+    return m["generic_baseline"]
+
+
 def _us_airline_record(tables: dict, prior: dict, carrier: str) -> dict | None:
     """A US airline's record on its US flights, for its routes we have no other data on."""
+    from .ml_engine import US_CARRIER_NAMES
+    if carrier not in US_CARRIER_NAMES:
+        return None
     e = tables["carrier"].get(carrier)
     if not e or e[0] < 1000:
         return None
@@ -251,10 +276,14 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
         elif airline_rec:
             base, cancel_share = airline_rec["disrupted_share"], airline_rec["cancel_share_of_disrupted"]
             route_hist, method = airline_rec, "route_history"
+        elif not any(tables[name].get(key) for name, key in
+                     stat_keys(carrier, flight_no, origin, dest, dep_hour, arr_hour).items()):
+            base = prior["delay"] + prior["cancel"]  # nothing known: the average flight, at this day and time
         if base is not None:
             generic = run({name: {} for name in STAT_KEYS})
-            avg = prior["delay"] + prior["cancel"]
-            context = _odds(generic[1] + generic[2]) / _odds(avg)
+            # Only the effect of this day and time: measured against the model's own average answer for
+            # a flight with no history, since its absolute level for such flights is arbitrary
+            context = _odds(generic[1] + generic[2]) / _odds(_generic_baseline(m))
             odds = _odds(base) * context
             cal = m.get("calibration")
             if cal and method == "route_history":  # predictions ran high on held-out flights

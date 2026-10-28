@@ -1,7 +1,7 @@
 name: Retrain delay model
 
-# Every three months: download the latest two years of US flight records and
-# airport weather, retrain the delay model, and publish it only if it passes
+# Every three months: download the latest two years of US and Brazil flight
+# records and airport weather, retrain the delay model, and publish it only if it passes
 # the quality check and the test suite. Otherwise the live model is kept and
 # this run fails, so GitHub emails the repository owner.
 on:
@@ -30,7 +30,7 @@ jobs:
 
       - name: Download flights and weather
         working-directory: backend
-        run: python scripts/download_training_data.py "$RUNNER_TEMP/data" --months 24
+        run: python scripts/download_training_data.py "$RUNNER_TEMP/data" --months 24 --brazil-months 24 --korea-months 0
 
       - name: Train
         working-directory: backend

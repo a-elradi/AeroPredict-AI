@@ -228,7 +228,7 @@ async function loadAnalytics() {
     if (report && stats.test_flights) {
       const months = stats.data_months || [];
       report.textContent =
-        `Real US flights from ${months[0]} to ${months[months.length - 1]} (US Bureau of Transportation Statistics). ` +
+        `Real flights from ${months[0]} to ${months[months.length - 1]} (${stats.data_source || "US Bureau of Transportation Statistics"}). ` +
         `We tested the model on ${stats.test_flights.toLocaleString()} flights from ${stats.test_months.join(" and ")} ` +
         `that it never saw during training: it ranks risky flights above safe ones ${Math.round(stats.model_auc * 100)}% of the time ` +
         `(50% would be guessing)` +
