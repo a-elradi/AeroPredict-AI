@@ -61,6 +61,7 @@ JAPAN_UTC_OFFSET = timedelta(hours=9)
 SCHIPHOL_TOKEN = "https://api.auth.schiphol.nl/oauth/token"
 SCHIPHOL_AUDIENCE = "https://api.schiphol.nl/public"
 SCHIPHOL_FLIGHTS = "https://api.schiphol.nl/public/public-flights/v4/flights"
+SCHIPHOL_TAXI_IN = 10  # minutes; v4 gives landing, not on-block, times for arrivals (check against EUROCONTROL)
 SWEDAVIA_FLIGHTS = "https://api.swedavia.se/flightinfo/v2/{airport}/{direction}/{day}"
 SWEDAVIA_AIRPORTS = ["ARN", "GOT", "BMA", "MMX", "LLA", "UME", "OSD", "VBY", "KRN", "RNB"]
 
@@ -311,9 +312,10 @@ def collect_schiphol(day: date) -> dict:
                 sched = _utc(f.get("scheduleDateTime"))
                 if direction == "D":
                     actual = _utc(f.get("actualOffBlockTime"))
-                else:  # at the gate if given, else landing plus typical taxi-in
+                else:  # at the gate if given, else landing plus Schiphol's typical taxi-in (long runways)
                     actual = _utc(f.get("actualOnBlockTime")) or (
-                        _utc(f.get("actualLandingTime")) + timedelta(minutes=5) if f.get("actualLandingTime") else None)
+                        _utc(f.get("actualLandingTime")) + timedelta(minutes=SCHIPHOL_TAXI_IN)
+                        if f.get("actualLandingTime") else None)
                 if sched and actual:
                     out[key] = [day.isoformat(), airline, number, origin, dest,
                                 round((actual - sched).total_seconds() / 60), 0]
