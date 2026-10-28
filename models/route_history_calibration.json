@@ -2,5 +2,12 @@
  "a": -0.4052,
  "b": 0.7991,
  "fitted_on": "Brazil 2026-07 to 2026-08",
- "flights": 14987
+ "flights": 14987,
+ "by_country": {
+  "KR": {
+   "a": -0.274,
+   "b": 0.7062,
+   "fitted_on": "Korea 2026-07 to 2026-08"
+  }
+ }
 }

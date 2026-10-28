@@ -286,6 +286,9 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
             context = _odds(generic[1] + generic[2]) / _odds(_generic_baseline(m))
             odds = _odds(base) * context
             cal = m.get("calibration")
+            if cal:  # a country's own fit where there is one (Korea), else the default (fitted on Brazil)
+                countries = {airports.lookup(origin)["country"], airports.lookup(dest)["country"]}
+                cal = next((v for k, v in (cal.get("by_country") or {}).items() if k in countries), cal)
             if cal and method == "route_history":  # predictions ran high on held-out flights
                 odds = math.exp(cal["a"]) * odds ** cal["b"]
             disrupted = odds / (1 + odds)
