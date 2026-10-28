@@ -68,6 +68,12 @@ loadCoverage();
   });
 });
 
+/* ── Swap From and To ── */
+document.getElementById("swapAirports").addEventListener("click", () => {
+  const dep = document.getElementById("depAirport"), arr = document.getElementById("arrAirport");
+  [dep.value, arr.value] = [arr.value, dep.value];
+});
+
 /* ── Default date/time ── */
 (function setDefaults() {
   const tomorrow = new Date();
