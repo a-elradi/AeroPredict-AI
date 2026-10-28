@@ -5,8 +5,13 @@ Download the data the delay model is trained on:
 - Brazil: every flight from ANAC's VRA files over the same months, written in the
   same format as the US files (flights/brazil_YYYY_M.zip), plus weather for
   Brazil's busier airports (--brazil-months 0 to skip)
+- South Korea: every passenger flight at Korea's 15 airports from Airportal
+  (flights/korea_YYYY_M.zip). Its records hold one side of each flight (the
+  Korean airport's take-off or landing time), so the other side's scheduled time
+  is estimated from the distance, and "late" is the airport's own delay flag
+  (--korea-months 0 to skip; slow, about 7 minutes a month)
 
-    python scripts/download_training_data.py OUT_DIR [--months 24] [--brazil-months 24]
+    python scripts/download_training_data.py OUT_DIR [--months 24] [--brazil-months 24] [--korea-months 12]
 
 Creates OUT_DIR/flights/*.zip and OUT_DIR/weather/<IATA>.csv.
 Used by .github/workflows/retrain-model.yml.
@@ -20,7 +25,7 @@ import sys
 import time
 import zipfile
 from collections import Counter, defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import requests
@@ -91,6 +96,96 @@ def brazil_month(ref, y: int, m: int) -> list[list]:
     for key, items in cancelled.items():
         rows += items[:operated[key]]
     return rows
+
+
+def _local(t_utc: datetime, iata: str) -> datetime | None:
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+    tz = (WORLD.get(iata) or [None] * 6)[5]
+    try:
+        return t_utc.astimezone(ZoneInfo(tz)) if tz else None
+    except ZoneInfoNotFoundError:
+        return None
+
+
+def korea_rows(raw: list, names: dict) -> list[list]:
+    """Airportal rows -> BTS-layout rows. Domestic flights are taken from the departure side only."""
+    from zoneinfo import ZoneInfo
+    import build_route_stats as brs
+    seoul = ZoneInfo("Asia/Seoul")
+    kr = {a for a, v in WORLD.items() if v[2] == "KR"}
+    out = []
+    for context, here, other_name, flight, day, sched, actual, status in raw:
+        other = names.get(other_name)
+        fm = brs.re.fullmatch(r"([A-Z0-9]{2})(\d{1,4})[A-Z]?", flight.strip())
+        s = brs._minutes(sched)
+        if not other or not fm or s is None or not brs.re.fullmatch(r"\d{8}", day):
+            continue
+        if context == "arrival" and other in kr:
+            continue
+        dist = miles(here, other)
+        if dist is None:
+            continue
+        flight_min = dist / 7.5 + 30  # rough gate-to-gate time: ~450 mph plus taxiing
+        local = datetime(int(day[:4]), int(day[4:6]), int(day[6:]), s // 60, s % 60, tzinfo=seoul)
+        if context == "departure":
+            origin, dest, dep = here, other, local
+            arr = _local(dep + timedelta(minutes=flight_min), other)
+        else:
+            origin, dest, arr = other, here, local
+            dep = _local(arr - timedelta(minutes=flight_min), other)
+        if dep is None or arr is None:
+            continue
+        base = [dep.year, dep.month, dep.day, dep.isoweekday(), dep.strftime("%Y-%m-%d"), fm.group(1),
+                int(fm.group(2)), origin, dest, dep.hour * 100 + dep.minute, arr.hour * 100 + arr.minute]
+        if status == brs.KR_STATUS_CANCELLED:
+            out.append(base + ["", 0, 1, 0, dist])
+            continue
+        a = brs._minutes(actual)
+        if a is None:
+            continue
+        delay = (a - s + 720) % 1440 - 720 - (brs.KR_TAXI_MINUTES if context == "departure" else 0)
+        late = status in brs.KR_STATUS_LATE
+        out.append(base + [max(delay, 15) if late else min(delay, 14), int(late), 0, 0, dist])
+    return out
+
+
+def download_korea(flights: Path, months: list[tuple[int, int]]) -> Counter:
+    """Writes flights/korea_YYYY_M.zip (by the month of each flight's departure); returns flights per airport."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import build_route_stats as brs
+    wanted = {(y, m) for y, m in months}
+    todo = [p for p in sorted(wanted) if not (flights / f"korea_{p[0]}_{p[1]}.zip").exists()]
+    if todo:
+        ref = brs.Ref()
+        names, raw = {}, []
+        for y, m in todo:
+            raw += brs.korea_month(ref, y, m, names)
+        by_month = defaultdict(list)
+        for row in korea_rows(raw, names):  # names are complete once every month has been read
+            if (row[0], row[1]) in wanted:
+                by_month[(row[0], row[1])].append(row)
+        for (y, m), rows in by_month.items():
+            buf = io.StringIO()
+            w = csv.writer(buf)
+            w.writerow(BTS_COLUMNS)
+            w.writerows(rows)
+            with zipfile.ZipFile(flights / f"korea_{y}_{m}.zip", "w", zipfile.ZIP_DEFLATED) as z:
+                z.writestr(f"korea_{y}_{m}.csv", buf.getvalue())
+    counts = Counter()
+    for y, m in sorted(wanted):
+        path = flights / f"korea_{y}_{m}.zip"
+        if not path.exists():
+            continue
+        with zipfile.ZipFile(path) as z:
+            reader = csv.reader(io.TextIOWrapper(z.open(z.namelist()[0]), encoding="utf-8"))
+            next(reader)
+            n = 0
+            for row in reader:
+                counts[row[7]] += 1
+                counts[row[8]] += 1
+                n += 1
+        print(f"  {path.name}: {n:,} flights", flush=True)
+    return counts
 
 
 def download_brazil(flights: Path, months: list[tuple[int, int]]) -> Counter:
@@ -165,6 +260,7 @@ def main():
     ap.add_argument("out", type=Path)
     ap.add_argument("--months", type=int, default=24)
     ap.add_argument("--brazil-months", type=int, default=24)
+    ap.add_argument("--korea-months", type=int, default=12)
     args = ap.parse_args()
 
     flights, weather = args.out / "flights", args.out / "weather"
@@ -187,6 +283,12 @@ def main():
         # Elsewhere the archive uses ICAO codes (SBGR); files are still saved under the IATA code
         stations.update({iata: WORLD[iata][0] for iata, n in counts.items()
                          if n >= BRAZIL_WEATHER_MIN_FLIGHTS and iata in WORLD and iata not in stations})
+    if args.korea_months:
+        print("Korea flights...", flush=True)
+        counts = download_korea(flights, months[:args.korea_months])
+        stations.update({iata: WORLD[iata][0] for iata, n in counts.items()
+                         if n >= BRAZIL_WEATHER_MIN_FLIGHTS * args.korea_months // 24 and iata in WORLD
+                         and iata not in stations})
 
     first_y, first_m = months[-1]
     end = date(last_y + (last_m == 12), last_m % 12 + 1, 1)  # first day after the last month

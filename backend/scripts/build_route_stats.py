@@ -511,6 +511,44 @@ def _minutes(hhmm: str) -> int | None:
     return int(m.group(1)) * 60 + int(m.group(2)) if m else None
 
 
+def korea_month(ref: Ref, y: int, m: int, names: dict) -> list[tuple]:
+    """
+    One month of passenger flights at Korea's 15 airports, as
+    (direction, airport, other airport's Korean name, flight, YYYYMMDD, scheduled, actual, status).
+    Also adds Korean name -> IATA pairs from the daily feed to `names`.
+    """
+    import pandas as pd
+    last = (date(y + m // 12, m % 12 + 1, 1) - date(y, m, 1)).days
+    rows, failures = [], 0
+    for icao in KR_AIRPORTS:
+        here = ref.icao_to_iata.get(icao)
+        for context, key in (("departure", "depAirport"), ("arrival", "arrAirport")):
+            try:
+                feed = airportal("/airport/getFlightArrivalDepartureInfo.do",
+                                 {"searchContext": context, "ymd": f"{y}{m:02d}15", "loadType": "", key: icao})
+                for f in feed.json().get("content") or []:
+                    if f.get("apKr") and f.get("apIata"):
+                        names[f["apKr"]] = f["apIata"]
+                raw = airportal("/airport/exportDepArr.do",
+                                {"searchContext": context, "ymd1": f"{y}{m:02d}01", "ymd2": f"{y}{m:02d}{last}",
+                                 "loadType": "", key: icao}).content
+            except requests.RequestException as e:  # skip this airport-month rather than all of Korea
+                print(f"  Korea {icao} {context} {y}-{m:02d} skipped: {e}", flush=True)
+                failures += 1
+                if failures > 20:
+                    raise
+                continue
+            if not raw.startswith(b"PK"):
+                continue  # no flights (small airports) or an error page
+            df = pd.read_excel(io.BytesIO(raw), dtype=str)
+            for r in df.itertuples(index=False):
+                _, _, _, flight, other, day, sched, _, actual, kind, status = r[:11]
+                if kind == "여객" and isinstance(flight, str):
+                    rows.append((context, here, other, flight, str(day), sched, actual, status))
+    print(f"  Korea {y}-{m:02d}: {len(rows):,} rows", flush=True)
+    return rows
+
+
 def build_korea(ref: Ref, stats: Stats, months: int) -> dict:
     """
     Every passenger flight at Korea's 15 airports. Departures use the departure delay; arrivals
@@ -524,7 +562,6 @@ def build_korea(ref: Ref, stats: Stats, months: int) -> dict:
     kr_iata = {ref.icao_to_iata[i] for i in KR_AIRPORTS if i in ref.icao_to_iata}
     names = {}  # Korean airport name -> IATA, learned from the daily feed (it carries both)
     pending = []  # rows whose airport name hasn't been seen in the feed yet
-    failures = 0
     unmatched = defaultdict(int)
     flights_total = 0
 
@@ -554,36 +591,11 @@ def build_korea(ref: Ref, stats: Stats, months: int) -> dict:
             stats.add("airline_country", f"{airline}|KR", 1, int(late), 0, delay if late else 0)
         flights_total += 1
     for y, m in periods:
-        last = (date(y + m // 12, m % 12 + 1, 1) - date(y, m, 1)).days
-        for icao in KR_AIRPORTS:
-            here = ref.icao_to_iata.get(icao)
-            for context, key in (("departure", "depAirport"), ("arrival", "arrAirport")):
-                try:
-                    feed = airportal("/airport/getFlightArrivalDepartureInfo.do",
-                                     {"searchContext": context, "ymd": f"{y}{m:02d}15", "loadType": "", key: icao})
-                    for f in feed.json().get("content") or []:
-                        if f.get("apKr") and f.get("apIata"):
-                            names[f["apKr"]] = f["apIata"]
-                    raw = airportal("/airport/exportDepArr.do",
-                                    {"searchContext": context, "ymd1": f"{y}{m:02d}01", "ymd2": f"{y}{m:02d}{last}",
-                                     "loadType": "", key: icao}).content
-                except requests.RequestException as e:  # skip this airport-month rather than all of Korea
-                    print(f"  Korea {icao} {context} {y}-{m:02d} skipped: {e}", flush=True)
-                    failures += 1
-                    if failures > 30:
-                        raise
-                    continue
-                if not raw.startswith(b"PK"):
-                    continue  # no flights (small airports) or an error page
-                df = pd.read_excel(io.BytesIO(raw), dtype=str)
-                for r in df.itertuples(index=False):
-                    _, _, _, flight, other, _, sched, _, actual, kind, status = r[:11]
-                    if kind != "여객" or not isinstance(flight, str):
-                        continue
-                    if other in names:
-                        record(context, here, names[other], flight, sched, actual, status)
-                    else:
-                        pending.append((context, here, other, flight, sched, actual, status))
+        for context, here, other, flight, _, sched, actual, status in korea_month(ref, y, m, names):
+            if other in names:
+                record(context, here, names[other], flight, sched, actual, status)
+            else:
+                pending.append((context, here, other, flight, sched, actual, status))
         print(f"  Korea {y}-{m:02d}: done ({flights_total:,} flights so far)", flush=True)
     for context, here, other, *rest in pending:
         if other in names:
