@@ -35,7 +35,11 @@ def create_app():
         # Contact details are set in the host's environment (CONTACT_EMAIL, CONTACT_WHATSAPP), never in the code
         whatsapp = "".join(c for c in os.environ.get("CONTACT_WHATSAPP", "") if c.isdigit() or c == "+")
         return jsonify({"contact_email": os.environ.get("CONTACT_EMAIL", "").strip() or None,
-                        "contact_whatsapp": whatsapp if len(whatsapp.lstrip("+")) >= 8 else None})
+                        "contact_whatsapp": whatsapp if len(whatsapp.lstrip("+")) >= 8 else None,
+                        # For checking the host's setup: setting names only, never their values
+                        "contact_settings_found": sorted(k for k in os.environ if "CONTACT" in k.upper()),
+                        "service": os.environ.get("RENDER_SERVICE_NAME"),
+                        "version": (os.environ.get("RENDER_GIT_COMMIT") or "")[:7] or None})
 
     @app.route("/<path:path>")
     def static_files(path):
