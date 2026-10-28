@@ -74,7 +74,7 @@ def brazil_month(ref, y: int, m: int) -> list[list]:
         except ValueError:
             continue
         dist = miles(origin, dest)
-        if dist is None:
+        if dist is None or (dep.year, dep.month) != (y, m):  # files also hold a few flights of the next month
             continue
         base = [dep.year, dep.month, dep.day, dep.isoweekday(), dep.strftime("%Y-%m-%d"), airline, int(number),
                 origin, dest, dep.hour * 100 + dep.minute, arr.hour * 100 + arr.minute]

@@ -381,6 +381,13 @@ def main():
     del weather
     print(f"{len(df):,} flights; weather found for {np.isfinite(df['o_vis']).mean():.0%} of departures", flush=True)
 
+    # Months with only a sliver of flights (e.g. the first hours of the next month in another
+    # country's file) would distort which months are held out for testing
+    counts = df["period"].value_counts()
+    stray = counts[counts < counts.median() * 0.05].index
+    if len(stray):
+        print(f"Dropping {int(counts[stray].sum()):,} flights in near-empty months {[ym(p) for p in stray]}", flush=True)
+        df = df[~df["period"].isin(stray)].reset_index(drop=True)
     periods = sorted(df["period"].unique())
     test_p, val_p = periods[-2:], periods[-3]
     is_train = (df["period"] < val_p).to_numpy()
