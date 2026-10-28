@@ -1,0 +1,159 @@
+{
+ "country": "Korea",
+ "source": "official flight records, every flight",
+ "history_months": "2025-09 to 2026-06",
+ "test_months": "2026-07 to 2026-08",
+ "test_flights": 30000,
+ "actual_late_share": 0.205,
+ "with_route_history": {
+  "auc": 0.707,
+  "brier": 0.1473,
+  "log_loss": 0.4677
+ },
+ "before_route_history": {
+  "auc": 0.526,
+  "brier": 0.1834,
+  "log_loss": 0.5535
+ },
+ "overall_average_guess": {
+  "auc": 0.5,
+  "brier": 0.1629,
+  "log_loss": 0.5071
+ },
+ "by_data_level": {
+  "flight": {
+   "flights": 29055,
+   "actual_late": 0.206,
+   "auc": 0.712,
+   "brier": 0.147,
+   "log_loss": 0.4666
+  },
+  "route_airline": {
+   "flights": 492,
+   "actual_late": 0.171,
+   "auc": 0.596,
+   "brier": 0.141,
+   "log_loss": 0.4654
+  }
+ },
+ "calibration": [
+  {
+   "predicted": 0.021,
+   "actual": 0.059,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.052,
+   "actual": 0.08,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.08,
+   "actual": 0.11,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.108,
+   "actual": 0.138,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.136,
+   "actual": 0.158,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.167,
+   "actual": 0.195,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.209,
+   "actual": 0.231,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.264,
+   "actual": 0.273,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.342,
+   "actual": 0.319,
+   "flights": 3000
+  },
+  {
+   "predicted": 0.517,
+   "actual": 0.487,
+   "flights": 3000
+  }
+ ],
+ "recalibration": {
+  "a": -0.274,
+  "b": 0.7062,
+  "held_out_half_before": {
+   "auc": 0.71,
+   "brier": 0.148,
+   "log_loss": 0.4675
+  },
+  "held_out_half_after": {
+   "auc": 0.71,
+   "brier": 0.1476,
+   "log_loss": 0.4628
+  },
+  "calibration_after": [
+   {
+    "predicted": 0.046,
+    "actual": 0.055,
+    "flights": 1502
+   },
+   {
+    "predicted": 0.09,
+    "actual": 0.076,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.12,
+    "actual": 0.111,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.146,
+    "actual": 0.139,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.171,
+    "actual": 0.159,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.198,
+    "actual": 0.21,
+    "flights": 1502
+   },
+   {
+    "predicted": 0.23,
+    "actual": 0.227,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.269,
+    "actual": 0.289,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.324,
+    "actual": 0.313,
+    "flights": 1501
+   },
+   {
+    "predicted": 0.449,
+    "actual": 0.493,
+    "flights": 1502
+   }
+  ]
+ },
+ "distinct_predictions_before": 444,
+ "distinct_predictions_with": 844
+}

@@ -30,6 +30,8 @@ jobs:
 
       - name: Download flights and weather
         working-directory: backend
+        # Korea is left out: its one-sided records made the model slightly worse for Korean flights
+        # (AUC 0.699) than the route-history method (0.707) on the same months, Oct 2026
         run: python scripts/download_training_data.py "$RUNNER_TEMP/data" --months 24 --brazil-months 24 --korea-months 0
 
       - name: Train
