@@ -27,7 +27,7 @@ def _carriers() -> list[dict]:
         "otp": round((v[0] - v[1] - v[2]) / v[0] * 100, 1),
         "delay": round(v[1] / v[0] * 100, 1),
         "cancel": round(v[2] / v[0] * 100, 2),
-    } for code, v in _rows("carrier")]
+    } for code, v in _rows("carrier") if code in US_CARRIER_NAMES]  # the chart covers US airlines (BTS)
     return sorted(data, key=lambda x: x["otp"], reverse=True)
 
 
@@ -37,8 +37,8 @@ def _airports() -> list[dict]:
         "airport": code,
         "flights": v[0],
         "delay_pct": round((v[1] + v[2]) / v[0] * 100, 1),
-    } for code, v in _rows("origin")]
-    # The busiest airports, ordered by how often their departures are disrupted
+    } for code, v in _rows("origin") if airport_data.lookup(code)["country"] in ("US", None)]
+    # The busiest US airports, ordered by how often their departures are disrupted
     busiest = sorted(data, key=lambda x: x["flights"], reverse=True)[:25]
     return sorted(busiest, key=lambda x: x["delay_pct"], reverse=True)
 

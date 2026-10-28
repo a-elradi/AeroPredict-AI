@@ -17,6 +17,10 @@ hidden on half the training flights because live forecasts only cover the
 next day or so; the test is scored both with and without weather. The final
 model is then retrained on all months and saved to models/.
 
+Besides US files, flights from other countries can be added in the same format
+(files named <country>_YYYY_M.zip, e.g. brazil_2026_7.zip from
+scripts/download_training_data.py); test scores are also reported per country.
+
 Lookup keys (flight, route, airport...) are kept as integers while training
 so ~14M flights fit in memory; they are turned into the text keys used by
 services/delay_model.py only when the history tables are saved.
@@ -53,6 +57,9 @@ PARAMS = {
 WEATHER_HIDDEN_SHARE = 0.5
 TRAIN_ROWS_SHARE = 0.4  # trees learn from 40% of flights; history uses all of them (saves memory)
 EPOCH = np.datetime64("1970-01-01")
+SOURCE_COUNTRY = {"brazil": "BR", "korea": "KR"}  # file name prefix -> country; anything else is US BTS data
+WORLD = json.loads((Path(__file__).resolve().parents[1] / "data" / "airports_world.json").read_text(encoding="utf-8"))
+AIRPORT_COUNTRY: np.ndarray = np.array([], dtype=object)  # country of each airport code, set in main()
 
 
 class Codes:
@@ -75,12 +82,13 @@ def _read_month(path: Path) -> pd.DataFrame:
 
 def load_flights(folders: list[Path], sample: float) -> tuple[pd.DataFrame, Codes]:
     paths = sorted(p for folder in folders for p in folder.glob("*.zip"))
-    raw = []
+    raw, sources = [], []
     for path in paths:
         m = _read_month(path)
         if sample < 1:
             m = m.sample(frac=sample, random_state=0)
         raw.append(m.dropna(subset=["Origin", "Dest", "CRSDepTime", "Reporting_Airline"]))
+        sources.append(SOURCE_COUNTRY.get(path.name.split("_")[0], "US"))
         print(f"  {path.name}: {len(m):,} flights", flush=True)
 
     codes = Codes()
@@ -89,7 +97,7 @@ def load_flights(folders: list[Path], sample: float) -> tuple[pd.DataFrame, Code
     ap, cr = {a: i for i, a in enumerate(codes.airports)}, {c: i for i, c in enumerate(codes.carriers)}
 
     frames = []
-    for m in raw:
+    for m, src in zip(raw, sources):
         dep_hour = (m["CRSDepTime"] // 100).clip(0, 23).astype(np.int8)
         arr_hour = ((m["CRSArrTime"].fillna(m["CRSDepTime"]) // 100) % 24).astype(np.int8)
         label = np.where(m["Cancelled"] == 1, 2, np.where((m["ArrDel15"] == 1) | (m["Diverted"] == 1), 1, 0))
@@ -106,14 +114,17 @@ def load_flights(folders: list[Path], sample: float) -> tuple[pd.DataFrame, Code
             "dep_abs": dep_abs, "arr_abs": arr_abs,  # local hours since 1970, for weather joins
             "o": m["Origin"].map(ap).astype(np.int16).to_numpy(),
             "d": m["Dest"].map(ap).astype(np.int16).to_numpy(),
-            "c": m["Reporting_Airline"].map(cr).astype(np.int8).to_numpy(),
+            "c": m["Reporting_Airline"].map(cr).astype(np.int16).to_numpy(),
             "fno": m["Flight_Number_Reporting_Airline"].astype(np.int32).to_numpy(),
             "Distance": m["Distance"].astype(np.float32).to_numpy(),
             "label": label.astype(np.int8),
             "delay_min": np.where(label == 1, m["ArrDelay"], np.nan).astype(np.float32),
+            "src": src,
         }))
     del raw
-    return pd.concat(frames, ignore_index=True), codes
+    df = pd.concat(frames, ignore_index=True)
+    df["src"] = df["src"].astype("category")
+    return df, codes
 
 
 # ── Weather ──────────────────────────────────────────────────────────────────
@@ -124,7 +135,7 @@ def load_weather(folder: Path, codes: Codes) -> pd.DataFrame:
     frames = []
     for path in sorted(folder.glob("*.csv")):
         station = path.stem
-        tz = AIRPORT_TZ.get(station)
+        tz = AIRPORT_TZ.get(station) or (WORLD.get(station) or [None] * 6)[5]
         if not tz or station not in ap:
             continue
         w = pd.read_csv(path, na_values=["M", "T"], low_memory=False)
@@ -292,14 +303,19 @@ def history_features(df: pd.DataFrame, keys: dict, prior: dict, frames: dict | N
 
 def matrix(df: pd.DataFrame, prior: dict, frames: dict | None, hide_weather: float = 0.0,
            seed: int = 0, source: pd.DataFrame | None = None) -> pd.DataFrame:
-    days = df["day"].to_numpy()
-    uniq = np.unique(days)
-    hol = dict(zip(uniq, (holiday_distance(date.fromordinal(date(1970, 1, 1).toordinal() + int(x))) for x in uniq)))
+    # Holidays of the departure country, worked out once per (day, country)
+    days = df["day"].to_numpy().astype(np.int64)
+    country = AIRPORT_COUNTRY[df["o"].to_numpy()] if len(AIRPORT_COUNTRY) else np.full(len(df), "US", dtype=object)
+    names, cidx = np.unique(country.astype(str), return_inverse=True)
+    pair = days * 1000 + cidx
+    uniq = np.unique(pair)
+    hol = dict(zip(uniq, (holiday_distance(date.fromordinal(date(1970, 1, 1).toordinal() + int(x // 1000)),
+                                           names[int(x % 1000)]) for x in uniq)))
     X = pd.DataFrame({
         "month": df["Month"].to_numpy(np.float32), "day_of_week": df["DayOfWeek"].to_numpy(np.float32),
         "dep_hour": df["dep_hour"].to_numpy(np.float32), "arr_hour": df["arr_hour"].to_numpy(np.float32),
         "distance": df["Distance"].to_numpy(np.float32), "day_of_month": df["DayofMonth"].to_numpy(np.float32),
-        "holiday_days": pd.Series(days).map(hol).to_numpy(np.float32),
+        "holiday_days": pd.Series(pair).map(hol).to_numpy(np.float32),
         **history_features(df, key_columns(df), prior, frames, source),
         **{f: df[f].to_numpy(np.float32) for f in WX_FEATURES},
     })[FEATURES]
@@ -354,6 +370,9 @@ def main():
 
     print("Loading flights...", flush=True)
     df, codes = load_flights(args.flights, args.sample)
+    global AIRPORT_COUNTRY
+    AIRPORT_COUNTRY = np.array([(WORLD.get(a) or [None, None, "US"])[2] or "US" for a in codes.airports], dtype=object)
+    print("Flights by source: " + ", ".join(f"{k} {v:,}" for k, v in df["src"].value_counts().items()), flush=True)
     weather = pd.DataFrame()
     if args.weather:
         print("Loading weather...", flush=True)
@@ -393,6 +412,17 @@ def main():
         "baseline_accuracy_always_on_time": round(float((y == 0).mean()), 4),
         "without_weather": evaluate(booster, X_test.assign(**{f: np.nan for f in WX_FEATURES}), y, class_rates, rounds),
     }
+    # The same test, per data source (US, and each other country added)
+    src = test_df["src"].to_numpy()
+    metrics["by_source"] = {}
+    for s in sorted(set(src)):
+        m = src == s
+        if m.sum() >= 2000:
+            r = evaluate(booster, X_test[m].assign(**{f: np.nan for f in WX_FEATURES}), y[m], class_rates, rounds)
+            metrics["by_source"][str(s)] = {"flights": int(m.sum()), "auc_delay_or_cancel": r["auc_delay_or_cancel"],
+                                            "log_loss": r["log_loss"], "baseline_log_loss": r["baseline_log_loss"],
+                                            "actual_disrupted_pct": r["actual_disrupted_pct"],
+                                            "mean_predicted_disrupted_pct": r["mean_predicted_disrupted_pct"]}
     has_wx = X_test["o_vis"].notna().to_numpy()
     if has_wx.any():
         metrics["with_weather"] = evaluate(booster, X_test[has_wx], y[has_wx], class_rates, rounds)
@@ -419,7 +449,9 @@ def main():
     wo = metrics["without_weather"]
     meta = {
         "trained_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
-        "data_source": "US Bureau of Transportation Statistics, Reporting Carrier On-Time Performance",
+        "data_source": "US Bureau of Transportation Statistics, Reporting Carrier On-Time Performance"
+                       + ("; ANAC Brazil (VRA)" if "BR" in set(df["src"]) else "")
+                       + ("; Airportal Korea" if "KR" in set(df["src"]) else ""),
         "weather_source": "Iowa Environmental Mesonet ASOS archive" if args.weather else None,
         "data_months": [ym(p) for p in periods],
         "n_training": int(len(df)),
@@ -427,7 +459,7 @@ def main():
         "trees": int(rounds),
         "class_rates": {"on_time": round(float(class_rates[0]), 4), "delayed": round(float(class_rates[1]), 4),
                         "cancelled": round(float(class_rates[2]), 4)},
-        "monthly": monthly_summary(df),
+        "monthly": monthly_summary(df[df["src"] == "US"]),  # the Analytics page's US seasonal chart
         # Headline numbers are the cautious ones: predictions made without a weather forecast
         "accuracy": wo["accuracy"], "log_loss": wo["log_loss"], "auc_delay_or_cancel": wo["auc_delay_or_cancel"],
         "calibration": wo["calibration"],

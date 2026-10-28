@@ -54,10 +54,27 @@ def us_holidays(year: int) -> tuple[date, ...]:
     )
 
 
-def holiday_distance(d: date) -> int:
-    """Days to the nearest major holiday, capped at 15."""
-    days = [abs((h - d).days) for y in (d.year - 1, d.year, d.year + 1) for h in us_holidays(y)]
-    return min(min(days), 15)
+@lru_cache(maxsize=1024)
+def public_holidays(country: str, year: int) -> tuple[date, ...]:
+    """The country's holidays (US: the ones that move travellers; elsewhere: public and optional ones,
+    so Brazil's Carnival counts)."""
+    if country in ("US", "", None):
+        return us_holidays(year)
+    import holidays
+    try:
+        found = holidays.country_holidays(country, years=year, categories=("public", "optional"))
+    except (NotImplementedError, KeyError, ValueError, TypeError):
+        try:
+            found = holidays.country_holidays(country, years=year)
+        except (NotImplementedError, KeyError, ValueError):
+            return ()
+    return tuple(found.keys())
+
+
+def holiday_distance(d: date, country: str = "US") -> int:
+    """Days to the nearest holiday in the departure country, capped at 15."""
+    days = [abs((h - d).days) for y in (d.year - 1, d.year, d.year + 1) for h in public_holidays(country, y)]
+    return min(min(days), 15) if days else 15
 
 _lock = threading.Lock()
 _loaded: dict | None = None
@@ -78,11 +95,12 @@ def stat_keys(carrier: str, flight_no: str, origin: str, dest: str, dep_hour: in
 
 def build_features(tables: dict, prior: dict, *, carrier: str, flight_no: str, origin: str, dest: str,
                    flight_date: date, dep_hour: int, arr_hour: int, distance: float,
-                   weather: dict | None = None) -> dict:
-    """weather: WX_FEATURES values, or None/NaN when no forecast covers the flight."""
+                   weather: dict | None = None, country: str = "US") -> dict:
+    """weather: WX_FEATURES values, or None/NaN when no forecast covers the flight.
+    country: the departure airport's country, for its public holidays."""
     row = {"month": flight_date.month, "day_of_week": flight_date.isoweekday(), "dep_hour": dep_hour,
            "arr_hour": arr_hour, "distance": distance, "day_of_month": flight_date.day,
-           "holiday_days": holiday_distance(flight_date)}
+           "holiday_days": holiday_distance(flight_date, country)}
     row.update(weather or empty_weather())
     for name, key in stat_keys(carrier, flight_no, origin, dest, dep_hour, arr_hour).items():
         n, d, c, _ = tables[name].get(key, (0, 0, 0, None))
@@ -195,7 +213,8 @@ def predict(carrier: str, flight_no: str, origin: str, dest: str, dep_local: dat
     def run(stats: dict) -> np.ndarray:
         row = build_features(stats, prior, carrier=carrier, flight_no=flight_no, origin=origin, dest=dest,
                              flight_date=dep_local.date(), dep_hour=dep_hour, arr_hour=arr_hour,
-                             distance=distance, weather=weather or None)
+                             distance=distance, weather=weather or None,
+                             country=airports.lookup(origin)["country"] or "US")
         x = np.array([[row[f] for f in names]], dtype=np.float32)
         return m["booster"].predict(xgb.DMatrix(x, feature_names=names))[0]
 
