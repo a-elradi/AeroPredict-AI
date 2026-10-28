@@ -250,7 +250,8 @@ def _key(*names: str) -> list[str]:
 
 
 def _save_sample(source: str, payload) -> None:
-    path = COLLECTED / source / "sample.json"
+    folder, _, part = source.partition("_")
+    path = COLLECTED / folder / (f"sample_{part}.json" if part else "sample.json")
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, indent=1)[:200_000], encoding="utf-8")
@@ -292,7 +293,7 @@ def collect_schiphol(day: date) -> dict:
                 "includedelays": "false", "sort": "+scheduleTime"})
             flights = resp.json().get("flights", []) if resp.content else []
             if page == 0:
-                _save_sample("schiphol", resp.json() if resp.content else {})
+                _save_sample("schiphol" if direction == "D" else "schiphol_arrivals", resp.json() if resp.content else {})
             for f in flights:
                 if f.get("serviceType") not in ("J", "C") or f.get("flightName") != f.get("mainFlight"):
                     continue  # passenger flights only; codeshares repeat the operating flight
@@ -308,7 +309,11 @@ def collect_schiphol(day: date) -> dict:
                     out[key] = [day.isoformat(), airline, number, origin, dest, None, 1]
                     continue
                 sched = _utc(f.get("scheduleDateTime"))
-                actual = _utc(f.get("actualOffBlockTime") if direction == "D" else f.get("actualOnBlockTime"))
+                if direction == "D":
+                    actual = _utc(f.get("actualOffBlockTime"))
+                else:  # at the gate if given, else landing plus typical taxi-in
+                    actual = _utc(f.get("actualOnBlockTime")) or (
+                        _utc(f.get("actualLandingTime")) + timedelta(minutes=5) if f.get("actualLandingTime") else None)
                 if sched and actual:
                     out[key] = [day.isoformat(), airline, number, origin, dest,
                                 round((actual - sched).total_seconds() / 60), 0]
