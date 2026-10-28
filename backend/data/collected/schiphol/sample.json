@@ -1,0 +1,2782 @@
+{
+ "flights": [
+  {
+   "lastUpdatedAt": "2026-10-27T06:29:50.636+01:00",
+   "actualOffBlockTime": "2026-10-27T06:26:56.000+01:00",
+   "aircraftRegistration": "PHYHZ",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:30:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:20:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "KL3278"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "HV6455",
+   "flightNumber": 6455,
+   "gate": "D83",
+   "pier": "D",
+   "id": "146084021683971195",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6455",
+   "prefixIATA": "HV",
+   "prefixICAO": "TRA",
+   "airlineCode": 164,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "LPA"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:20:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:20:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:29:50.636+01:00",
+   "actualOffBlockTime": "2026-10-27T06:26:56.000+01:00",
+   "aircraftRegistration": "PHYHZ",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:30:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:20:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "KL3278"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "KL3278",
+   "flightNumber": 3278,
+   "gate": "D83",
+   "pier": "D",
+   "id": "146084022062242477",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6455",
+   "prefixIATA": "KL",
+   "prefixICAO": "KLM",
+   "airlineCode": 100,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "LPA"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:20:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:20:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:41:19.863+01:00",
+   "actualOffBlockTime": "2026-10-27T06:35:24.000+01:00",
+   "aircraftRegistration": "PHYHR",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:35:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:25:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL7480"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "HV6635",
+   "flightNumber": 6635,
+   "gate": "D63",
+   "pier": "D",
+   "id": "146084021683976523",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6635",
+   "prefixIATA": "HV",
+   "prefixICAO": "TRA",
+   "airlineCode": 164,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "FNC"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:25:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:25:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:41:19.863+01:00",
+   "actualOffBlockTime": "2026-10-27T06:35:24.000+01:00",
+   "aircraftRegistration": "PHYHR",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:35:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:25:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL7480"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "DL7480",
+   "flightNumber": 7480,
+   "gate": "D63",
+   "pier": "D",
+   "id": "146084021091837837",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6635",
+   "prefixIATA": "DL",
+   "prefixICAO": "DAL",
+   "airlineCode": 58,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "FNC"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:25:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:25:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:52:37.174+01:00",
+   "actualOffBlockTime": "2026-10-27T06:42:33.000+01:00",
+   "aircraftRegistration": "PHHXB",
+   "aircraftType": {
+    "iataMain": "737",
+    "iataSub": "73H"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:50:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:40:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL7504",
+     "KL2649"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "HV6115",
+   "flightNumber": 6115,
+   "gate": "B31",
+   "pier": "B",
+   "id": "146084021683962685",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6115",
+   "prefixIATA": "HV",
+   "prefixICAO": "TRA",
+   "airlineCode": 164,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "AGP"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:40:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:40:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:52:37.174+01:00",
+   "actualOffBlockTime": "2026-10-27T06:42:33.000+01:00",
+   "aircraftRegistration": "PHHXB",
+   "aircraftType": {
+    "iataMain": "737",
+    "iataSub": "73H"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:50:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:40:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL7504",
+     "KL2649"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "DL7504",
+   "flightNumber": 7504,
+   "gate": "B31",
+   "pier": "B",
+   "id": "146084021091839991",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6115",
+   "prefixIATA": "DL",
+   "prefixICAO": "DAL",
+   "airlineCode": 58,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "AGP"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:40:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:40:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:52:37.174+01:00",
+   "actualOffBlockTime": "2026-10-27T06:42:33.000+01:00",
+   "aircraftRegistration": "PHHXB",
+   "aircraftType": {
+    "iataMain": "737",
+    "iataSub": "73H"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:50:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:40:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL7504",
+     "KL2649"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "KL2649",
+   "flightNumber": 2649,
+   "gate": "B31",
+   "pier": "B",
+   "id": "146084022062151903",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6115",
+   "prefixIATA": "KL",
+   "prefixICAO": "KLM",
+   "airlineCode": 100,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "AGP"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:40:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:40:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:55:45.556+01:00",
+   "actualOffBlockTime": "2026-10-27T06:46:10.000+01:00",
+   "aircraftRegistration": "PHYHX",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:55:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:45:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL7506",
+     "KL2641"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "KL2641",
+   "flightNumber": 2641,
+   "gate": "C11",
+   "pier": "C",
+   "id": "146084022062151887",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6143",
+   "prefixIATA": "KL",
+   "prefixICAO": "KLM",
+   "airlineCode": 100,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "ALC"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:45:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:45:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:55:45.556+01:00",
+   "actualOffBlockTime": "2026-10-27T06:46:10.000+01:00",
+   "aircraftRegistration": "PHYHX",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:55:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:45:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL7506",
+     "KL2641"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "HV6143",
+   "flightNumber": 6143,
+   "gate": "C11",
+   "pier": "C",
+   "id": "146084021683962903",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6143",
+   "prefixIATA": "HV",
+   "prefixICAO": "TRA",
+   "airlineCode": 164,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "ALC"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:45:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:45:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:55:45.556+01:00",
+   "actualOffBlockTime": "2026-10-27T06:46:10.000+01:00",
+   "aircraftRegistration": "PHYHX",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T05:55:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "2",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "3",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           },
+           {
+            "position": 11
+           },
+           {
+            "position": 12
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T03:45:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL7506",
+     "KL2641"
+    ]
+   },
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "DL7506",
+   "flightNumber": 7506,
+   "gate": "C11",
+   "pier": "C",
+   "id": "146084021091839995",
+   "isOperationalFlight": true,
+   "mainFlight": "HV6143",
+   "prefixIATA": "DL",
+   "prefixICAO": "DAL",
+   "airlineCode": 58,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "ALC"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:45:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:45:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-22T12:47:19.530+02:00",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "codeshares": {
+    "codeshares": [
+     "G35649"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:20:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T05:50:00.000+01:00",
+   "flightDirection": "D",
+   "flightName": "KL1917",
+   "flightNumber": 1917,
+   "id": "146084022062058585",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1917",
+   "prefixIATA": "KL",
+   "prefixICAO": "KLM",
+   "airlineCode": 100,
+   "publicFlightState": {
+    "flightStates": [
+     "CNX"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "ZRH"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-22T12:47:19.530+02:00",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "codeshares": {
+    "codeshares": [
+     "G35649"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:20:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T05:50:00.000+01:00",
+   "flightDirection": "D",
+   "flightName": "G35649",
+   "flightNumber": 5649,
+   "id": "146084021575173961",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1917",
+   "prefixIATA": "G3",
+   "prefixICAO": "GLO",
+   "airlineCode": 4918,
+   "publicFlightState": {
+    "flightStates": [
+     "CNX"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "ZRH"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:59:46.048+01:00",
+   "actualOffBlockTime": "2026-10-27T06:49:23.000+01:00",
+   "aircraftRegistration": "PHAXE",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T06:10:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "6",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "7",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "8",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T04:25:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "G35616"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:20:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T05:50:00.000+01:00",
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "KL1601",
+   "flightNumber": 1601,
+   "gate": "D59",
+   "pier": "D",
+   "id": "146084022062050285",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1601",
+   "prefixIATA": "KL",
+   "prefixICAO": "KLM",
+   "airlineCode": 100,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "FCO"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T06:59:46.048+01:00",
+   "actualOffBlockTime": "2026-10-27T06:49:23.000+01:00",
+   "aircraftRegistration": "PHAXE",
+   "aircraftType": {
+    "iataMain": "32S",
+    "iataSub": "32Q"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T06:10:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "6",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "7",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "8",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T04:25:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "G35616"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:20:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T05:50:00.000+01:00",
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "G35616",
+   "flightNumber": 5616,
+   "gate": "D59",
+   "pier": "D",
+   "id": "146084021575173733",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1601",
+   "prefixIATA": "G3",
+   "prefixICAO": "GLO",
+   "airlineCode": 4918,
+   "publicFlightState": {
+    "flightStates": [
+     "DEP"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "FCO"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T07:15:21.703+01:00",
+   "actualOffBlockTime": "2026-10-27T07:03:50.000+01:00",
+   "aircraftRegistration": "PHNXN",
+   "aircraftType": {
+    "iataMain": "EMJ",
+    "iataSub": "295"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T06:10:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "6",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "7",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "8",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T04:35:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL9593",
+     "G35643",
+     "KE6431",
+     "MF9704",
+     "SK6681",
+     "6E3395"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:45:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T06:30:00.000+01:00",
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "KL1197",
+   "flightNumber": 1197,
+   "gate": "B26",
+   "pier": "B",
+   "id": "146084022062037273",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1197",
+   "prefixIATA": "KL",
+   "prefixICAO": "KLM",
+   "airlineCode": 100,
+   "publicEstimatedOffBlockTime": "2026-10-27T07:00:00.000+01:00",
+   "publicFlightState": {
+    "flightStates": [
+     "DEP",
+     "DEL"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "OSL"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T07:15:21.703+01:00",
+   "actualOffBlockTime": "2026-10-27T07:03:50.000+01:00",
+   "aircraftRegistration": "PHNXN",
+   "aircraftType": {
+    "iataMain": "EMJ",
+    "iataSub": "295"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T06:10:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "6",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "7",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "8",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T04:35:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL9593",
+     "G35643",
+     "KE6431",
+     "MF9704",
+     "SK6681",
+     "6E3395"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:45:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T06:30:00.000+01:00",
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "DL9593",
+   "flightNumber": 9593,
+   "gate": "B26",
+   "pier": "B",
+   "id": "146084021092043267",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1197",
+   "prefixIATA": "DL",
+   "prefixICAO": "DAL",
+   "airlineCode": 58,
+   "publicEstimatedOffBlockTime": "2026-10-27T07:00:00.000+01:00",
+   "publicFlightState": {
+    "flightStates": [
+     "DEP",
+     "DEL"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "OSL"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T07:15:21.703+01:00",
+   "actualOffBlockTime": "2026-10-27T07:03:50.000+01:00",
+   "aircraftRegistration": "PHNXN",
+   "aircraftType": {
+    "iataMain": "EMJ",
+    "iataSub": "295"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T06:10:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "6",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "7",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "8",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T04:35:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL9593",
+     "G35643",
+     "KE6431",
+     "MF9704",
+     "SK6681",
+     "6E3395"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:45:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T06:30:00.000+01:00",
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "G35643",
+   "flightNumber": 5643,
+   "gate": "B26",
+   "pier": "B",
+   "id": "146084021575173949",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1197",
+   "prefixIATA": "G3",
+   "prefixICAO": "GLO",
+   "airlineCode": 4918,
+   "publicEstimatedOffBlockTime": "2026-10-27T07:00:00.000+01:00",
+   "publicFlightState": {
+    "flightStates": [
+     "DEP",
+     "DEL"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "OSL"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T07:15:21.703+01:00",
+   "actualOffBlockTime": "2026-10-27T07:03:50.000+01:00",
+   "aircraftRegistration": "PHNXN",
+   "aircraftType": {
+    "iataMain": "EMJ",
+    "iataSub": "295"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T06:10:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "6",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "7",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "8",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T04:35:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL9593",
+     "G35643",
+     "KE6431",
+     "MF9704",
+     "SK6681",
+     "6E3395"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:45:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T06:30:00.000+01:00",
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "KE6431",
+   "flightNumber": 6431,
+   "gate": "B26",
+   "pier": "B",
+   "id": "146084022036313307",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1197",
+   "prefixIATA": "KE",
+   "prefixICAO": "KAL",
+   "airlineCode": 105,
+   "publicEstimatedOffBlockTime": "2026-10-27T07:00:00.000+01:00",
+   "publicFlightState": {
+    "flightStates": [
+     "DEP",
+     "DEL"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "OSL"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T07:15:21.703+01:00",
+   "actualOffBlockTime": "2026-10-27T07:03:50.000+01:00",
+   "aircraftRegistration": "PHNXN",
+   "aircraftType": {
+    "iataMain": "EMJ",
+    "iataSub": "295"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T06:10:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "6",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "7",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "8",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T04:35:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL9593",
+     "G35643",
+     "KE6431",
+     "MF9704",
+     "SK6681",
+     "6E3395"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:45:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T06:30:00.000+01:00",
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "MF9704",
+   "flightNumber": 9704,
+   "gate": "B26",
+   "pier": "B",
+   "id": "146084022317749373",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1197",
+   "prefixIATA": "MF",
+   "prefixICAO": "CXA",
+   "airlineCode": 1551,
+   "publicEstimatedOffBlockTime": "2026-10-27T07:00:00.000+01:00",
+   "publicFlightState": {
+    "flightStates": [
+     "DEP",
+     "DEL"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "OSL"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  },
+  {
+   "lastUpdatedAt": "2026-10-27T07:15:21.703+01:00",
+   "actualOffBlockTime": "2026-10-27T07:03:50.000+01:00",
+   "aircraftRegistration": "PHNXN",
+   "aircraftType": {
+    "iataMain": "EMJ",
+    "iataSub": "295"
+   },
+   "checkinAllocations": {
+    "checkinAllocations": [
+     {
+      "endTime": "2026-10-27T06:10:00.000+01:00",
+      "rows": {
+       "rows": [
+        {
+         "position": "6",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "7",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           },
+           {
+            "position": 8
+           },
+           {
+            "position": 9
+           },
+           {
+            "position": 10
+           }
+          ]
+         }
+        },
+        {
+         "position": "8",
+         "desks": {
+          "desks": [
+           {
+            "position": 1
+           },
+           {
+            "position": 2
+           },
+           {
+            "position": 3
+           },
+           {
+            "position": 4
+           },
+           {
+            "position": 5
+           },
+           {
+            "position": 6
+           },
+           {
+            "position": 7
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "startTime": "2026-10-27T04:35:00.000+01:00"
+     }
+    ]
+   },
+   "codeshares": {
+    "codeshares": [
+     "DL9593",
+     "G35643",
+     "KE6431",
+     "MF9704",
+     "SK6681",
+     "6E3395"
+    ]
+   },
+   "expectedTimeBoarding": "2026-10-27T06:35:00.000+01:00",
+   "expectedTimeGateClosing": "2026-10-27T06:45:00.000+01:00",
+   "expectedTimeGateOpen": "2026-10-27T06:30:00.000+01:00",
+   "expectedSecurityFilter": "VF1",
+   "flightDirection": "D",
+   "flightName": "SK6681",
+   "flightNumber": 6681,
+   "gate": "B26",
+   "pier": "B",
+   "id": "146084023168312397",
+   "isOperationalFlight": true,
+   "mainFlight": "KL1197",
+   "prefixIATA": "SK",
+   "prefixICAO": "SAS",
+   "airlineCode": 150,
+   "publicEstimatedOffBlockTime": "2026-10-27T07:00:00.000+01:00",
+   "publicFlightState": {
+    "flightStates": [
+     "DEP",
+     "DEL"
+    ]
+   },
+   "route": {
+    "destinations": [
+     "OSL"
+    ],
+    "eu": "S",
+    "visa": false
+   },
+   "scheduleDateTime": "2026-10-27T06:50:00.000+01:00",
+   "scheduleDate": "2026-10-27",
+   "scheduleTime": "06:50:00",
+   "serviceType": "J",
+   "terminal": 1,
+   "schemaVersion": "4"
+  }
+ ]
+}
