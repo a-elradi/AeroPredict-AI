@@ -181,8 +181,10 @@ def punctuality(iata: str, airline: str | None = None) -> dict | None:
     rep = _reported().get(info["iata"])
     if rep:  # e.g. Saudi GACA's monthly report: one figure for departures and arrivals
         own = (rep.get("airlines") or {}).get((airline or "").upper())
-        pct = own if own is not None else rep["on_time_pct"]
-        return {"name": rep.get("name"), "dep_on_time_pct": pct, "arr_on_time_pct": pct,
+        pct = own if own is not None else rep.get("on_time_pct")
+        sided = own is None and "dep_on_time_pct" in rep  # separate departure and arrival figures
+        return {"name": rep.get("name"), "dep_on_time_pct": rep["dep_on_time_pct"] if sided else pct,
+                "arr_on_time_pct": rep["arr_on_time_pct"] if sided else pct, "sided": sided,
                 "level": "airport_airline" if own is not None else "airport", "airline": airline if own is not None else None,
                 "period": rep["period"], "source": rep["source"], "publisher": rep["publisher"], "single_figure": True}
     cty = (euro.get("countries") or {}).get(info["country"] or "")

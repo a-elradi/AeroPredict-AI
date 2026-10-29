@@ -1,12 +1,856 @@
 {
- "_about": "Official punctuality figures that are only published as reports or press statements, entered by hand. Each entry: [flights, delayed_over_15_min, cancelled, typical_delay_min]. Update when a newer report appears.",
+ "_about": "Official punctuality figures that are only published as reports or press statements, entered by hand. airline_country: [flights, delayed_over_15_min, cancelled, typical_delay_min], or {late_pct, cancelled_pct} when the report gives percentages only. airports: on-time % (one figure, or dep/arr), optionally per airline. Update when a newer report appears.",
  "sources": {
-  "NG": {"name": "Nigerian Civil Aviation Authority, Summary of Domestic Airline Flight Disruption Operations (as reported; some airlines dispute it)",
-         "period": "August 2026",
-         "url": "https://allafrica.com/stories/202609150060.html"}
+  "NG": {
+   "name": "Nigerian Civil Aviation Authority, Summary of Domestic Airline Flight Disruption Operations (as reported; some airlines dispute it)",
+   "period": "August 2026",
+   "url": "https://allafrica.com/stories/202609150060.html"
+  },
+  "NZ": {
+   "name": "NZ Ministry of Transport, aviation on-time performance",
+   "period": "August 2026",
+   "url": "https://www.transport.govt.nz/assets/Air/Aviation-on-time-performance-August-2026.pdf"
+  },
+  "EC": {
+   "name": "DGAC Ecuador, punctuality of domestic flights",
+   "period": "June and September 2026",
+   "url": "https://www.aviacioncivil.gob.ec/estadisticas-de-puntualidad-2/"
+  },
+  "CL": {
+   "name": "JAC Chile (Junta de Aeronáutica Civil), punctuality report",
+   "period": "January to June 2026",
+   "url": "https://elaereo.com/2026/09/aerolineas-en-chile-reportaron-importante-mejora-en-la-puntualidad-de-sus-vuelos-destacan-latam-sky-y-turkish-airlines/"
+  },
+  "CN": {
+   "name": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "period": "September 2026",
+   "url": "http://www.caacnews.com.cn/1/tbtj_/202610/t20261019_1397859.html"
+  },
+  "MY": {
+   "name": "CAAM Malaysia consumer report (Malaysian airlines, all flights)",
+   "period": "January to June 2025",
+   "url": "https://www.caam.gov.my/wp-content/uploads/2025/12/Consumer-Report-Jan-Jun-2025.pdf"
+  },
+  "VN": {
+   "name": "CAAV (Civil Aviation Authority of Vietnam), on-time and cancelled flights",
+   "period": "September 2026",
+   "url": "https://imgcaa.minhvujsc.com/2026/10/09/14/59/pdf1soLieuVTHK102026.pdf"
+  },
+  "IN": {
+   "name": "DGCA India, on-time performance at 10 major airports",
+   "period": "September 2026",
+   "url": "https://www.dgca.gov.in"
+  },
+  "SA": {
+   "name": "GACA Saudi Arabia, on-time performance report",
+   "period": "September 2025",
+   "url": "https://www.argaam.com/en/article/articledetail/id/1854982"
+  }
  },
  "airline_country": {
-  "P4|NG": [1864, 1330, 0, null],
-  "*|NG": [7961, 4765, 36, null]
+  "P4|NG": [
+   1864,
+   1330,
+   0,
+   null
+  ],
+  "*|NG": [
+   7961,
+   4765,
+   36,
+   null
+  ],
+  "NZ|NZ": {
+   "late_pct": 16.8,
+   "cancelled_pct": 2.2
+  },
+  "JQ|NZ": {
+   "late_pct": 15.6,
+   "cancelled_pct": 0.6
+  },
+  "CV|NZ": {
+   "late_pct": 19.5,
+   "cancelled_pct": 0
+  },
+  "S8|NZ": {
+   "late_pct": 9.8,
+   "cancelled_pct": 2.3
+  },
+  "*|NZ": {
+   "late_pct": 16.5,
+   "cancelled_pct": 2.6
+  },
+  "XL|EC": [
+   2270,
+   78,
+   13,
+   null
+  ],
+  "*|EC": [
+   4437,
+   245,
+   60,
+   null
+  ],
+  "2K|EC": [
+   1861,
+   134,
+   6,
+   null
+  ],
+  "LA|CL": {
+   "late_pct": 12.7,
+   "cancelled_pct": 0.5
+  },
+  "H2|CL": {
+   "late_pct": 9.2,
+   "cancelled_pct": 0.5
+  },
+  "JA|CL": {
+   "late_pct": 15.5,
+   "cancelled_pct": 0.5
+  },
+  "*|CL": {
+   "late_pct": 12.4,
+   "cancelled_pct": 0.5
+  },
+  "*|CN": {
+   "late_pct": 13.4
+  },
+  "SC|CN": {
+   "late_pct": 12.1
+  },
+  "HU|CN": {
+   "late_pct": 12.2
+  },
+  "9C|CN": {
+   "late_pct": 12.6
+  },
+  "EU|CN": {
+   "late_pct": 12.7
+  },
+  "CZ|CN": {
+   "late_pct": 12.9
+  },
+  "MU|CN": {
+   "late_pct": 13.1
+  },
+  "3U|CN": {
+   "late_pct": 13.1
+  },
+  "HO|CN": {
+   "late_pct": 13.3
+  },
+  "CA|CN": {
+   "late_pct": 13.6
+  },
+  "MF|CN": {
+   "late_pct": 13.7
+  },
+  "GS|CN": {
+   "late_pct": 14.5
+  },
+  "ZH|CN": {
+   "late_pct": 14.8
+  },
+  "G5|CN": {
+   "late_pct": 17.8
+  },
+  "9H|CN": {
+   "late_pct": 11.4
+  },
+  "CN|CN": {
+   "late_pct": 11.4
+  },
+  "OQ|CN": {
+   "late_pct": 11.9
+  },
+  "AQ|CN": {
+   "late_pct": 12.4
+  },
+  "GX|CN": {
+   "late_pct": 12.4
+  },
+  "BK|CN": {
+   "late_pct": 12.8
+  },
+  "QW|CN": {
+   "late_pct": 12.9
+  },
+  "NS|CN": {
+   "late_pct": 12.9
+  },
+  "GJ|CN": {
+   "late_pct": 13.1
+  },
+  "JD|CN": {
+   "late_pct": 13.2
+  },
+  "LT|CN": {
+   "late_pct": 13.2
+  },
+  "RY|CN": {
+   "late_pct": 13.2
+  },
+  "UQ|CN": {
+   "late_pct": 13.3
+  },
+  "PN|CN": {
+   "late_pct": 13.4
+  },
+  "9D|CN": {
+   "late_pct": 13.4
+  },
+  "GT|CN": {
+   "late_pct": 13.4
+  },
+  "8L|CN": {
+   "late_pct": 13.7
+  },
+  "FM|CN": {
+   "late_pct": 13.7
+  },
+  "A6|CN": {
+   "late_pct": 13.8
+  },
+  "KY|CN": {
+   "late_pct": 13.8
+  },
+  "TV|CN": {
+   "late_pct": 13.9
+  },
+  "FU|CN": {
+   "late_pct": 14.2
+  },
+  "GY|CN": {
+   "late_pct": 14.3
+  },
+  "KN|CN": {
+   "late_pct": 15.0
+  },
+  "DR|CN": {
+   "late_pct": 15.7
+  },
+  "Y8|CN": {
+   "late_pct": 16.6
+  },
+  "DZ|CN": {
+   "late_pct": 16.8
+  },
+  "*|MY": {
+   "late_pct": 20.8
+  },
+  "VN|VN": [
+   8233,
+   2046,
+   40,
+   null
+  ],
+  "VJ|VN": [
+   9415,
+   4004,
+   41,
+   null
+  ],
+  "BL|VN": [
+   550,
+   94,
+   2,
+   null
+  ],
+  "0V|VN": [
+   1605,
+   273,
+   3,
+   null
+  ],
+  "QH|VN": [
+   65,
+   6,
+   1,
+   null
+  ],
+  "VU|VN": [
+   821,
+   207,
+   9,
+   null
+  ],
+  "9G|VN": [
+   2192,
+   493,
+   2,
+   null
+  ],
+  "*|VN": [
+   22881,
+   7123,
+   98,
+   null
+  ],
+  "6E|IN": {
+   "late_pct": 9.3,
+   "cancelled_pct": 0.41
+  },
+  "QP|IN": {
+   "late_pct": 9.2,
+   "cancelled_pct": 0.05
+  },
+  "AI|IN": {
+   "late_pct": 19.7,
+   "cancelled_pct": 1.76
+  },
+  "IX|IN": {
+   "late_pct": 19.7,
+   "cancelled_pct": 1.76
+  },
+  "9I|IN": {
+   "late_pct": 28.4,
+   "cancelled_pct": 4.55
+  },
+  "SG|IN": {
+   "late_pct": 86.8,
+   "cancelled_pct": 20.29
+  },
+  "SV|SA": {
+   "late_pct": 12.5
+  },
+  "XY|SA": {
+   "late_pct": 15.5
+  },
+  "F3|SA": {
+   "late_pct": 8.0
+  }
+ },
+ "airports": {
+  "AKL": {
+   "dep_on_time_pct": 86.5,
+   "arr_on_time_pct": 86.1,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "BHE": {
+   "dep_on_time_pct": 89.2,
+   "arr_on_time_pct": 91.9,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "CHT": {
+   "dep_on_time_pct": 88.9,
+   "arr_on_time_pct": 27.8,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "CHC": {
+   "dep_on_time_pct": 85.5,
+   "arr_on_time_pct": 85.0,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "DUD": {
+   "dep_on_time_pct": 83.4,
+   "arr_on_time_pct": 85.0,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "GIS": {
+   "dep_on_time_pct": 89.4,
+   "arr_on_time_pct": 89.1,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "HLZ": {
+   "dep_on_time_pct": 80.8,
+   "arr_on_time_pct": 84.6,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "NPE": {
+   "dep_on_time_pct": 87.2,
+   "arr_on_time_pct": 88.3,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "HKK": {
+   "dep_on_time_pct": 79.2,
+   "arr_on_time_pct": 77.6,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "IVC": {
+   "dep_on_time_pct": 84.5,
+   "arr_on_time_pct": 85.8,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "KKE": {
+   "dep_on_time_pct": 78.1,
+   "arr_on_time_pct": 82.1,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "NSN": {
+   "dep_on_time_pct": 85.6,
+   "arr_on_time_pct": 84.9,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "NPL": {
+   "dep_on_time_pct": 86.8,
+   "arr_on_time_pct": 90.3,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "PMR": {
+   "dep_on_time_pct": 85.6,
+   "arr_on_time_pct": 88.0,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "PPQ": {
+   "dep_on_time_pct": 96.3,
+   "arr_on_time_pct": 92.6,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "PCN": {
+   "dep_on_time_pct": 93.8,
+   "arr_on_time_pct": 88.2,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "ZQN": {
+   "dep_on_time_pct": 79.1,
+   "arr_on_time_pct": 83.6,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "ROT": {
+   "dep_on_time_pct": 84.7,
+   "arr_on_time_pct": 91.0,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "TUO": {
+   "dep_on_time_pct": 94.0,
+   "arr_on_time_pct": 94.0,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "TRG": {
+   "dep_on_time_pct": 88.1,
+   "arr_on_time_pct": 91.8,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "TIU": {
+   "dep_on_time_pct": 86.8,
+   "arr_on_time_pct": 85.2,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "WLG": {
+   "dep_on_time_pct": 85.8,
+   "arr_on_time_pct": 87.8,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "WHK": {
+   "dep_on_time_pct": 88.5,
+   "arr_on_time_pct": 88.5,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "WAG": {
+   "dep_on_time_pct": 79.5,
+   "arr_on_time_pct": 77.3,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "WRE": {
+   "dep_on_time_pct": 84.0,
+   "arr_on_time_pct": 85.6,
+   "period": "August 2026",
+   "publisher": "NZ Ministry of Transport",
+   "source": "NZ Ministry of Transport, aviation on-time performance",
+   "scope": "domestic flights"
+  },
+  "*": {
+   "on_time_pct": 86.1,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "TYN": {
+   "on_time_pct": 88.5,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "KWE": {
+   "on_time_pct": 87.5,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "LHW": {
+   "on_time_pct": 87.3,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "DLU": {
+   "on_time_pct": 88.2,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "DSN": {
+   "on_time_pct": 87.8,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "JHG": {
+   "on_time_pct": 87.7,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "KHN": {
+   "on_time_pct": 87.7,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "INC": {
+   "on_time_pct": 87.6,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "XUZ": {
+   "on_time_pct": 87.2,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "XNN": {
+   "on_time_pct": 87.1,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "YIH": {
+   "on_time_pct": 86.6,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "NTG": {
+   "on_time_pct": 86.6,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "MIG": {
+   "on_time_pct": 86.5,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "LJG": {
+   "on_time_pct": 86.4,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "ZHA": {
+   "on_time_pct": 86.3,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "HET": {
+   "on_time_pct": 86.3,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "NNG": {
+   "on_time_pct": 86.0,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "JJN": {
+   "on_time_pct": 85.7,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "YIW": {
+   "on_time_pct": 85.6,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "ZUH": {
+   "on_time_pct": 85.6,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "HLD": {
+   "on_time_pct": 85.4,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "SWA": {
+   "on_time_pct": 84.8,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "CZX": {
+   "on_time_pct": 83.3,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "LXA": {
+   "on_time_pct": 82.4,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "KHG": {
+   "on_time_pct": 81.7,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "YTY": {
+   "on_time_pct": 78.3,
+   "period": "September 2026",
+   "publisher": "CAAC",
+   "source": "CAAC monthly flight normal rates, converted to the 15-minute standard",
+   "scope": "departures"
+  },
+  "MEX": {
+   "on_time_pct": 75.3,
+   "airlines": {
+    "AM": 77.4,
+    "5D": 82.6,
+    "VB": 68.7,
+    "Y4": 70.9,
+    "AA": 70.5,
+    "DL": 67.9,
+    "UA": 63.2,
+    "AC": 63.6,
+    "AF": 52.8,
+    "BA": 68.4,
+    "LH": 51.9,
+    "IB": 84.0,
+    "KL": 60.7,
+    "TK": 76.7,
+    "AV": 77.1,
+    "CM": 81.0,
+    "LA": 73.4,
+    "LR": 77.7,
+    "JJ": 79.3,
+    "T0": 82.7,
+    "Q6": 65.7,
+    "N3": 64.8,
+    "NH": 67.5,
+    "HU": 71.9,
+    "EK": 81.5
+   },
+   "period": "January to June 2025",
+   "publisher": "AFAC",
+   "source": "AFAC Mexico, punctuality index for Mexico City airport",
+   "scope": "arrivals and departures",
+   "url": "https://www.gob.mx/cms/uploads/attachment/file/1020524/mex-demoras-2025-04092025.xlsx"
+  },
+  "MAA": {
+   "on_time_pct": 95.3,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "HYD": {
+   "on_time_pct": 92.2,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "AMD": {
+   "on_time_pct": 91.2,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "BLR": {
+   "on_time_pct": 91.2,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "CCU": {
+   "on_time_pct": 89.3,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "LKO": {
+   "on_time_pct": 85.5,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "BOM": {
+   "on_time_pct": 84.4,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "DEL": {
+   "on_time_pct": 82.7,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "GAU": {
+   "on_time_pct": 82.5,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "COK": {
+   "on_time_pct": 82.1,
+   "period": "September 2026",
+   "publisher": "DGCA",
+   "source": "DGCA India, on-time performance at 10 major airports",
+   "scope": "domestic departures"
+  },
+  "RUH": {
+   "on_time_pct": 87,
+   "period": "September 2025",
+   "publisher": "GACA",
+   "source": "GACA Saudi Arabia, on-time performance report",
+   "scope": "arrivals and departures"
+  },
+  "DMM": {
+   "on_time_pct": 90,
+   "period": "September 2025",
+   "publisher": "GACA",
+   "source": "GACA Saudi Arabia, on-time performance report",
+   "scope": "arrivals and departures"
+  },
+  "TUU": {
+   "on_time_pct": 91,
+   "period": "September 2025",
+   "publisher": "GACA",
+   "source": "GACA Saudi Arabia, on-time performance report",
+   "scope": "arrivals and departures"
+  },
+  "ULH": {
+   "on_time_pct": 97,
+   "period": "September 2025",
+   "publisher": "GACA",
+   "source": "GACA Saudi Arabia, on-time performance report",
+   "scope": "arrivals and departures"
+  },
+  "ABT": {
+   "on_time_pct": 100,
+   "period": "September 2025",
+   "publisher": "GACA",
+   "source": "GACA Saudi Arabia, on-time performance report",
+   "scope": "arrivals and departures"
+  }
  }
 }

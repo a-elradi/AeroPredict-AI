@@ -182,8 +182,10 @@ def _route_history_factors(rh: dict | None, carrier, number, dep, arr) -> list[d
     on_time = 100 - rh["disrupted_share"] * 100
     late = rh["disrupted_share"]
     level = "high" if late > 0.30 else "low" if late < 0.18 else "medium"
-    return [{"icon": "✈", "label": _route_history_label(rh, carrier, number, dep, arr),
-             "value": f"{on_time:.0f}% on time ({rh['flights']:,} flights)", "level": level}]
+    value = f"{on_time:.0f}% on time ({rh['flights']:,} flights)" if rh.get("flights_known", True) \
+        else f"{on_time:.0f}% on time"
+    return [{"icon": "✈", "label": _route_history_label(rh, carrier, number, dep, arr), "value": value,
+             "level": level}]
 
 
 def _airport_factors(shares: list[dict]) -> list[dict]:
@@ -206,7 +208,8 @@ def _airport_factors(shares: list[dict]) -> list[dict]:
             if a.get("month_pct") is not None:
                 value += f", {a['month_pct']:.0f}% in {a.get('month')}"
         elif a.get("single_figure"):  # an official monthly or quarterly report
-            label, value = f"{where} ({a['source']})", f"{a['on_time_pct']:.0f}% on time in {a['period']}"
+            label = f"{where} {what} ({a['source']})" if a.get("sided") else f"{where} ({a['source']})"
+            value = f"{a['on_time_pct']:.0f}% on time in {a['period']}"
         else:
             label, value = f"{where} {what} (EUROCONTROL)", f"{a['on_time_pct']:.0f}% on time this year"
             if a.get("on_time_pct_7d") is not None:
@@ -233,6 +236,9 @@ def _data_basis(hist: dict, meta: dict, weather_used: bool = False,
                 "airline_country": f"{rh['flights']:,} {carrier} domestic flights across the country",
                 "country": f"{rh['flights']:,} domestic flights by all airlines in the country",
                 "airline": f"{rh['flights']:,} {carrier} flights on the routes we have data for"}[rh["level"]]
+        if not rh.get("flights_known", True):  # the report gives percentages only
+            what = {"airline_country": f"{carrier}'s published punctuality on domestic flights",
+                    "country": "the published punctuality of domestic flights in the country"}.get(rh["level"], what)
         src = rh["source"]
         level = "high" if rh["level"] == "flight" else "medium"
         note = (f"Based on {what} ({src.get('name')}, {src.get('period')}), adjusted for time of day, "

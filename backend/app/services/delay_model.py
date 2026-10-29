@@ -171,7 +171,7 @@ def _airport_late_shares(tables: dict, origin: str, dest: str, carrier: str = ""
                            "airline": p.get("airline"), "on_time_pct": p[field],
                            "on_time_pct_7d": p.get(field.replace("_pct", "_pct_7d")),
                            "month_pct": p.get("month_pct"), "month": p.get("month"),
-                           "single_figure": p.get("single_figure", False)})
+                           "single_figure": p.get("single_figure", False), "sided": p.get("sided", False)})
             continue
         rec = route_history.airport_record(airport, "dep" if side == "origin" else "arr")
         if rec:  # flights to/from this airport in other countries' official data

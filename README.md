@@ -134,6 +134,7 @@ the model's time-of-day, season, holiday and weather effects:
 | MLIT Japan | national on-time record of the 10 main Japanese airlines (domestic) | monthly check, published yearly |
 | BITRE Australia on-time performance | every major airline on every Australian domestic route, plus each airline's national record | monthly (`route-stats.yml`) |
 | Nigerian Civil Aviation Authority | domestic delays by airline (Air Peace) and nationally, entered by hand from the monthly report (`backend/data/manual_records.json`) | by hand |
+| Official monthly or quarterly reports, entered by hand in `backend/data/manual_records.json` | **China** (CAAC normal rates for 40 airlines and smaller airports, converted to the 15-minute standard with a fit against airports we measure directly), **India** (DGCA, 5 airlines and 10 airports), **Vietnam** (CAAV, 7 airlines with counts), **Saudi Arabia** (GACA, 3 airlines and 5 airports), **New Zealand** (Ministry of Transport, 4 airlines and 25 airports), **Chile** (JAC, 3 airlines), **Ecuador** (DGAC, 2 airlines with counts), **Malaysia** (CAAM national average), **Mexico City** (AFAC, 27 airlines) | by hand, when a new report appears |
 | ACSA (Airports Company South Africa) | each airline's on-time performance at South Africa's 9 main airports | weekly (`reference-data.yml`) |
 | EUROCONTROL airport punctuality | ~110 European and Turkish airports, plus country averages | weekly (`reference-data.yml`) |
 | Airport weather forecasts (TAF) | any airport worldwide, flights in the next ~30 hours | live |

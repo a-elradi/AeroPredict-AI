@@ -33,9 +33,21 @@ def _load() -> dict:
     if MANUAL_FILE.exists():
         manual = json.loads(MANUAL_FILE.read_text(encoding="utf-8"))
         for key, entry in manual.get("airline_country", {}).items():
+            if isinstance(entry, dict):  # a report that gives percentages only, no flight counts
+                entry, _ = _from_shares(entry), data.setdefault("share_only", set()).add(key)
             data.setdefault("airline_country", {}).setdefault(key, entry)
         data["manual_sources"] = manual.get("sources", {})
     return data
+
+
+SHARE_ONLY_FLIGHTS = 1000  # weight for reports without flight counts (never shown as a count)
+
+
+def _from_shares(e: dict) -> list:
+    """{"late_pct", "cancelled_pct"} -> [flights operated, late, cancelled, typical delay] on a nominal base."""
+    cancelled = round(SHARE_ONLY_FLIGHTS * (e.get("cancelled_pct") or 0) / 100)
+    late = round(SHARE_ONLY_FLIGHTS * e["late_pct"] / 100) - cancelled
+    return [SHARE_ONLY_FLIGHTS - cancelled, max(late, 0), cancelled, None]
 
 
 def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
@@ -62,7 +74,7 @@ def lookup(carrier: str, flight_no: str, origin: str, dest: str) -> dict | None:
         return {"level": level, "flights": total, "late": late, "cancelled": cancelled, "country": domestic,
                 "disrupted_share": (late + cancelled) / total, "cancel_share_of_disrupted":
                 cancelled / (late + cancelled) if late + cancelled else 0.0,
-                "typical_delay": typical,
+                "typical_delay": typical, "flights_known": key not in data.get("share_only", ()),
                 "source": data.get("manual_sources", {}).get(domestic) if level in ("airline_country", "country")
                 and domestic in data.get("manual_sources", {}) else _source(data, origin, dest)}
     return None
