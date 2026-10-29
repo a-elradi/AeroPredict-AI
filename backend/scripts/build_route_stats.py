@@ -734,6 +734,18 @@ def build_netherlands(ref: Ref, stats: Stats, months: int) -> dict:
     return {"name": "Schiphol Public Flight API", "period": f"{dates[0]} to {dates[-1]}", "flights": n}
 
 
+def build_finland(ref: Ref, stats: Stats, months: int) -> dict:
+    """Departures from Finavia's 19 airports and arrivals from abroad (gate times), saved daily."""
+    records = collect_flights.load("finavia", months)
+    if not records:
+        raise RuntimeError("no collected Finavia data yet (needs the free Finavia API key)")
+    n = add_collected(ref, stats, records, skip_countries=("GB", "BR", "KR", "HK", "NO", "IL", "TW", "NL"),
+                      domestic_country="FI")
+    dates = sorted(r[0] for r in records)
+    print(f"  Finland: {n:,} flights", flush=True)
+    return {"name": "Finavia Public Flights API", "period": f"{dates[0]} to {dates[-1]}", "flights": n}
+
+
 # ── Japan (MLIT Civil Aviation Bureau) ───────────────────────────────────────
 
 MLIT_INDEX = "https://www.mlit.go.jp/koku/15_bf_000727.html"
@@ -819,7 +831,7 @@ def main():
                          ("korea", build_korea), ("hongkong", build_hongkong),
                          ("japan", build_japan), ("norway", build_norway),
                          ("israel", build_israel), ("taiwan", build_taiwan),
-                         ("netherlands", build_netherlands)):
+                         ("netherlands", build_netherlands), ("finland", build_finland)):
         try:
             stats.source = key
             sources[key] = builder(ref, stats, args.months)

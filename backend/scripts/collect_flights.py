@@ -26,9 +26,9 @@ history, so the route statistics can cover a full year:
 - Finland: Finavia Public Flights API, Finavia's 19 airports (free key: the
   subscription's primary key in FINAVIA_KEY, from https://apiportal.finavia.fi).
   The feed covers the previous evening to the next morning, so it runs just
-  before midnight Finnish time. Collected as given (scheduled vs actual time);
-  not used in the route statistics until checked against EUROCONTROL's figures
-  for Helsinki, since the actual times may be take-off and landing times.
+  before midnight Finnish time. Gate times (ablk_d: off-block / on-block);
+  act_d is take-off / landing, used with the typical taxi time when there's no
+  gate time (checked on a day at Helsinki: median 8 min out, 5 min in).
 Sources whose key isn't set are skipped. The first run of each also saves one
 raw response to data/collected/<source>/sample.json so the parsing can be checked.
 
@@ -72,6 +72,7 @@ SWEDAVIA_FLIGHTS = "https://api.swedavia.se/flightinfo/v2/{airport}/{direction}/
 SWEDAVIA_AIRPORTS = ["ARN", "GOT", "BMA", "MMX", "LLA", "UME", "OSD", "VBY", "KRN", "RNB"]
 FINAVIA_FLIGHTS = "https://apigw.finavia.fi/flights/public/v0/flights/{kind}/{airport}"
 FINAVIA_NS = "{http://www.finavia.fi/FlightsService.xsd}"
+FINAVIA_TAXI = {"dep": -8, "arr": 5}  # minutes from take-off back to pushback, from landing on to the gate
 FINAVIA_AIRPORTS = ["HEL", "OUL", "RVN", "TMP", "TKU", "KTT", "IVL", "KUO", "VAA", "JOE", "JYV", "KAJ", "KEM",
                     "KOK", "KAO", "MHQ", "POR", "SVL", "ENF"]
 
@@ -416,7 +417,9 @@ def collect_finavia() -> dict:
                 if status == "Cancelled":
                     out[rec] = [sched.date().isoformat(), airline, number, origin, dest, None, 1]
                     continue
-                actual = _utc(text("act_d"))
+                actual = _utc(text("ablk_d"))
+                if not actual and _utc(text("act_d")):
+                    actual = _utc(text("act_d")) + timedelta(minutes=FINAVIA_TAXI[kind])
                 if actual:
                     out[rec] = [sched.date().isoformat(), airline, number, origin, dest,
                                 round((actual - sched).total_seconds() / 60), 0]
