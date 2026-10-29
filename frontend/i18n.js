@@ -65,37 +65,53 @@
       .map(k => {
         const order = [];
         const re = new RegExp("^" + escape(k).replace(/\\?\{(\d)\\?\}/g, (_, n) => { order.push(+n); return "(.+?)"; }) + "$");
-        return { re, order, out: d[k] };
+        return { re, order, out: d[k], sample: k.replace(/\{\d\}/g, "0") };
       });
   }
 
-  const SENTENCE = /(?<!e\.g\.)(?<!i\.e\.)(?<=[.!?:;])\s+(?=[A-Z0-9(“"])/;
+  const SENTENCE = /(?<!e\.g\.)(?<!i\.e\.)(?<=[.!?:])\s+(?=[A-Z0-9(“"])/;
 
   function lookup(text, depth = 0) {
     const key = norm(text);
     if (!key || lang === "en") return null;
     if (Object.prototype.hasOwnProperty.call(dict, key)) return dict[key];
+    if (depth === 0 && collect && /[A-Za-z]{2}/.test(key)) window.__i18nMissing.add(key);
+    // Text built from pieces ("Your starting point · 45 min", or sentences one after another):
+    // whole sentences beat loose patterns, so try the pieces first
+    let partial = null, splitBy = null;
+    if (depth === 0) {
+      for (const [split, glue] of [[/ · /, " · "], [SENTENCE, " "]]) {
+        const parts = key.split(split);
+        if (parts.length < 2) continue;
+        splitBy = split;
+        const out = parts.map(s => lookup(s, 1) ?? (/ · /.test(s) ? lookup(s) : null));
+        if (out.every((x, i) => x != null || !/[A-Za-z]{2}/.test(parts[i]))) return out.map((x, i) => x ?? parts[i]).join(glue);
+        if (out.some(x => x != null)) partial = out.map((x, i) => x ?? parts[i]).join(glue);
+        break;
+      }
+    }
     for (const p of patterns) {
+      if (splitBy && !splitBy.test(p.sample)) continue;  // a pattern only covers several pieces if it has them too
       const m = key.match(p.re);
       if (!m) continue;
       const vals = {};
       p.order.forEach((n, i) => { vals[n] = (depth < 3 && lookup(m[i + 1], depth + 1)) || m[i + 1]; });
       return p.out.replace(/\{(\d)\}/g, (_, n) => vals[n] ?? "");
     }
-    // The same sentence without its full stop
-    if (/[^.]\.$/.test(key)) {
+    if (partial != null) return partial;
+    // The same text without its full stop or colon ("Medium confidence:")
+    const end = key.match(/[^.:]([.:])$/);
+    if (end) {
       const bare = lookup(key.slice(0, -1), depth + 1);
-      if (bare != null) return /[.!?。؟]$/.test(bare) ? bare : bare + ".";
+      if (bare != null) return /[.!?:。؟]$/.test(bare) ? bare : bare + end[1];
     }
-    if (depth === 0 && collect && /[A-Za-z]{2}/.test(key)) window.__i18nMissing.add(key);
-    // Text built from pieces: "Level 2 · Wheelchair accessible", sentences one after another,
-    // or a list such as "DXB (64% on time), BKK (76% on time)". Translate piece by piece.
-    const splits = depth === 0 ? [[/ · /, " · "], [SENTENCE, " "]] : depth < 3 ? [[/, (?=[A-Z0-9])/, ", "]] : [];
-    for (const [split, glue] of splits) {
-      const parts = key.split(split);
-      if (parts.length < 2) continue;
-      const out = parts.map(s => lookup(s, 1) ?? (/ · /.test(s) ? lookup(s) : null));
-      return out.some(x => x != null) ? out.map((x, i) => x ?? parts[i]).join(glue) : null;
+    // A list such as "DXB (64% on time), BKK (76% on time)"
+    if (depth > 0 && depth < 3) {
+      const parts = key.split(/, (?=[A-Z0-9])/);
+      if (parts.length > 1) {
+        const out = parts.map(s => lookup(s, depth + 1));
+        if (out.some(x => x != null)) return out.map((x, i) => x ?? parts[i]).join(", ");
+      }
     }
     return null;
   }

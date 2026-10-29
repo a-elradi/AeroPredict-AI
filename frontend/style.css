@@ -35,6 +35,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  overflow-wrap: break-word;
 }
 a { color: inherit; text-decoration: none; }
 img, svg { display: block; }
@@ -593,7 +594,7 @@ html[lang="ar"] .search-label, html[lang="ar"] .sc-label { letter-spacing: 0; }
   .nav-links.open .nav-link { padding: 12px 8px; font-size: 1rem; color: var(--text); }
   .nav-links.open .menu-only { display: block; margin-bottom: 8px; }
   .nav-links.open .menu-cta { background: var(--accent); color: var(--on-accent); font-weight: 600; text-align: center; border-radius: var(--radius-sm); }
-  .predict-layout { grid-template-columns: 1fr; }
+  .predict-layout { grid-template-columns: minmax(0, 1fr); }
   .empty-state { display: none; }
   .kpi-grid { grid-template-columns: 1fr 1fr; }
   .charts-grid { grid-template-columns: 1fr; }
@@ -669,3 +670,6 @@ html.i18n-loading body { visibility: hidden; }
   unicode-bidi: isolate; direction: ltr;
 }
 [dir="rtl"] .sc-input { text-align: right; }
+[dir="rtl"] .hero-facts strong { margin: 0 0 0 6px; }  /* the gap sits between the number and its word */
+.bp-code { align-self: flex-start; }
+.bp-end-arr .bp-code { align-self: flex-end; }

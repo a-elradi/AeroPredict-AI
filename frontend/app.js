@@ -170,13 +170,13 @@ function renderResult(data) {
   $("rArrCode").textContent = arr_airport;
   $("rDepName").textContent = data.dep_name || "";
   $("rArrName").textContent = data.arr_name || "";
-  $("rRoute").setAttribute("aria-label", `${data.dep_name || dep_airport} to ${data.arr_name || arr_airport}`);
+  $("rRoute").setAttribute("aria-label", `Flight from ${data.dep_name || dep_airport} to ${data.arr_name || arr_airport}`);
   $("rTime").textContent = departsText(departure);
 
   // Without data for this flight, its route or its airports, don't present a confident risk level
   const generic = data.data_basis && data.data_basis.confidence === "general";
   const badge = $("riskBadge");
-  badge.textContent = generic ? "Estimate only" : `${risk_tier.charAt(0)}${risk_tier.slice(1).toLowerCase()} risk`;
+  badge.textContent = generic ? "Estimate only" : { LOW: "Low risk", MODERATE: "Moderate risk", MEDIUM: "Medium risk", HIGH: "High risk" }[risk_tier] || `${risk_tier} risk`;
   badge.dataset.tier = generic ? "ESTIMATE" : risk_tier;
 
   $("pOnTime").textContent = `${Math.round(p.on_time)}%`;
@@ -247,26 +247,23 @@ async function loadAnalytics() {
     const report = document.getElementById("modelReport");
     if (report && stats.test_flights) {
       const months = stats.data_months || [];
-      report.textContent =
-        `Real flights from ${months[0]} to ${months[months.length - 1]} (${stats.data_source || "US Bureau of Transportation Statistics"}). ` +
-        `We tested the model on ${stats.test_flights.toLocaleString()} flights from ${stats.test_months.join(", ")} ` +
-        `that it never saw during training: it ranks risky flights above safe ones ${Math.round(stats.model_auc * 100)}% of the time ` +
-        `(50% would be guessing)` +
-        (stats.model_auc_with_forecast
-          ? `, rising to ${Math.round(stats.model_auc_with_forecast * 100)}% for flights in the next day, when the airport weather forecast is known. `
-          : ". ") +
-        (() => {
-          const bucket = (stats.calibration || []).find(c => c.predicted === "20-30%");
-          return bucket ? `Of the test flights it gave a 20–30% chance of disruption, ${bucket.actual_disrupted_pct}% were delayed or cancelled. ` : "";
-        })() +
-        (() => {
-          const t = stats.international_test;
-          return t ? `Outside the US we tested the same way on ${t.test_flights.toLocaleString()} ${t.country} flights ` +
-            `from ${t.test_months}: ${Math.round(t.auc * 100)}% (up from ${Math.round(t.auc_before * 100)}% before route history was added)` +
-            (t.riskiest_predicted_pct ? `, and of the riskiest tenth, predicted at ${t.riskiest_predicted_pct}%, ${t.riskiest_actual_pct}% were delayed or cancelled. ` : ". ")
-            : "";
-        })() +
-        `Delays also depend on things no schedule can show, so treat predictions as odds, not certainties.`;
+      // One sentence per element, so each can be translated as a whole
+      const pct = x => Math.round(x * 100);
+      const bucket = (stats.calibration || []).find(c => c.predicted === "20-30%");
+      const t = stats.international_test;
+      const sentences = [
+        `Real flights from ${months[0]} to ${months[months.length - 1]} (${stats.data_source || "US Bureau of Transportation Statistics"}).`,
+        stats.model_auc_with_forecast
+          ? `We tested the model on ${stats.test_flights.toLocaleString()} flights from ${stats.test_months.join(", ")} that it never saw during training: it ranks risky flights above safe ones ${pct(stats.model_auc)}% of the time (50% would be guessing), rising to ${pct(stats.model_auc_with_forecast)}% for flights in the next day, when the airport weather forecast is known.`
+          : `We tested the model on ${stats.test_flights.toLocaleString()} flights from ${stats.test_months.join(", ")} that it never saw during training: it ranks risky flights above safe ones ${pct(stats.model_auc)}% of the time (50% would be guessing).`,
+        bucket && `Of the test flights it gave a 20–30% chance of disruption, ${bucket.actual_disrupted_pct}% were delayed or cancelled.`,
+        t && (t.riskiest_predicted_pct
+          ? `Outside the US we tested the same way on ${t.test_flights.toLocaleString()} ${t.country} flights from ${t.test_months}: ${pct(t.auc)}% (up from ${pct(t.auc_before)}% before route history was added), and of the riskiest tenth, predicted at ${t.riskiest_predicted_pct}%, ${t.riskiest_actual_pct}% were delayed or cancelled.`
+          : `Outside the US we tested the same way on ${t.test_flights.toLocaleString()} ${t.country} flights from ${t.test_months}: ${pct(t.auc)}% (up from ${pct(t.auc_before)}% before route history was added).`),
+        "Delays also depend on things no schedule can show, so treat predictions as odds, not certainties.",
+      ].filter(Boolean);
+      report.replaceChildren(...sentences.flatMap((text, i) =>
+        [i ? " " : "", Object.assign(document.createElement("span"), { textContent: text })].filter(Boolean)));
     }
 
     // Charts draw text on a canvas, so the page translator can't reach it: label them here
@@ -826,7 +823,7 @@ window.Wayfinding = (() => {
     const card = $("bagResult");
     card.dataset.level = d.risk_level;
     $("bagTitle").textContent = d.route.join(" → ");
-    $("bagLevel").textContent = `${d.risk_level[0].toUpperCase()}${d.risk_level.slice(1)} risk`;
+    $("bagLevel").textContent = { low: "Low risk", medium: "Medium risk", high: "High risk" }[d.risk_level] || `${d.risk_level} risk`;
     $("bagPct").textContent = `${d.risk_percent}%`;
     $("bagOneIn").textContent = d.one_in
       ? `chance a bag is delayed or lost · about 1 in ${d.one_in} trips like yours`
@@ -984,9 +981,7 @@ const flightRights = (() => {
       const h = d.headline;
       const laws = d.regimes.filter(r => r.compensation.eligible).map(r => r.code);
       $("rbSummary").textContent = h.eligible
-        ? `On this route, ${laws.join(" / ")} rules could give you up to ${h.currency}${h.amount} per passenger ` +
-          `if you arrive 3 or more hours late or your flight is cancelled at short notice, unless it's caused ` +
-          `by something outside the airline's control, such as severe weather.`
+        ? `On this route, ${laws.join(" / ")} rules could give you up to ${h.currency}${h.amount} per passenger if you arrive 3 or more hours late or your flight is cancelled at short notice, unless it's caused by something outside the airline's control, such as severe weather.`
         : `No law sets a fixed cash payout on this route, but the airline still owes you help if things go wrong.`;
       const main = d.regimes[0];
       $("rbPoints").replaceChildren(...[main.care[0], main.choices[0], main.choices[main.choices.length - 1]]
