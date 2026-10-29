@@ -4,7 +4,7 @@
   "NG": {
    "name": "Nigerian Civil Aviation Authority, Summary of Domestic Airline Flight Disruption Operations (as reported; some airlines dispute it)",
    "period": "August 2026",
-   "url": "https://allafrica.com/stories/202609150060.html"
+   "url": "https://dailytrust.com/?p=1952804"
   },
   "NZ": {
    "name": "NZ Ministry of Transport, aviation on-time performance",
@@ -45,13 +45,23 @@
    "name": "GACA Saudi Arabia, on-time performance report",
    "period": "September 2025",
    "url": "https://www.argaam.com/en/article/articledetail/id/1854982"
+  },
+  "ID": {
+   "name": "Indonesia Directorate General of Civil Aviation (Kemenhub), on-time performance in the 2025 performance report",
+   "period": "2025",
+   "url": "https://hubud.kemenhub.go.id/assets/file/lakip/LAKIP_2025.pdf"
+  },
+  "PK": {
+   "name": "Pakistan Civil Aviation Authority, airline on-time departures (airlines January to June 2025; national 2026)",
+   "period": "2025 to 2026",
+   "url": "https://propakistani.pk/"
   }
  },
  "airline_country": {
   "P4|NG": [
    1864,
    1330,
-   0,
+   7,
    null
   ],
   "*|NG": [
@@ -320,6 +330,138 @@
   },
   "F3|SA": {
    "late_pct": 8.0
+  },
+  "SI|ID": [
+   3842,
+   789,
+   167,
+   null
+  ],
+  "ID|ID": [
+   77382,
+   22817,
+   1,
+   null
+  ],
+  "QG|ID": [
+   66497,
+   6655,
+   74,
+   null
+  ],
+  "GA|ID": [
+   63175,
+   10720,
+   15,
+   null
+  ],
+  "QZ|ID": [
+   10530,
+   1239,
+   485,
+   null
+  ],
+  "JT|ID": [
+   89508,
+   30958,
+   8,
+   null
+  ],
+  "IN|ID": [
+   6951,
+   1557,
+   210,
+   null
+  ],
+  "IP|ID": [
+   20499,
+   1021,
+   83,
+   null
+  ],
+  "SJ|ID": [
+   9828,
+   1883,
+   68,
+   null
+  ],
+  "IU|ID": [
+   71497,
+   28404,
+   89,
+   null
+  ],
+  "8B|ID": [
+   4976,
+   1590,
+   23,
+   null
+  ],
+  "IL|ID": [
+   7150,
+   768,
+   149,
+   null
+  ],
+  "IW|ID": [
+   48522,
+   10161,
+   657,
+   null
+  ],
+  "*|ID": [
+   480357,
+   118562,
+   2029,
+   null
+  ],
+  "QI|NG": [
+   560,
+   254,
+   3,
+   null
+  ],
+  "W3|NG": [
+   301,
+   188,
+   1,
+   null
+  ],
+  "VM|NG": [
+   336,
+   204,
+   4,
+   null
+  ],
+  "Q9|NG": [
+   226,
+   114,
+   3,
+   null
+  ],
+  "OF|NG": [
+   239,
+   139,
+   0,
+   null
+  ],
+  "PF|PK": {
+   "late_pct": 33.2
+  },
+  "9P|PK": {
+   "late_pct": 40.2
+  },
+  "PK|PK": {
+   "late_pct": 45.2
+  },
+  "PA|PK": {
+   "late_pct": 50.8
+  },
+  "ER|PK": {
+   "late_pct": 56.1
+  },
+  "*|PK": {
+   "late_pct": 32.5
   }
  },
  "airports": {

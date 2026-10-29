@@ -262,12 +262,12 @@ def test_south_africa_uses_acsa_airline_figures(client):
 def test_nigeria_manual_ncaa_records():
     from app.services import route_history
     own = route_history.lookup("P4", "9999", "LOS", "ABV")
-    other = route_history.lookup("W3", "9999", "LOS", "PHC")
+    other = route_history.lookup("ZZ", "9999", "LOS", "PHC")
     assert own and own["level"] == "airline_country" and "NCAA" not in own["source"]["period"]
     assert "Nigerian Civil Aviation Authority" in own["source"]["name"]
     assert other and other["level"] == "country"
-    assert route_history.lookup("W3", "9999", "LOS", "LHR") is None or \
-        route_history.lookup("W3", "9999", "LOS", "LHR")["level"] != "country"
+    assert route_history.lookup("ZZ", "9999", "LOS", "LHR") is None or \
+        route_history.lookup("ZZ", "9999", "LOS", "LHR")["level"] != "country"
 
 
 def test_small_airports_are_smoothed():
