@@ -69,6 +69,18 @@ Never put text on gradients.
 - Navigation: wordmark left, links right, one "Check a flight" button. On phones a menu button opens a
   solid panel.
 
+## Languages
+
+- English, العربية (Arabic, right-to-left), Español and Türkçe. The globe button in the top bar switches
+  instantly and the choice is remembered; first-time visitors get their browser's language when we have it.
+- Pages are written in English. `frontend/i18n.js` swaps the text from `frontend/i18n/<lang>.json`
+  (English text → translation), including results the server writes. Keys can hold `{0}` slots for numbers
+  and codes, and `<0>…</0>` around links and bold words so they can move within the sentence.
+- New or changed text needs an entry in all three files (`backend/tests/test_i18n.py` checks they match).
+- Layout uses logical CSS (`margin-inline-start`, `text-align: start`), so Arabic mirrors without extra rules.
+  Numbers, codes and times stay left-to-right inside Arabic text. Arabic uses IBM Plex Sans Arabic.
+- Language names are always written in their own language, never as flags.
+
 ## Accessibility
 
 - Text contrast at least 4.5:1 (muted text on `--bg` is 5.6:1).

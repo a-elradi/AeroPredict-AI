@@ -147,21 +147,31 @@ document.getElementById("flightForm").addEventListener("submit", async function 
 });
 
 /* ── Render Result ── */
+let lastDeparture = null;
+const departsText = departure => {
+  const when = new Date(departure.replace(" ", "T"));
+  return isNaN(when) ? departure
+    : `Departs ${when.toLocaleDateString(window.i18n?.locale, { weekday: "short", day: "numeric", month: "short" })} · ` +
+      `${departure.slice(11, 16)} local time`;
+};
+// Dates are written in the page language, so redo them when it changes
+document.addEventListener("languagechange", () => {
+  if (lastDeparture) document.getElementById("rTime").textContent = departsText(lastDeparture);
+});
+
 function renderResult(data) {
   const { flight_number, dep_airport, arr_airport, departure, probabilities, risk_tier, factors } = data;
   const p = probabilities;
   const $ = id => document.getElementById(id);
 
+  lastDeparture = departure;
   $("rFlightNum").textContent = flight_number;
   $("rDepCode").textContent = dep_airport;
   $("rArrCode").textContent = arr_airport;
   $("rDepName").textContent = data.dep_name || "";
   $("rArrName").textContent = data.arr_name || "";
   $("rRoute").setAttribute("aria-label", `${data.dep_name || dep_airport} to ${data.arr_name || arr_airport}`);
-  const when = new Date(departure.replace(" ", "T"));
-  $("rTime").textContent = isNaN(when) ? departure
-    : `Departs ${when.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}, ` +
-      `${departure.slice(11, 16)} local time`;
+  $("rTime").textContent = departsText(departure);
 
   // Without data for this flight, its route or its airports, don't present a confident risk level
   const generic = data.data_basis && data.data_basis.confidence === "general";
@@ -239,7 +249,7 @@ async function loadAnalytics() {
       const months = stats.data_months || [];
       report.textContent =
         `Real flights from ${months[0]} to ${months[months.length - 1]} (${stats.data_source || "US Bureau of Transportation Statistics"}). ` +
-        `We tested the model on ${stats.test_flights.toLocaleString()} flights from ${stats.test_months.join(" and ")} ` +
+        `We tested the model on ${stats.test_flights.toLocaleString()} flights from ${stats.test_months.join(", ")} ` +
         `that it never saw during training: it ranks risky flights above safe ones ${Math.round(stats.model_auc * 100)}% of the time ` +
         `(50% would be guessing)` +
         (stats.model_auc_with_forecast
@@ -259,15 +269,26 @@ async function loadAnalytics() {
         `Delays also depend on things no schedule can show, so treat predictions as odds, not certainties.`;
     }
 
+    // Charts draw text on a canvas, so the page translator can't reach it: label them here
+    const tr = s => window.i18n ? window.i18n.t(s) : s;
+    const monthNames = () => Array.from({ length: 12 }, (_, i) =>
+      new Date(2024, i, 1).toLocaleDateString(window.i18n?.locale, { month: "short" }));
+    const charts = [];
+    document.addEventListener("languagechange", () => charts.forEach(({ chart, labels, months }) => {
+      chart.data.datasets.forEach((d, i) => { d.label = tr(labels[i]); });
+      if (months) chart.data.labels = monthNames();
+      chart.update();
+    }));
+
     // Carrier chart (top 10)
     const top10 = carriers.slice(0, 10);
-    new Chart(document.getElementById("carrierChart"), {
+    charts.push({ labels: ["On time %", "Delayed %"], chart: new Chart(document.getElementById("carrierChart"), {
       type: "bar",
       data: {
         labels: top10.map(c => c.carrier),
         datasets: [
-          { label: "On time %", data: top10.map(c => c.otp), backgroundColor: C.good, borderRadius: 3 },
-          { label: "Delayed %", data: top10.map(c => c.delay), backgroundColor: C.warn, borderRadius: 3 },
+          { label: tr("On time %"), data: top10.map(c => c.otp), backgroundColor: C.good, borderRadius: 3 },
+          { label: tr("Delayed %"), data: top10.map(c => c.delay), backgroundColor: C.warn, borderRadius: 3 },
         ],
       },
       options: {
@@ -278,16 +299,16 @@ async function loadAnalytics() {
           y: { ticks: { color: C.muted }, grid: { color: C.grid }, min: 0, max: 100 },
         },
       },
-    });
+    }) });
 
     // Airport chart (top 12)
     const top12 = airports.slice(0, 12);
-    new Chart(document.getElementById("airportChart"), {
+    charts.push({ labels: ["Departures delayed or cancelled %"], chart: new Chart(document.getElementById("airportChart"), {
       type: "bar",
       data: {
         labels: top12.map(a => a.airport),
         datasets: [{
-          label: "Departures delayed or cancelled %",
+          label: tr("Departures delayed or cancelled %"),
           data: top12.map(a => a.delay_pct),
           backgroundColor: C.warn,
           borderRadius: 3,
@@ -302,18 +323,17 @@ async function loadAnalytics() {
           y: { ticks: { color: C.muted }, grid: { color: C.grid } },
         },
       },
-    });
+    }) });
 
     // Seasonal chart
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const byMonth = Object.fromEntries((stats.monthly || []).map(m => [m.month, m.delayed_pct + m.cancelled_pct]));
-    const seasonal = months.map((_, i) => byMonth[i + 1] ?? null);
-    new Chart(document.getElementById("seasonChart"), {
+    const seasonal = Array.from({ length: 12 }, (_, i) => byMonth[i + 1] ?? null);
+    charts.push({ labels: ["Flights delayed or cancelled %"], months: true, chart: new Chart(document.getElementById("seasonChart"), {
       type: "line",
       data: {
-        labels: months,
+        labels: monthNames(),
         datasets: [{
-          label: "Flights delayed or cancelled %",
+          label: tr("Flights delayed or cancelled %"),
           data: seasonal,
           borderColor: C.accent,
           backgroundColor: "rgba(242,194,48,0.08)",
@@ -331,7 +351,7 @@ async function loadAnalytics() {
           y: { ticks: { color: C.muted }, grid: { color: C.grid }, min: 0 },
         },
       },
-    });
+    }) });
 
   } catch (err) {
     console.warn("Analytics load failed (backend may be offline):", err);
@@ -380,6 +400,16 @@ document.querySelector(".nav-cta")?.addEventListener("click", e => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   $("jpDate").value = tomorrow.toISOString().split("T")[0];
+
+  // The plan is written in the page language unless the passenger picks another one
+  let langPicked = false;
+  $("jpLang").addEventListener("change", () => { langPicked = true; });
+  const followPageLang = () => {
+    const l = window.i18n?.lang;
+    if (!langPicked && l && $("jpLang").querySelector(`option[value="${l}"]`)) $("jpLang").value = l;
+  };
+  followPageLang();
+  document.addEventListener("languagechange", followPageLang);
 
   const el = (tag, cls, text) => {
     const node = document.createElement(tag);
@@ -452,8 +482,8 @@ document.querySelector(".nav-cta")?.addEventListener("click", e => {
     facts.replaceChildren();
     const addFact = (label, value) => {
       if (!value) return;
-      const f = el("span", "jp-fact", label + ": ");
-      f.appendChild(el("strong", null, value));
+      const f = el("span", "jp-fact");
+      f.append(el("span", null, label), ": ", el("strong", null, value));
       facts.appendChild(f);
     };
     addFact("Status", flight.status);
@@ -647,7 +677,9 @@ window.Wayfinding = (() => {
     for (const cat of Object.keys(LABELS).filter(c => c in data.categories)) {
       const info = data.categories[cat];
       const section = el("div", "wf-cat");
-      section.appendChild(el("h4", null, `${LABELS[cat]} (${info.count})`));
+      const heading = el("h4", null, LABELS[cat]);
+      heading.appendChild(el("span", "wf-count", ` (${info.count})`));
+      section.appendChild(heading);
       if (!info.nearest.length) {
         section.appendChild(el("p", "wf-empty", "Not on the map for this airport yet. Ask airport staff or check the airport signs."));
         lists.appendChild(section);
@@ -952,7 +984,7 @@ const flightRights = (() => {
       const h = d.headline;
       const laws = d.regimes.filter(r => r.compensation.eligible).map(r => r.code);
       $("rbSummary").textContent = h.eligible
-        ? `On this route, ${laws.join(" and ")} rules could give you up to ${h.currency}${h.amount} per passenger ` +
+        ? `On this route, ${laws.join(" / ")} rules could give you up to ${h.currency}${h.amount} per passenger ` +
           `if you arrive 3 or more hours late or your flight is cancelled at short notice, unless it's caused ` +
           `by something outside the airline's control, such as severe weather.`
         : `No law sets a fixed cash payout on this route, but the airline still owes you help if things go wrong.`;
