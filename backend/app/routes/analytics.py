@@ -76,6 +76,9 @@ def _coverage() -> dict:
     countries.update(icao_country[i] for i in euro.get("airports", {}) if i in icao_country)
     airports.update(i for i, v in world.items() if v[0] in euro.get("airports", {}))
     airports.update(airport_data._acsa().get("airports", {}))
+    reported = airport_data._reported()  # official reports entered by hand
+    airports.update(reported)
+    countries.update(c for c in map(country, reported) if c)
     if delay_model.is_available():
         airports.update(k for k, v in delay_model._load()["tables"]["origin"].items() if v[0] >= 1000)
         airlines = {k for k, v in delay_model._load()["tables"]["carrier"].items() if v[0] >= 1000}

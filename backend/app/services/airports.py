@@ -134,6 +134,13 @@ def _eurocontrol() -> dict:
 
 
 @lru_cache(maxsize=1)
+def _reported() -> dict:
+    """Airport punctuality from official reports entered by hand (data/manual_records.json, "airports")."""
+    path = _DATA_DIR / "manual_records.json"
+    return json.loads(path.read_text(encoding="utf-8")).get("airports", {}) if path.exists() else {}
+
+
+@lru_cache(maxsize=1)
 def _acsa() -> dict:
     path = _DATA_DIR / "acsa_punctuality.json"
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
@@ -171,6 +178,13 @@ def punctuality(iata: str, airline: str | None = None) -> dict | None:
                 "month_pct": pick.get("on_time_pct_month"), "month": acsa.get("month"),
                 "level": "airport_airline" if own else "airport", "airline": airline if own else None,
                 "period": acsa["period"], "source": acsa["source"], "publisher": "ACSA"}
+    rep = _reported().get(info["iata"])
+    if rep:  # e.g. Saudi GACA's monthly report: one figure for departures and arrivals
+        own = (rep.get("airlines") or {}).get((airline or "").upper())
+        pct = own if own is not None else rep["on_time_pct"]
+        return {"name": rep.get("name"), "dep_on_time_pct": pct, "arr_on_time_pct": pct,
+                "level": "airport_airline" if own is not None else "airport", "airline": airline if own is not None else None,
+                "period": rep["period"], "source": rep["source"], "publisher": rep["publisher"], "single_figure": True}
     cty = (euro.get("countries") or {}).get(info["country"] or "")
     if cty and cty.get("dep_on_time_pct") is not None:
         return {**cty, "level": "country", "period": euro["period"], "source": euro["source"],

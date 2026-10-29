@@ -197,7 +197,7 @@ def _airport_factors(shares: list[dict]) -> list[dict]:
                         "value": f"{a['on_time_pct']:.0f}% on time ({a['flights']:,} flights)",
                         "level": "high" if late > 30 else "low" if late < 18 else "medium"})
             continue
-        if a["source"] not in ("EUROCONTROL", "ACSA"):
+        if a["source"] not in ("EUROCONTROL", "ACSA") and not a.get("single_figure"):
             continue
         where = {"airport": a["airport"], "airport_airline": f"{a.get('airline')} at {a['airport']}"}.get(
             a.get("level"), f"{a['airport']} (country average)")
@@ -205,6 +205,8 @@ def _airport_factors(shares: list[dict]) -> list[dict]:
             label, value = f"{where} (ACSA)", f"{a['on_time_pct']:.0f}% on time this year"
             if a.get("month_pct") is not None:
                 value += f", {a['month_pct']:.0f}% in {a.get('month')}"
+        elif a.get("single_figure"):  # an official monthly or quarterly report
+            label, value = f"{where} ({a['source']})", f"{a['on_time_pct']:.0f}% on time in {a['period']}"
         else:
             label, value = f"{where} {what} (EUROCONTROL)", f"{a['on_time_pct']:.0f}% on time this year"
             if a.get("on_time_pct_7d") is not None:
