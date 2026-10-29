@@ -374,22 +374,30 @@ def collect_finavia() -> dict:
     for airport in FINAVIA_AIRPORTS:
         for kind in ("dep", "arr"):
             try:
+                # The gateway is Azure API Management: send the key under its usual header too
                 resp = requests.get(FINAVIA_FLIGHTS.format(kind=kind, airport=airport), timeout=120,
-                                    headers={**HEADERS, "app_key": key})
+                                    headers={**HEADERS, "app_key": key, "Ocp-Apim-Subscription-Key": key,
+                                             "Accept": "application/xml"})
             except requests.RequestException as e:
                 print(f"  Finavia {airport} {kind}: {e}", flush=True)
                 continue
             if resp.status_code == 401:  # say so once rather than for every airport
                 raise RuntimeError("Finavia refused the key (401): check FINAVIA_KEY is the subscription's primary key")
-            if not resp.ok:
-                print(f"  Finavia {airport} {kind}: HTTP {resp.status_code}", flush=True)
+            if not resp.ok or not resp.content.strip():
+                if airport == "HEL":  # say what came back (never the key)
+                    print(f"  Finavia {airport} {kind}: HTTP {resp.status_code}, {resp.headers.get('Content-Type')}, "
+                          f"{len(resp.content)} bytes: {resp.text[:200]!r}", flush=True)
                 continue
             if airport == "HEL":
                 path = COLLECTED / "finavia" / f"sample_{kind}.xml"
                 if not path.exists():
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_bytes(resp.content[:200_000])
-            root = ET.fromstring(resp.content)
+            try:
+                root = ET.fromstring(resp.content)
+            except ET.ParseError as e:
+                print(f"  Finavia {airport} {kind}: not XML ({e}): {resp.text[:200]!r}", flush=True)
+                continue
             for f in root.iterfind(f"{FINAVIA_NS}{kind}/{FINAVIA_NS}body/{FINAVIA_NS}flight"):
                 text = lambda tag: (f.findtext(FINAVIA_NS + tag) or "").strip()
                 airline, number = flight_code(text("fltnr"))
