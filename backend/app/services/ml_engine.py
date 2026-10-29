@@ -308,7 +308,8 @@ def _explain_factors(hist, prior, carrier, number, dep, arr, dt) -> list[dict]:
         factors.append({"icon": "🛫", "label": f"{dep} → {arr} route",
                         "value": f"{_pct_on_time(rt):.0f}% on time", "level": _level(rt, prior)})
     c = hist.get("carrier")
-    if c and c[0] >= MIN_HISTORY:
+    # The model's table also holds foreign airlines' few flights to Brazil: too few to call "overall"
+    if c and c[0] >= (MIN_HISTORY if carrier in US_CARRIER_NAMES else 1000):
         name = US_CARRIER_NAMES.get(carrier, carrier)
         factors.append({"icon": "📊", "label": f"{name} overall",
                         "value": f"{_pct_on_time(c):.0f}% on time", "level": _level(c, prior)})
