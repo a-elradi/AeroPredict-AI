@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from ..services.ml_engine import predict, train_model, META_PATH
+from ..services import airports
 import hmac, json, os, re, traceback
 from datetime import datetime
 
@@ -35,6 +36,8 @@ def predict_flight():
             date_str     =data["date"],
             dep_time     =data["dep_time"],
         )
+        result["dep_name"] = airports.lookup(data["dep_airport"])["name"]
+        result["arr_name"] = airports.lookup(data["arr_airport"])["name"]
         return jsonify({"success": True, "data": result})
     except Exception:
         traceback.print_exc()

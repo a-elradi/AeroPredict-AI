@@ -122,13 +122,29 @@
       <!-- RESULT PANEL (initially hidden) -->
       <div class="card result-card" id="resultCard" hidden>
         <div class="result-header" id="resultHeader">
-          <div class="result-flight">
+          <div class="bp-top">
             <span class="result-flight-num" id="rFlightNum">–</span>
-            <span class="result-route" id="rRoute">– → –</span>
             <span class="result-time" id="rTime">–</span>
+            <span class="risk-badge" id="riskBadge">–</span>
           </div>
-          <span class="risk-badge" id="riskBadge">–</span>
+          <div class="bp-route" id="rRoute" role="img" aria-label="">
+            <div class="bp-end">
+              <span class="bp-code" id="rDepCode">–</span>
+              <span class="bp-city" id="rDepName"></span>
+            </div>
+            <div class="bp-path" aria-hidden="true">
+              <span class="bp-line"></span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+              <span class="bp-line"></span>
+            </div>
+            <div class="bp-end bp-end-arr">
+              <span class="bp-code" id="rArrCode">–</span>
+              <span class="bp-city" id="rArrName"></span>
+            </div>
+          </div>
         </div>
+        <div class="bp-tear" aria-hidden="true"></div>
 
         <div class="result-main">
           <div class="result-figure">
@@ -229,38 +245,38 @@
       <h2 class="section-title">The rest of your trip</h2>
       <p class="section-subtitle">Tools for the airport, your luggage and the moment something goes wrong.</p>
     </div>
-    <div class="tools-grid">
-      <a class="tool-card" href="#journey">
+    <ol class="tools-list">
+      <li><a class="tool-row" href="#journey">
+        <span class="tool-num">01</span>
         <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16"/></svg></span>
-        <h3>Journey plan</h3>
-        <p>When to leave home, how long security takes, and a step-by-step plan to the gate.</p>
-        <span class="tool-link">Plan my journey →</span>
-      </a>
-      <a class="tool-card" href="#wayfinding">
+        <span class="tool-text"><strong>Journey plan</strong><span>When to leave home, how long security takes, and a step-by-step plan to the gate.</span></span>
+        <span class="tool-link">Plan my journey <span class="tool-arrow" aria-hidden="true">→</span></span>
+      </a></li>
+      <li><a class="tool-row" href="#wayfinding">
+        <span class="tool-num">02</span>
         <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>
-        <h3>Near my gate</h3>
-        <p>Coffee, food, toilets, prayer rooms and lounges, sorted by walking distance.</p>
-        <span class="tool-link">Find nearby →</span>
-      </a>
-      <a class="tool-card" href="#baggage">
+        <span class="tool-text"><strong>Near my gate</strong><span>Coffee, food, toilets, prayer rooms and lounges, sorted by walking distance.</span></span>
+        <span class="tool-link">Find nearby <span class="tool-arrow" aria-hidden="true">→</span></span>
+      </a></li>
+      <li><a class="tool-row" href="#baggage">
+        <span class="tool-num">03</span>
         <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M9 11v5M15 11v5"/></svg></span>
-        <h3>Bag check</h3>
-        <p>How likely your checked bag is to go missing on your route, and what to do if it does.</p>
-        <span class="tool-link">Check my bag →</span>
-      </a>
-      <a class="tool-card" href="#rights">
+        <span class="tool-text"><strong>Bag check</strong><span>How likely your checked bag is to go missing on your route, and what to do if it does.</span></span>
+        <span class="tool-link">Check my bag <span class="tool-arrow" aria-hidden="true">→</span></span>
+      </a></li>
+      <li><a class="tool-row" href="#rights">
+        <span class="tool-num">04</span>
         <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M7 20h10M5 8h14M5 8l-3 6a3 3 0 0 0 6 0L5 8zM19 8l-3 6a3 3 0 0 0 6 0l-3-6z"/></svg></span>
-        <h3>My rights</h3>
-        <p>Delayed or cancelled? See what the airline owes you: cash, meals, a hotel or a refund.</p>
-        <span class="tool-link">Check my rights →</span>
-      </a>
-      <a class="tool-card" href="#analytics">
+        <span class="tool-text"><strong>My rights</strong><span>Delayed or cancelled? See what the airline owes you: cash, meals, a hotel or a refund.</span></span>
+        <span class="tool-link">Check my rights <span class="tool-arrow" aria-hidden="true">→</span></span>
+      </a></li>
+      <li><a class="tool-row" href="#analytics">
+        <span class="tool-num">05</span>
         <span class="tool-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
-        <h3>Analytics</h3>
-        <p>Which airlines and airports run on time, and how accurate our predictions are.</p>
-        <span class="tool-link">View analytics →</span>
-      </a>
-    </div>
+        <span class="tool-text"><strong>Analytics</strong><span>Which airlines and airports run on time, and how accurate our predictions are.</span></span>
+        <span class="tool-link">View analytics <span class="tool-arrow" aria-hidden="true">→</span></span>
+      </a></li>
+    </ol>
   </div>
 </section>
 

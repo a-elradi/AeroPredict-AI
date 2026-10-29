@@ -153,7 +153,11 @@ function renderResult(data) {
   const $ = id => document.getElementById(id);
 
   $("rFlightNum").textContent = flight_number;
-  $("rRoute").textContent = `${dep_airport} → ${arr_airport}`;
+  $("rDepCode").textContent = dep_airport;
+  $("rArrCode").textContent = arr_airport;
+  $("rDepName").textContent = data.dep_name || "";
+  $("rArrName").textContent = data.arr_name || "";
+  $("rRoute").setAttribute("aria-label", `${data.dep_name || dep_airport} to ${data.arr_name || arr_airport}`);
   const when = new Date(departure.replace(" ", "T"));
   $("rTime").textContent = isNaN(when) ? departure
     : `Departs ${when.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}, ` +
