@@ -23,6 +23,12 @@ history, so the route statistics can cover a full year:
   https://developer.schiphol.nl; exchanged for an OAuth token on each run)
 - Sweden: Swedavia FlightInfo API, Sweden's 10 state airports (free key:
   SWEDAVIA_KEY, from https://apideveloper.swedavia.se)
+- Finland: Finavia Public Flights API, Finavia's 19 airports (free key: the
+  subscription's primary key in FINAVIA_KEY, from https://apiportal.finavia.fi).
+  The feed covers the previous evening to the next morning, so it runs just
+  before midnight Finnish time. Collected as given (scheduled vs actual time);
+  not used in the route statistics until checked against EUROCONTROL's figures
+  for Helsinki, since the actual times may be take-off and landing times.
 Sources whose key isn't set are skipped. The first run of each also saves one
 raw response to data/collected/<source>/sample.json so the parsing can be checked.
 
@@ -64,6 +70,10 @@ SCHIPHOL_FLIGHTS = "https://api.schiphol.nl/public/public-flights/v4/flights"
 SCHIPHOL_TAXI_IN = 10  # minutes; v4 gives landing, not on-block, times for arrivals (check against EUROCONTROL)
 SWEDAVIA_FLIGHTS = "https://api.swedavia.se/flightinfo/v2/{airport}/{direction}/{day}"
 SWEDAVIA_AIRPORTS = ["ARN", "GOT", "BMA", "MMX", "LLA", "UME", "OSD", "VBY", "KRN", "RNB"]
+FINAVIA_FLIGHTS = "https://apigw.finavia.fi/flights/public/v0/flights/{kind}/{airport}"
+FINAVIA_NS = "{http://www.finavia.fi/FlightsService.xsd}"
+FINAVIA_AIRPORTS = ["HEL", "OUL", "RVN", "TMP", "TKU", "KTT", "IVL", "KUO", "VAA", "JOE", "JYV", "KAJ", "KEM",
+                    "KOK", "KAO", "MHQ", "POR", "SVL", "ENF"]
 
 
 class KeyMissing(Exception):
@@ -357,6 +367,54 @@ def collect_swedavia(day: date) -> dict:
     return out
 
 
+def collect_finavia() -> dict:
+    """Departures from Finavia's 19 airports, plus arrivals from abroad (times in UTC)."""
+    (key,) = _key("FINAVIA_KEY")
+    out = {}
+    for airport in FINAVIA_AIRPORTS:
+        for kind in ("dep", "arr"):
+            try:
+                resp = requests.get(FINAVIA_FLIGHTS.format(kind=kind, airport=airport), timeout=120,
+                                    headers={**HEADERS, "app_key": key})
+            except requests.RequestException as e:
+                print(f"  Finavia {airport} {kind}: {e}", flush=True)
+                continue
+            if resp.status_code == 401:  # say so once rather than for every airport
+                raise RuntimeError("Finavia refused the key (401): check FINAVIA_KEY is the subscription's primary key")
+            if not resp.ok:
+                print(f"  Finavia {airport} {kind}: HTTP {resp.status_code}", flush=True)
+                continue
+            if airport == "HEL":
+                path = COLLECTED / "finavia" / f"sample_{kind}.xml"
+                if not path.exists():
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(resp.content[:200_000])
+            root = ET.fromstring(resp.content)
+            for f in root.iterfind(f"{FINAVIA_NS}{kind}/{FINAVIA_NS}body/{FINAVIA_NS}flight"):
+                text = lambda tag: (f.findtext(FINAVIA_NS + tag) or "").strip()
+                airline, number = flight_code(text("fltnr"))
+                sched = _utc(text("sdt"))
+                # The other end: a departure's first stop, an arrival's origin (the leg before this airport)
+                legs = [text(f"route_{i}") for i in range(1, 5)]
+                legs = [c for c in legs if c and c != airport]
+                if not airline or not sched or not legs:
+                    continue
+                other = legs[0] if kind == "dep" else legs[-1]
+                if kind == "arr" and other in FINAVIA_AIRPORTS:
+                    continue  # counted as that airport's departure
+                origin, dest = (airport, other) if kind == "dep" else (other, airport)
+                rec = f"{sched.date()}|{airline}{number}|{airport}|{kind}"
+                status = text("prt")
+                if status == "Cancelled":
+                    out[rec] = [sched.date().isoformat(), airline, number, origin, dest, None, 1]
+                    continue
+                actual = _utc(text("act_d"))
+                if actual:
+                    out[rec] = [sched.date().isoformat(), airline, number, origin, dest,
+                                round((actual - sched).total_seconds() / 60), 0]
+    return out
+
+
 def save(source: str, records: dict) -> int:
     """Merge into the month files; newer records replace older ones (status updates)."""
     by_month = {}
@@ -389,7 +447,8 @@ SOURCES = {"avinor": collect_avinor,
            "israel": collect_israel,
            "odpt": collect_odpt,
            "schiphol": lambda: collect_schiphol(date.today() - timedelta(days=1)),
-           "swedavia": lambda: collect_swedavia(date.today() - timedelta(days=1))}
+           "swedavia": lambda: collect_swedavia(date.today() - timedelta(days=1)),
+           "finavia": collect_finavia}
 
 
 def main():
